@@ -1,0 +1,8 @@
+.gradle/
+build/
+host/
+maven/
+reference/
+run/
+.codegraph/
+*.log
