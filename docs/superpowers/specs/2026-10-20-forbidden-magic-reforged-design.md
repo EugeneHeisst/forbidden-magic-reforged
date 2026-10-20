@@ -1,238 +1,240 @@
-# Forbidden Magic for Thaumcraft 4: Reforged — design
+# Forbidden Magic для Thaumcraft 4: Reforged — проект
 
-Status: approved in chat on 2026-10-20, pending spec review
-Target: Minecraft 26.3 / NeoForge 26.3.0.57-beta / Java 25, add-on to Thaumcraft 4: Reforged `main`
-Source of behaviour: Forbidden Magic 0.574 for Minecraft 1.7.10 (`ForbiddenMagic/`, WTFPL)
+Статус: форма согласована в чате 2026-10-20, ожидается ревью этого документа
+Цель: Minecraft 26.3 / NeoForge 26.3.0.57-beta / Java 25, аддон к Thaumcraft 4: Reforged, ветка `main`
+Источник поведения: Forbidden Magic 0.574 для Minecraft 1.7.10 (`ForbiddenMagic/`, WTFPL)
 
-## 1. Goal
+## 1. Цель
 
-Port Forbidden Magic to run as an add-on on Thaumcraft 4: Reforged, keeping the original
-mod's content, numbers, recipes, research text and assets as the reference, the same doctrine
-the host itself applies to Thaumcraft 4.2.3.5. Content that requires a third-party mod which
-does not exist for this loader and version is dropped, not invented.
+Портировать Forbidden Magic как аддон к Thaumcraft 4: Reforged, сохранив контент, числа, рецепты,
+тексты исследований и ассеты оригинала как норму — по той же доктрине, по которой сам хост переносит
+Thaumcraft 4.2.3.5. Контент, требующий сторонний мод, которого нет под этим загрузчиком и версией,
+вырезается и документируется, а не изобретается заново.
 
-The port is one project in one new directory. The host working tree stays byte-identical to
-the upstream clone at all times; this is enforced by a gate, not by discipline.
+Порт — один проект в одной новой папке. Рабочее дерево хоста во все моменты побайтово совпадает с
+клоном upstream; это обеспечивается гейтом в сборке, а не дисциплиной.
 
-## 2. Constraints
+## 2. Ограничения
 
-- **Host ownership and license.** Thaumcraft 4: Reforged belongs to `notlikethiss`. The repo has
-  no `LICENSE` file, declares `mod_license=All Rights Reserved`, and states in `README.md:9`
-  "Personal use only … not intended for redistribution". Modifications are therefore developed
-  locally and proposed upstream; no rebuilt host jar is ever published by this project.
-- **Host addon API is not a stability contract.** The addon-facing surface is documented in the
-  host's `CLAUDE.md` section "API для аддонов", which is an instruction file for the host's own
-  agents, not a published compatibility promise. Every host version is pinned by commit sha.
-- **Original Forbidden Magic is WTFPL.** Its code and its 135 textures may be copied and modified.
-  Thaumcraft assets and code are not copied into this project; where the original references
-  `thaumcraft:` texture paths, those resolve at runtime from the host.
-- **Parity.** Numbers, aspect costs, research text and recipe shapes are taken from the 1.7.10
-  source unchanged. Any deviation is recorded in `docs/deviations.md` with the reason.
-- **Attribution.** The port is published as Forbidden Magic by its original author, this
-  repository as the port, Thaumcraft 4: Reforged and Azanor in credits, and with a statement of
-  AI-assisted development.
+- **Принадлежность и лицензия хоста.** Репозиторий Thaumcraft 4: Reforged принадлежит `notlikethiss`.
+  Файла `LICENSE` нет, объявлено `mod_license=All Rights Reserved`, в `README.md:9` сказано
+  «Personal use only … not intended for redistribution». Поэтому правки хоста разрабатываются локально
+  и предлагаются upstream; собранный jar хоста этот проект не публикует никогда.
+- **Аддон-API хоста — не контракт стабильности.** Поверхность для аддонов описана в разделе
+  `CLAUDE.md` «API для аддонов», а это файл инструкций собственным агентам хоста, не обещание
+  совместимости. Каждая версия хоста пинится коммитом по sha.
+- **Оригинальный Forbidden Magic под WTFPL.** Его код и 135 текстур можно копировать и изменять.
+  Ресурсы и код Thaumcraft к себе не переносим: где оригинальный FM ссылается на пути
+  `thaumcraft:`, они разрешаются из хоста в рантайме.
+- **Паритет.** Числа, стоимость аспектов, тексты исследований и форма рецептов берутся из исходника
+  1.7.10 без правок. Любое отступление фиксируется в `docs/deviations.md` с причиной.
+- **Атрибуция.** Порт публикуется как Forbidden Magic с оригинальным автором, этот репозиторий — как
+  порт, Thaumcraft 4: Reforged и Azanor — в кредитах, с указанием, что разработка шла с участием ИИ.
 
-## 3. Why the host must change at all
+## 3. Почему хост обязан измениться
 
-Forbidden Magic registers seven aspects of its own — `luxuria`, `infernus`, `superbia`, `gula`,
-`invidia`, `desidia`, `ira` — built with `new Aspect(tag, color, components, texture, blend)`.
-They carry 16 recipe definitions, 16 research entries, 17 references in the Wrath Cage and the
-identity of the Deadly Shards.
+Forbidden Magic регистрирует семь собственных аспектов — `luxuria`, `infernus`, `superbia`, `gula`,
+`invidia`, `desidia`, `ira` — создаваемых через `new Aspect(tag, color, components, texture, blend)`.
+На них держатся 16 рецептов, 16 записей исследования, 17 обращений в Клетке Гнева и вся идентичность
+Осколков грехов.
 
-In the host, `Aspect` is `public enum` of 48 constants (`thaumcraft/aspect/Aspect.java:17`) with
-the texture path hard-wired to `thaumcraft:textures/aspects/<tag>.png`. A Java enum cannot gain a
-constant from outside: the constructor is private, `$VALUES` is fixed, reflective creation throws.
-`AspectList` is keyed `Map<Aspect, Integer>`, so a stand-in type is not an option either. There is
-no `IClassTransformer` or coremod hook in NeoForge 26.3 sources; `accesstransformer.cfg` only
-widens visibility, it cannot restructure a class.
+В хосте `Aspect` — это `public enum` из 48 констант (`thaumcraft/aspect/Aspect.java:17`), путь текстуры
+жёстко зашит в `thaumcraft:textures/aspects/<tag>.png`. Java не позволяет добавить константу enum
+извне: конструктор приватен, `$VALUES` фиксирован, рефлективное создание бросает исключение.
+`AspectList` ключуется `Map<Aspect, Integer>`, поэтому замена типа-представителя тоже не вариант.
+В исходниках NeoForge 26.3 нет ни `IClassTransformer`, ни coremod-хука; `accesstransformer.cfg`
+расширяет только видимость и не может перестроить класс.
 
-Verified against the host source, so that the size of the ask is known:
+Проверено по исходнику хоста, чтобы размер запроса был известен заранее:
 
-| Measured | Value | Consequence |
+| Измерено | Значение | Следствие |
 |---|---|---|
-| `Aspect.<CONSTANT>` references | 1827, of which 1379 in four generated files | generated files are untouched; field access on `static final` keeps the same syntax |
-| `Aspect.values()` call sites | 17 in hand-written code plus 2 test files | a `static Aspect[] values()` method keeps every call site valid |
-| `switch` on an `Aspect` | none | no exhaustive-switch rewrites |
-| `Aspect.valueOf`, `isEnum`, `<E extends Enum>` | none | no hidden enum dependencies |
-| `aspect.ordinal()` | 1 site, `entity/AspectOrb.java:41` | registry index must stay stable; covered by a game test |
-| Enum-ness that must be replaced | `StringRepresentable.fromEnum`, `values()` loops in `combine`/`getPrimalAspects`/`getCompoundAspects` | localised inside `Aspect.java` |
+| ссылок `Aspect.<КОНСТАНТА>` | 1827, из них 1379 в четырёх генерируемых файлах | генерированные таблицы не трогаем; обращение к `static final` сохраняет синтаксис |
+| вызовов `Aspect.values()` | 17 в писаном коде плюс 2 тестовых файла | `static Aspect[] values()` оставляет все места вызова валидными |
+| `switch` по аспекту | нет | переписывание исчерпывающих switch не нужно |
+| `Aspect.valueOf`, `isEnum`, `<E extends Enum>` | нет | скрытых enum-зависимостей нет |
+| `aspect.ordinal()` | одно место, `entity/AspectOrb.java:41` | индекс реестра обязан быть стабильным; закрывается GameTest |
+| enum-специфичное внутри самого `Aspect` | `StringRepresentable.fromEnum`, обходы `values()` в `combine`, `getPrimalAspects`, `getCompoundAspects` | локализовано в одном файле |
 
-The change is one file plus a hook, and it does not touch `platform/` seams, so the host's
-`tools/check_seams.py` gate is unaffected.
+Итог: изменение — один файл плюс хук регистрации. В швы `platform/` оно не заходит, поэтому гейт
+хоста `tools/check_seams.py` не задевается.
 
-## 4. Architecture
+## 4. Архитектура
 
-### 4.1 Repository layout
+### 4.1 Раскладка репозитория
 
 ```
 forbidden-magic-reforged/
-  host/                     pristine clone at the pinned sha, patched          (gitignored)
-  patches/                  series .patch files, tracked, the temporary crutch
-  maven/                    local maven repo the patched host is published to   (gitignored)
-  src/main/java/fox/spiteful/forbidden/     the port
-  src/main/resources/                        FM's own assets
-  src/main/java/fox/spiteful/forbidden/test/ game tests
-  src/generated/resources/                   written by tools/, never by hand
-  tools/                    prepare_host.py, gen_resources.py, id_map.json, checks
-  reference/ForbiddenMagic/ the 1.7.10 source, source of truth for behaviour    (gitignored)
-  docs/                     this spec, deviations.md, dropped.md, upstream.md
+  host/                     чистый клон хоста на пинном sha, пропатченный        (gitignore)
+  patches/                  серия .patch, в гите, временный костыль и payload PR
+  maven/                    локальный maven-репозиторий пропатченного хоста      (gitignore)
+  src/main/java/fox/spiteful/forbidden/     порт
+  src/main/resources/                       ассеты FM
+  src/main/java/fox/spiteful/forbidden/test/ game test-ы
+  src/generated/resources/                  пишут tools/, руками не правится
+  tools/                    prepare_host.py, gen_resources.py, id_map.json, проверки
+  reference/ForbiddenMagic/ исходник 1.7.10, источник истины по поведению        (gitignore)
+  docs/                     этот документ, deviations.md, dropped.md, upstream.md
 ```
 
-`patches/` is tracked because it is also the payload of the upstream proposal. Nothing published
-by this project contains a rebuilt host class file.
+`patches/` ведутся в гите, потому что они же идут приложением к upstream-запросу. Ни один
+публикуемый этим проектом артефакт не содержит перекомпилированного класса хоста.
 
-### 4.2 Host patch series
+### 4.2 Серия патчей хоста
 
-| Patch | Content | Scope |
+| Патч | Содержание | Объём |
 |---|---|---|
-| `0001-aspect-registry` | `Aspect`: enum to `final class` with a registry, `static final` constants in the original order, `static Aspect[] values()` over builtins then addon registrations, `CODEC`/`STREAM_CODEC` via the by-tag map, `image` accepts a full `Identifier`, public `Aspect.register(...)` | `aspect/Aspect.java`, ~200 lines |
-| `0002-aspect-addon-init` | a point where an addon registers aspects before `AspectSync.rebuild` runs | ~20 lines |
-| `0003-host-publish` | `maven-publish` producing `thaumcraft:thaumcraft:1.2`, jar name carrying the pinned sha | ~15 lines |
+| `0001-aspect-registry` | `Aspect`: enum → `final class` с реестром; `static final` константы в исходном порядке; `static Aspect[] values()` — встроенные, затем аддон-аспекты; `CODEC`/`STREAM_CODEC` через by-tag карту; `image` принимает полный `Identifier`; публичный `Aspect.register(...)` | `aspect/Aspect.java`, ~200 строк |
+| `0002-aspect-addon-init` | точка, в которой аддон регистрирует аспекты до запуска `AspectSync.rebuild` | ~20 строк |
+| `0003-host-publish` | `maven-publish` на координаты `thaumcraft:thaumcraft:1.2`, в имени jar — пинный sha | ~15 строк |
 
-The patched host reports mod version `1.2`, not `1.1` and not a suffixed variant: a pre-release
-qualifier such as `1.2-fm.1` sorts below `1.2` and would fail the version range the port declares.
-`0001`, `0002` and `0003` are exactly the files a future upstream merge makes this project delete.
+Пропатченный хост обязан иметь версию мода ровно `1.2`, а не `1.1` и не `1.2-fm.1`: пре-релизный
+квалификатор сортируется ниже `1.2` и не удовлетворил бы диапазону, который объявляет порт.
+`0001`, `0002` и `0003` — ровно те файлы, которые удалит будущий мерж upstream.
 
-`0004-taint-block-tag` is held back. The host hard-codes eight taint blocks in
-`taint/TaintSpread.java:88`, but the port can satisfy Forbidden Magic's requirement — taint wood
-and taint stone are immune to fibrous taint — without it, because taint spread only converts air,
-replaceable blocks and vegetation. If increment 8 shows the exemption is not achievable cleanly,
-the patch is added then rather than assumed now.
+`0004-taint-block-tag` сознательно отложен. Хост перечисляет восемь тaint-блоков руками
+(`taint/TaintSpread.java:88`), но требование Forbidden Magic — скруное дерево и скруный камень
+иммунны к волокнистой скверне — выполнимо без патча, потому что распространение заражает только
+воздух, заменяемые блоки и растительность. Если на инкременте 8 окажется, что иммунитет так не
+достигается, патч добавляется тогда, а не заранее.
 
-`tools/prepare_host.py` clones the local host at the sha recorded in `host.sha`, applies the
-series, and fails loudly on the first hunk that does not land.
+`tools/prepare_host.py` клонирует локальный хост на sha из `host.sha`, применяет серию и падает
+на первом же хунке, который не лёг.
 
-### 4.3 Addon integration, per host API
+### 4.3 Интеграция аддона через API хоста
 
-| Forbidden Magic needs | Host mechanism |
+| Нужно Forbidden Magic | Механизм хоста |
 |---|---|
-| new aspects | `Aspect.register` from patch `0001` |
-| item and entity aspect tags, including retro-tagging vanilla mobs | subclass `thaumcraft.aspect.AspectRegistrar` (already `public abstract`, resolves ids and item tags, `copy`/`fill`/`complex` give merge semantics) fed through `AspectSync.addRegistrar` |
-| research category, 34 entries, 35 pages | `ResearchCategories.registerCategory`, `ResearchItem` builder, `ResearchPage` sealed records |
-| arcane, crucible, infusion, infusion-enchantment recipes | `TcRecipes.register(TcRecipe)`; recipes are records `(key, research, result, AspectList, ingredients)` |
-| dynamic wand recipe behaviour | `ArcaneCrafting.registerDynamic(DynamicArcaneRecipe)` |
-| wand caps and rods with per-rod update logic | `WandRegistry.registerCap`/`registerRod` with explicit `item` and `texture` identifiers and a `RodUpdate` lambda; research keys `CAP_<tag>`/`ROD_<tag>`, lang supplied by the addon |
-| custom focus (Blink) | subclass the open `thaumcraft.wand.focus.FocusItem` |
-| baubles (Ring of Nutrition) | `thaumcraft.platform.Bauble`; four slots exist, no new slot types are needed |
-| warp from gear | `Warp.registerItem`, `WarpingGear` interface |
-| stack-carrying data in infusion results | `TcStack.registerDataHandler` / `registerDataMatcher` |
-| enchantments | enchantment JSON in the port's own datapack plus behaviour handlers; the host resolves infusion-valid enchantments from registered `InfusionEnchantmentRecipe` entries, so adding one is enough |
-| taint-immune blocks, world generation, villager trades | the port's own `DeferredRegister`, NeoForge features and data-driven trades; public helpers `VisNet`, `TaintBiomes`, `GolemActions`, `Transfer`, `Teleport` are reused rather than re-implemented |
+| новые аспекты | `Aspect.register` из патча `0001` |
+| метки аспектов предметов и сущностей, включая ретро-метки ванильных мобов | подкласс `thaumcraft.aspect.AspectRegistrar` (уже `public abstract`, резолвит id и теги предметов, `copy`/`fill`/`complex` дают семантику слияния), переданный в `AspectSync.addRegistrar` |
+| своя категория исследования, 34 записи, 35 страниц | `ResearchCategories.registerCategory`, билдер `ResearchItem`, sealed-записи `ResearchPage` |
+| рецепты arcane, crucible, infusion, infusion-enchantment | `TcRecipes.register(TcRecipe)`; рецепт — record `(key, research, result, AspectList, ingredients)` |
+| динамический рецепт жезла | `ArcaneCrafting.registerDynamic(DynamicArcaneRecipe)` |
+| набалдашники и стержни с логикой обновления | `WandRegistry.registerCap`/`registerRod` с явными `item` и `texture` и `RodUpdate`; ключи `CAP_<tag>`/`ROD_<tag>`, lang добавляет аддон |
+| свой фокус (Blink) | подкласс открытого `thaumcraft.wand.focus.FocusItem` |
+| бижутерия (Кольцо питания) | `thaumcraft.platform.Bauble`; четыре слота есть, новых типов не требуется |
+| варп от экипировки | `Warp.registerItem`, интерфейс `WarpingGear` |
+| данные стека в результате инфузии | `TcStack.registerDataHandler` / `registerDataMatcher` |
+| зачарования | JSON зачарований в собственном датапаке порта плюс обработчики поведения; хост определяет допустимость инфузии из зарегистрированных `InfusionEnchantmentRecipe`, поэтому регистрации достаточно |
+| иммунные к скверне блоки, генерация мира, трейды жителя | свои `DeferredRegister`, фичи NeoForge, data-driven трейды; публичные помощники `VisNet`, `TaintBiomes`, `GolemActions`, `Transfer`, `Teleport` переиспользуются, а не переписываются |
 
-### 4.4 Everything else stays host-independent
+### 4.4 Всё остальное от хоста не зависит
 
-The single class touching the patched API is `FmAspects`. The dependency is declared as
-`thaumcraft` version range `[1.2,)`, which is the version the upstream proposal asks for. Switching
-from the local patch to an upstream release is therefore: delete `patches/0001`, `patches/0002`,
-`patches/0003`, drop `host/` from `prepare_host.py`, repoint the repository at the published jar.
-No port file changes. This is the exit condition that keeps the project from locking onto a fork.
+Единственный класс порта, трогющий пропатченный API, — `FmAspects`. Зависимость объявлена как
+`thaumcraft` в диапазоне `[1.2,)` — версию, которую просит upstream-запрос. Переход от локального
+патча к релизному хосту поэтому равен: удалить `patches/0001`, `patches/0002`, `patches/0003`,
+убрать `host/` из `prepare_host.py`, перенаправить репозиторий на опубликованный jar. Ни один файл
+порта не меняется. Это и есть условие выхода, не дающее проекту запереться на форке.
 
-### 4.5 Resources and conventions
+### 4.5 Ресурсы и конвенции
 
-Inherited from the host, because diverging would make a backport and a future upstream merge harder:
+Наследуются у хоста, потому что расхождение усложнило бы и бэкпорт, и будущий мерж:
 
-- resources are produced by Python generators in `tools/`; no datagen, no hand-edited
-  `src/generated/resources`
-- meta variants of 1.7.10 items and blocks become distinct identifiers plus blockstate properties,
-  keyed by an `id_map.json` the way the host does it
-- lang: `en_us` and `ru_ru` only, original Forbidden Magic wording preserved; research keys follow
-  `tc.research_name.<KEY>` / `tc.research_text.<KEY>`
-- Java: four spaces, no comments; Python: four spaces, double quotes, `pathlib`, no comments
-- commits in English, `feat:` / `fix:`, no co-author lines
-- regenerating resources must leave `git status` empty
+- ресурсы делают python-генераторы в `tools/`; datagen не используется, `src/generated/resources`
+  руками не правится;
+- meta-варианты предметов и блоков 1.7.10 раскладываются на отдельные id и свойства blockstate по
+  `id_map.json`, как это делает хост;
+- lang: только `en_us` и `ru_ru`, формулировки оригинального FM сохраняются; ключи исследований идут
+  по образцу `tc.research_name.<KEY>` / `tc.research_text.<KEY>`;
+- Java: четыре пробела, без комментариев; Python: четыре пробела, двойные кавычки, `pathlib`, без
+  комментариев;
+- коммиты на английском, `feat:` / `fix:`, без строк соавторства;
+- повторная генерация ресурсов не должна менять ни одного файла.
 
-## 5. Content inventory
+Отдельно про переносы строк: git на этой машине конвертирует LF→CRLF при коммите, а исходники хоста —
+LF. Клон для `prepare_host.py` создаётся с `core.autocrlf=false`, в репозитории порта лежит
+`.gitattributes`. Это закрывается на инкременте 0, иначе патчи начнут отваливаться молча.
 
-### 5.1 Ported
+## 5. Опись контента
 
-- blocks: Arcane Cake, Wrath Cage, Ink Flower, Umbral Bush, Star Block, taint stone, taint log,
-  taint planks, taint leaves, taint sapling
-- items: Deadly Shards (wrath, envy, taint, pride, lust, sloth, greed), Gluttony Shard, taint coal,
-  taint fruit, morph pickaxe/sword/shovel/axe, taint pickaxe/shovel, skull axe, diabolist fork and
-  spork, riding crop, arcane cake item, divine orb, scribes (bloodwell, boundwell, crystalwell,
-  primewell), ring of nutrition, FM resource items minus third-party variants, wand caps and cores
-  minus third-party variants, Blink focus
-- seven aspects and the full item and entity tagging table from `DarkAspects`
-- research: one custom category and 34 entries with 35 pages
-- recipes: arcane, crucible, infusion and infusion-enchantment sets from `ForbiddenRecipes`
-- enchantments: Cluster, Consuming, Corrupting, Educational, Greedy, Impact, Void, Wrath
-- Wrath Cage block entity, its spawner logic and its renderer, with geometry computed in the
-  port's equivalent of `client/geom`
-- taint tree world generation in taint biomes, heretic villager and its trades
-- config, including the original `no_lust` kill switch, kept as a synced config
+### 5.1 Портируется
 
-### 5.2 Dropped, with the reason recorded in `docs/dropped.md`
+- блоки: Арканный торт, Клетка Гнева, Чернильный цветок, Куст Теней, Звёздный блок, скруный камень,
+  скруное бревно, скруные доски, скруная листва, скруный саженец;
+- предметы: Осколки грехов (Гнев, Зависть, Скверна, Гордыня, Похоть, Лень), Осколок Чревоугодия,
+  скруный уголь, скруный плод, морф-кирка/меч/лопата/топор, скруные кирка и лопата, топор Череподрать,
+  дьявольская вилка и ложковилка, верховая плеть, предмет арканного торта, Божественная сфера,
+  писчие склянки (bloodwell, boundwell, crystalwell, primewell), Кольцо питания, ресурсы FM без
+  сторонних вариантов, набалдашники и стержни жезлов без сторонних вариантов, фокус Blink;
+- семь аспектов и полная таблица меток предметов и сущностей из `DarkAspects`;
+- исследования: одна своя категория, 34 записи, 35 страниц;
+- рецепты: наборы arcane, crucible, infusion и infusion-enchantment из `ForbiddenRecipes`;
+- зачарования: Cluster, Consuming, Corrupting, Educational, Greedy, Impact, Void, Wrath;
+- block entity Клетки Гнева, её логика спавнера и рендерер, с расчётом геометрии в собственном
+  аналоге `client/geom`;
+- генерация скруного дерева в скруных биомах, житель-еретик и его трейды;
+- конфиг, включая оригинальный рубильник `no_lust`, сохранённый как synced-конфиг.
 
-- `compat/` in full: Blood Magic, Botania, Ars Magica 2, CoFH, Thaumic Tinkerer detection — none
-  of these exist for NeoForge 26.3
-- `ItemBloodRapier`, `DarkPotions` and both potion effects — Blood Magic API
-- four Botania `SubTile` implementations (bloodthorn, euclidaisy, tainthistle, whisperweed)
-- `ItemSubCollar` and `ItemMobCrystal` — Thaumic Tinkerer
-- blood, mana and staff wand updates that read Blood Magic or Botania resources
-- third-party meta variants inside `ItemResource`, `ItemWandCaps`, `ItemWandCores`. The classes
-  survive, the variants are cut. The exact list is written into `docs/dropped.md` in increment 2,
-  once every variant is traced to the mod that supplied its item — 27 names are registered and the
-  mod of origin is not recorded in the 1.7.10 source, so guessing them now would put an unverified
-  list in the spec
-- `plans.txt` is never implemented: it is the original author's unfinished idea list, including
-  demon binding and sinful bees
+### 5.2 Вырезано, с причиной в `docs/dropped.md`
 
-### 5.3 Out of scope for now
+- `compat/` целиком: Blood Magic, Botania, Ars Magica 2, CoFH, Thaumic Tinkerer — ничего этого нет под
+  NeoForge 26.3;
+- `ItemBloodRapier`, `DarkPotions` и оба эффекта зелий — API Blood Magic;
+- четыре Botania `SubTile` (bloodthorn, euclidaisy, tainthistle, whisperweed);
+- `ItemSubCollar` и `ItemMobCrystal` — Thaumic Tinkerer;
+- обновления стержней жезлов blood и mana, читающие ресурсы Blood Magic или Botania;
+- сторонние meta-варианты внутри `ItemResource`, `ItemWandCaps`, `ItemWandCores`. Классы остаются,
+  варианты вырезаются. Точный список пишется в `docs/dropped.md` на инкременте 2, когда каждый вариант
+  будет привязан к предмету-поставщику: зарегистрировано 27 имён, а происхождение по модификатору в
+  исходнике 1.7.10 не подписано, так что заранее вставлять непроверенный список в проект нельзя;
+- `plans.txt` не реализуется никогда: это незавершённый список идей оригинального автора, включая
+  связывание демонов и грешных пчёл.
 
-Backport to `mc/1.21.1`. It is a real target — the host publishes a `1.21.1` release — but the
-upstream proposal has to land in `main` first, and the host's own backport chain moves from
-`main` outward, so a `1.21.1` port before that means hand-porting the patch twice.
+### 5.3 Вне объёма пока
 
-## 6. Increments
+Бэкпорт на `mc/1.21.1`. Мишень реальная — хост публикует релиз `1.21.1`, — но upstream-запрос должен
+сначала попасть в `main`, а цепочка бэкпортов хоста идёт от `main` наружу; порт на 1.21.1 раньше этого
+означает ручную переноску патча дважды.
 
-Every increment ends with: `gradlew build` green against the patched host,
-`gradlew runGameTestServer` green, `git -C ../thaumcraft-4-reforged status --porcelain` empty for
-tracked files, and a resource regeneration that changes nothing.
+## 6. Инкременты
 
-| # | Slice | Gate |
+Каждый инкремент заканчивается так: `gradlew build` зелёный против пропатченного хоста,
+`gradlew runGameTestServer` зелёный, `git -C ../thaumcraft-4-reforged status --porcelain` пуст по
+трекаемым файлам, повторная генерация ресурсов ничего не меняет.
+
+| # | Срез | Гейт |
 |---|---|---|
-| 0 | `prepare_host.py`, patch series, local maven, empty mod with `neoforge.mods.toml` requiring `thaumcraft` | patched host builds; the port loads in `runClient` beside it; a game test asserts seven aspects exist and survive a client sync |
-| 1 | aspects, item and entity tag tables, textures, lang | `combine` on new aspects, `AspectOrb` index stability, discovery in the Thaumonomicon, JEI aspect strips render |
-| 2 | blocks and items, models via `tools/`, creative tab | registration and id-map coverage tests; **decision point: send the upstream proposal, and whether the port publishes or stays personal-use** |
-| 3 | research category and 34 entries | unlock by parents, aspect cost, hidden and warp flags |
-| 4 | recipes | one game test per crafting type, costs equal to the 1.7.10 values |
-| 5 | eight enchantments | application, behaviour of `Corrupting` and `Void` drops |
-| 6 | caps, rods, rod updates, Blink focus | wand crafted through the host's dynamic wand recipe, vis update tick, focus activation |
-| 7 | Wrath Cage and baubles | spawner logic game test; renderer verified by eye by the user |
-| 8 | taint wood set, world generation, heretic trades | taint immunity assertions; decides whether `0004-taint-block-tag` is needed |
+| 0 | `prepare_host.py`, серия патчей, локальный maven, пустой мод с `neoforge.mods.toml`, требующим `thaumcraft` | пропатченный хост собирается; порт грузится в `runClient` рядом с ним; game test проверяет, что семь аспектов существуют и переживают синхронизацию на клиент |
+| 1 | аспекты, таблицы меток предметов и сущностей, текстуры, lang | `combine` на новых аспектах, стабильность индекса `AspectOrb`, открытие в Таумономиконе, полосы аспектов в JEI |
+| 2 | блоки и предметы, модели через `tools/`, вкладка креатива | тесты регистрации и покрытия id-карты; **точка решения: отправлять ли upstream-запрос и публикуется ли порт или остаётся личным билдом** |
+| 3 | категория исследований и 34 записи | разблокировка по родителям, стоимость аспектов, флаги hidden и warp |
+| 4 | рецепты | по game test на каждый тип крафта, costs равны значениям 1.7.10 |
+| 5 | восемь зачарований | наложение, поведение выпадения у `Corrupting` и `Void` |
+| 6 | набалдашники, стержни, rod-обновления, фокус Blink | жезл крафтится динамическим рецептом хоста, тик пополнения виса, активация фокуса |
+| 7 | Клетка Гнева и бижутерия | game test логики спавнера; рендерер проверяется глазами пользователя |
+| 8 | набор скруного дерева, генерация мира, житель-еретик и трейды | проверки иммунитета к скверне; решает, нужен ли `0004-taint-block-tag` |
 
-Increments 1 through 8 are the port; increment 0 is its infrastructure. Nothing in a later
-increment is started while an earlier gate is red.
+Инкременты 1-8 — это порт, инкремент 0 — его инфраструктура. Следующий инкремент не начинается, пока
+гейт предыдущего красный.
 
-## 7. Risks
+## 7. Риски
 
-- **Upstream answer is not ours to schedule.** The host's maintainer closes issues within a day and
-  merges agent-authored pull requests, but an outside pull request that has been open since 19
-  October has no review comments yet. Mitigation: the issue and the pull request are prepared from
-  the working patch series, and the fallback form (mapping the seven aspects onto existing ones) is
-  costed, not dismissed.
-- **`ordinal()` in entity data.** `AspectOrb` stores an aspect as an int. Appending addon aspects
-  after the 48 builtins in registration order keeps existing values valid; a game test pins it.
-- **Beta loader.** NeoForge `26.3.0.57-beta` and the host both move. Mitigation: pinned sha,
-  `prepare_host.py` failing loudly, and the whole host rebuild taking about seven minutes on this
-  machine.
-- **Client and server registration order.** An aspect must exist on both sides before an
-  `AspectList` decodes. Mitigation: registration happens in the mod constructor, and a test loads
-  a dedicated server plus a client.
-- **Behaviour that has no 1.7.10 analogue.** `WandTriggerRegistry`, mutating
-  `ThaumcraftApi.scanEntities`, `IScribeTools` are replaced by host seams, so parity is by
-  behaviour, not by API. Each substitution is recorded in `docs/deviations.md`.
-- **Visual correctness is not covered by tests.** Models, the Wrath Cage renderer and aspect icons
-  are checked by the user in `runClient`, following the host's own convention.
+- **Ответ upstream от нас не зависит.** Мейнтейнер закрывает issue за день и мержит PR, сделанные
+  ИИ-агентами, но внешний PR, открытый 19 октября, до сих пор без комментариев. Меры: запрос и PR
+  готовятся из рабочей серии патчей; вариант с заменой аспектов на существующие просчитан и не
+  отвергается.
+- **`ordinal()` в данных сущности.** `AspectOrb` хранит аспект int-ом. Аддон-аспекты дописываются
+  после 48 встроенных в порядке регистрации, существующие значения остаются валидными; закрепляется
+  game test-ом.
+- **Бета-загрузчик.** И NeoForge `26.3.0.57-beta`, и хост двигаются. Меры: пинный sha, громкий
+  отказ `prepare_host.py`, полная пересборка хоста занимает около семи минут на этой машине.
+- **Порядок регистрации на клиенте и сервере.** Аспект должен существовать на обеих сторонах до
+  декода `AspectList`. Мера: регистрация в конструкторе мода, плюс тест, поднимающий выделенный
+  сервер и клиент.
+- **Поведение без аналога в 1.7.10.** `WandTriggerRegistry`, мутация `ThaumcraftApi.scanEntities`,
+  `IScribeTools` заменяются швами хоста, то есть паритет поведенческий, а не по API. Каждая замена
+  фиксируется в `docs/deviations.md`.
+- **Визуальная часть не покрыта тестами.** Модели, рендерер Клетки Гнева и иконки аспектов проверяет
+  пользователь в `runClient`, по конвенции самого хоста.
 
-## 8. Distribution plan
+## 8. План публикации
 
-1. Develop against `patches/` locally.
-2. At the increment 2 gate, send the upstream proposal: an issue in the host tracker (Russian, the
-   language the whole tracker and `CLAUDE.md` use) describing the addon aspect need, with the
-   working patch series and green check runs attached, stating that the work was AI-assisted.
-   Drafting the text is this project's job; sending it is the user's.
-3. If the proposal is taken, drop `patches/0001` through `0003` and depend on the released host.
-   If it is refused or stalls, either keep the port personal-use with local patches, or switch the
-   aspect layer to the substitution form; that switch is a decision, not a default, and it is taken
-   with the numbers from increments 0 and 1 in hand.
+1. Разработка идёт против `patches/` локально.
+2. На гейте инкремента 2 отправляется upstream-запрос: issue в трекере хоста на русском — язык всего
+   трекера и `CLAUDE.md` — с описанием потребности в аддон-аспектах, приложенной рабочей серией
+   патчей, зелёными прогонами проверок и указанием участия ИИ. Текст готовит этот проект; отправку
+   выполняет пользователь.
+3. Если запрос принят, `patches/0001`-`0003` удаляются и порт зависит от релизного хоста. Если
+   отказ или молчание — либо остаёмся личным билдом с локальными патчами, либо переводим слой аспектов
+   на форму с заменой; это решение, а не режим по умолчанию, и оно принимается с числами инкрементов
+   0 и 1 в руках.
