@@ -8,6 +8,8 @@
 
 - Поведение: оригинал 1.7.10 в `../ForbiddenMagic`.
 - API хоста: `../thaumcraft-4-reforged`, его `CLAUDE.md` и раздел «API для аддонов».
+- `../thaumic-tinkerer-reforged` — TT Reforged (ветки `main` 26.3 и `mc/1.21.1`), All Rights Reserved.
+  Интеграция только через публичный `EnchantmentManager.data()`; код и ассеты TT не копируются.
 - `reference/tc4r/fm-1.21.1.jar` — jar чужого порта на 1.21.1, распакован рядом в `reference/tc4r/x/`. Локально, в git не идёт. Материал для сверки поведения; код оттуда не заимствуется.
 
 ## Хост: пиним, не правим
