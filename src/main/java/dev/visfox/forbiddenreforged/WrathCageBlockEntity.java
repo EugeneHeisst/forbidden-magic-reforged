@@ -10,6 +10,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -66,21 +67,23 @@ public class WrathCageBlockEntity extends TcBlockEntity implements AspectSource,
     }
 
     public static int nextDelay(RandomSource random, boolean slothful) {
-        int delay = 200 + random.nextInt(101);
+        int delay = 200 + random.nextInt(100);
         return slothful ? delay + 200 : delay;
     }
 
     public static void tick(Level level, BlockPos pos, BlockState state, WrathCageBlockEntity cage) {
-        if (level.isClientSide()) {
+        if (level.isClientSide() || !FmConfig.wrathCage()) {
             return;
+        }
+        int cost = FmConfig.wrathCost();
+        if (cost > 0 && cage.mobId != null && cage.hasRoom()) {
+            cage.drawEssentia(level, pos);
         }
         boolean powered = level.hasNeighborSignal(pos);
-        if (powered || cage.mobId == null) {
+        if (!shouldSpawn(powered, cage.mobId != null, cage.fuel, cost, cage.special + cage.wrath + cage.sloth)) {
             return;
         }
-        cage.drawEssentia(level, pos);
-        int cost = FmConfig.wrathCost();
-        if (cage.fuel <= 0 && cost > 0) {
+        if (cost > 0 && cage.fuel <= 0) {
             if (cage.special >= cost) {
                 cage.special -= cost;
                 cage.fuel = FmConfig.wrathEff();
@@ -108,6 +111,10 @@ public class WrathCageBlockEntity extends TcBlockEntity implements AspectSource,
         if (level instanceof ServerLevel serverLevel) {
             cage.spawnRound(serverLevel, pos);
         }
+    }
+
+    private boolean hasRoom() {
+        return special < MAX_STORED || wrath < MAX_STORED || sloth < MAX_STORED;
     }
 
     private void drawEssentia(Level level, BlockPos pos) {
@@ -186,6 +193,15 @@ public class WrathCageBlockEntity extends TcBlockEntity implements AspectSource,
             MobCrystalItem.setMob(stack, cage.mobId);
         }
         return stack;
+    }
+
+    @Override
+    public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+        super.preRemoveSideEffects(pos, state);
+        if (mobId != null && level != null) {
+            ItemEntity drop = new ItemEntity(level, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, crystalForBreak(this));
+            level.addFreshEntity(drop);
+        }
     }
 
     @Override

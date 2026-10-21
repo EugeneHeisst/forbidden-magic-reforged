@@ -1,10 +1,7 @@
 package dev.visfox.forbiddenreforged;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -40,10 +37,13 @@ public class WrathCageBlock extends Block implements EntityBlock {
         if (!(level.getBlockEntity(pos) instanceof WrathCageBlockEntity cage) || level.isClientSide()) {
             return InteractionResult.SUCCESS;
         }
-        ItemStack held = player.getMainHandItem();
+        return attune(cage, player.getMainHandItem()) ? InteractionResult.SUCCESS : InteractionResult.PASS;
+    }
+
+    public static boolean attune(WrathCageBlockEntity cage, ItemStack held) {
         String incoming = MobCrystalItem.mob(held);
         if (incoming == null || !FmSpawnerMobs.ids().contains(incoming)) {
-            return InteractionResult.PASS;
+            return false;
         }
         String previous = cage.getMobId();
         cage.setMobId(incoming);
@@ -52,16 +52,6 @@ public class WrathCageBlock extends Block implements EntityBlock {
         } else {
             MobCrystalItem.setMob(held, previous);
         }
-        return InteractionResult.SUCCESS;
-    }
-
-    @Override
-    public void playerDestroy(ServerLevel level, ServerPlayer player, BlockPos pos, BlockState state, @Nullable BlockEntity blockEntity, ItemStack tool) {
-        if (blockEntity instanceof WrathCageBlockEntity cage && cage.getMobId() != null) {
-            ItemEntity drop = new ItemEntity(level, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
-                WrathCageBlockEntity.crystalForBreak(cage));
-            level.addFreshEntity(drop);
-        }
-        super.playerDestroy(level, player, pos, state, blockEntity, tool);
+        return true;
     }
 }
