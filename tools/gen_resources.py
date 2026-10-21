@@ -3,7 +3,7 @@ import tomllib
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-LANG_SOURCE = ROOT / "tools" / "lang"
+LANG_SOURCE = ROOT / "data" / "lang"
 ASSETS = ROOT / "src" / "generated" / "resources" / "assets" / "forbiddenmagic"
 TEXTURES = ROOT / "src" / "main" / "resources" / "assets" / "forbiddenmagic" / "textures" / "item"
 

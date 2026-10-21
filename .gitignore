@@ -1,14 +1,30 @@
+# Build outputs
 .gradle/
 build/
+*.hprof
+
+# Local development artifacts
 host/
 maven/
 reference/
 run/
+
+# Caches and temporary files
+.cache/
 .codegraph/
-forbidden-magic-reforged/
+logs/
+*.log
+*.tmp
+
+# IDE
 .idea/
 *.iml
 .vscode/
-logs/
-*.hprof
-*.log
+
+# Secrets and local settings
+.env
+*.key
+*.p12
+
+# Nested clone of this repository
+forbidden-magic-reforged/
