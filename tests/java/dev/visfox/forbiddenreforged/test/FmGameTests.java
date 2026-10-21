@@ -58,6 +58,7 @@ import dev.visfox.forbiddenreforged.MobCrystalItem;
 import dev.visfox.forbiddenreforged.MorphState;
 import dev.visfox.forbiddenreforged.MorphToolItem;
 import dev.visfox.forbiddenreforged.TaintTree;
+import dev.visfox.forbiddenreforged.WrathCageBlockEntity;
 import thaumcraft.crafting.InfusionRecipe;
 import thaumcraft.crafting.InfusionEnchantmentRecipe;
 import thaumcraft.crafting.TcIngredient;
@@ -75,7 +76,7 @@ import thaumcraft.research.ResearchManager;
 public final class FmGameTests {
     public static final DeferredRegister<Consumer<GameTestHelper>> FUNCTIONS =
         DeferredRegister.create(Registries.TEST_FUNCTION, ForbiddenMagic.MODID);
-    private static final String[] TESTS = {"mod_loads_and_host_is_present", "aspect_registry_keeps_builtin_order_and_combines", "addon_aspect_survives_client_sync", "sin_aspects_registered_with_own_textures", "sin_aspect_tags_merge_with_existing", "entity_aspect_tags_merge_with_existing", "every_tag_target_resolved", "shards_are_registered_with_seven_ids", "no_lust_removes_luxuria_items", "mob_killed_by_player_drops_wrath_shard", "boss_drops_pride_shards", "unattended_death_drops_sloth_shard", "forbidden_category_and_shard_entries_resolve", "skull_axe_infusion_recipe_matches_original", "every_ported_recipe_resolves_its_inputs", "chain_from_netherrack_to_wrath_shard", "enchantments_resolve_with_expected_shape", "emerald_fragment_is_registered", "consuming_destroys_garbage", "corrupting_yields_sin_shards", "greedy_drops_match_kills", "educational_multiplies_experience", "wrath_adds_damage", "enchantment_research_present", "enchantment_recipes_cover_five", "tinkerer_integration_is_optional", "morph_tools_are_registered", "morph_phase_rotates_sets", "impact_covers_a_three_by_three_plane", "voidtouched_repairs_and_warps", "morph_enchantments_and_exclusivity", "cluster_replaces_drops_with_clusters", "morph_research_entries_present", "morph_recipes_match_the_original", "taint_material_blocks_are_registered", "taint_blocks_carry_tool_tags", "materials_have_crafting_recipes", "blocks_drop_themselves", "taint_sapling_grows_a_tree", "umbral_plants_are_registered", "plant_research_and_recipes", "arcane_cake_feeds_and_keeps_slices", "mob_crystal_and_spawn_table"};
+    private static final String[] TESTS = {"mod_loads_and_host_is_present", "aspect_registry_keeps_builtin_order_and_combines", "addon_aspect_survives_client_sync", "sin_aspects_registered_with_own_textures", "sin_aspect_tags_merge_with_existing", "entity_aspect_tags_merge_with_existing", "every_tag_target_resolved", "shards_are_registered_with_seven_ids", "no_lust_removes_luxuria_items", "mob_killed_by_player_drops_wrath_shard", "boss_drops_pride_shards", "unattended_death_drops_sloth_shard", "forbidden_category_and_shard_entries_resolve", "skull_axe_infusion_recipe_matches_original", "every_ported_recipe_resolves_its_inputs", "chain_from_netherrack_to_wrath_shard", "enchantments_resolve_with_expected_shape", "emerald_fragment_is_registered", "consuming_destroys_garbage", "corrupting_yields_sin_shards", "greedy_drops_match_kills", "educational_multiplies_experience", "wrath_adds_damage", "enchantment_research_present", "enchantment_recipes_cover_five", "tinkerer_integration_is_optional", "morph_tools_are_registered", "morph_phase_rotates_sets", "impact_covers_a_three_by_three_plane", "voidtouched_repairs_and_warps", "morph_enchantments_and_exclusivity", "cluster_replaces_drops_with_clusters", "morph_research_entries_present", "morph_recipes_match_the_original", "taint_material_blocks_are_registered", "taint_blocks_carry_tool_tags", "materials_have_crafting_recipes", "blocks_drop_themselves", "taint_sapling_grows_a_tree", "umbral_plants_are_registered", "plant_research_and_recipes", "arcane_cake_feeds_and_keeps_slices", "mob_crystal_and_spawn_table", "wrath_cage_block_and_entity", "wrath_cage_crystal_and_spawn_rules"};
 
     static {
         FUNCTIONS.register(TESTS[0], () -> FmGameTests::modLoadsAndHostIsPresent);
@@ -121,6 +122,8 @@ public final class FmGameTests {
         FUNCTIONS.register(TESTS[40], () -> FmGameTests::plantResearchAndRecipes);
         FUNCTIONS.register(TESTS[41], () -> FmGameTests::arcaneCakeFeedsAndKeepsSlices);
         FUNCTIONS.register(TESTS[42], () -> FmGameTests::mobCrystalAndSpawnTable);
+        FUNCTIONS.register(TESTS[43], () -> FmGameTests::wrathCageBlockAndEntity);
+        FUNCTIONS.register(TESTS[44], () -> FmGameTests::wrathCageCrystalAndSpawnRules);
     }
 
     private FmGameTests() {
@@ -689,6 +692,29 @@ public final class FmGameTests {
         helper.assertValueEqual(MobCrystalItem.mob(stack), "minecraft:zombie", "the crystal keeps the mob id");
         helper.assertTrue(FmSpawnerMobs.canImprint(EntityTypes.ZOMBIE), "zombies can be imprinted");
         helper.assertFalse(FmSpawnerMobs.canImprint(EntityTypes.ENDER_DRAGON), "bosses cannot be imprinted");
+        helper.succeed();
+    }
+
+    private static void wrathCageBlockAndEntity(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(5, 4, 5);
+        helper.getLevel().setBlockAndUpdate(pos, FmBlocks.WRATH_CAGE.get().defaultBlockState());
+        helper.assertTrue(helper.getLevel().getBlockEntity(pos) instanceof WrathCageBlockEntity, "cage creates its block entity");
+        WrathCageBlockEntity cage = (WrathCageBlockEntity) helper.getLevel().getBlockEntity(pos);
+        helper.assertTrue(cage != null && cage.getMobId() == null, "a fresh cage is unattuned");
+        cage.setMobId("minecraft:zombie");
+        helper.assertValueEqual(cage.getMobId(), "minecraft:zombie", "the cage keeps the mob id");
+        ItemStack crystal = WrathCageBlockEntity.crystalForBreak(cage);
+        helper.assertValueEqual(MobCrystalItem.mob(crystal), "minecraft:zombie", "breaking the cage yields the attuned crystal");
+        helper.succeed();
+    }
+
+    private static void wrathCageCrystalAndSpawnRules(GameTestHelper helper) {
+        helper.assertFalse(WrathCageBlockEntity.shouldSpawn(true, true, 10, 5, 0), "a powered cage waits");
+        helper.assertTrue(WrathCageBlockEntity.shouldSpawn(false, true, 10, 5, 0), "an attuned fuelled cage spawns");
+        helper.assertFalse(WrathCageBlockEntity.shouldSpawn(false, true, 0, 5, 4), "no fuel and too little essentia waits");
+        helper.assertTrue(WrathCageBlockEntity.shouldSpawn(false, true, 0, 5, 5), "enough essentia starts a fuel cycle");
+        helper.assertFalse(WrathCageBlockEntity.shouldSpawn(false, false, 10, 5, 0), "an unattuned cage waits");
+        helper.assertTrue(WrathCageBlockEntity.shouldSpawn(false, true, 0, 0, 0), "cost 0 needs no fuel");
         helper.succeed();
     }
 

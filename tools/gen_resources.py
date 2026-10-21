@@ -201,6 +201,20 @@ def generate_umbral_plants() -> None:
     print("umbral plants: 4 models and 2 blockstates")
 
 
+def generate_wrath_cage() -> None:
+    write_json(ASSETS / "blockstates" / "wrath_cage.json", {"variants": {"": {"model": "forbiddenmagic:block/wrath_cage"}}})
+    write_json(ASSETS / "models" / "block" / "wrath_cage.json", {
+        "parent": "minecraft:block/cube_all",
+        "render_type": "minecraft:cutout",
+        "textures": {"all": "forbiddenmagic:block/spirit_box"},
+    })
+    write_json(ASSETS / "models" / "item" / "wrath_cage.json", {"parent": "forbiddenmagic:block/wrath_cage"})
+    write_json(ASSETS / "items" / "wrath_cage.json", {
+        "model": {"type": "minecraft:model", "model": "forbiddenmagic:block/wrath_cage"},
+    })
+    print("wrath cage: one model and blockstate")
+
+
 def generate_cake() -> None:
     textures = {
         "particle": "forbiddenmagic:block/cake_side",
@@ -246,6 +260,7 @@ def main() -> int:
     generate_plants()
     generate_umbral_plants()
     generate_cake()
+    generate_wrath_cage()
     return 0
 
 

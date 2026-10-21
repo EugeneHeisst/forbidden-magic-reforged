@@ -111,6 +111,7 @@ taint_sapling = "Tainted Sapling"
 umbral_rose = "Umbral Rose"
 umbral_rose_bush = "Umbral Rose Bush"
 arcane_cake = "Thaumic Cake"
+wrath_cage = "Wrath Cage"
 
 [forbiddenmagic.research_page.TAINTTREE]
 1 = "The sick, twisted runoff of magical experiments can take on a strange life of its own. Most plants are unable to survive in Tainted Lands, but you've found a way to grow one that can. By steeping a sapling in taint, you create a tree that can thrive in Tainted Lands.<BR><BR>Its wood can also be turned into planks which are resistant to fibrous taint, allowing you to build structures safe from spreading taint.<BR><BR>The tree also seems to bear fruit, but eating them is not recommended..."
