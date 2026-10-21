@@ -461,7 +461,7 @@ python tools/check_host_clean.py
 python tools/check_provenance.py
 ```
 
-Expected: the first line prints `69a47a1 fix: restore thaumonomicon creation sparkles`, matching `host.sha`; `BUILD SUCCESSFUL`; `All tests successful` with `mod_loads_and_host_is_present` passing; `host clean`; `provenance ok: 1 jar(s)`. Do not work around a missing or stale host jar by dropping the dependency — the dependency is the point.
+Expected: the first line prints `69a47a1 fix: restore thaumonomicon creation sparkles`, matching `host.sha`; `BUILD SUCCESSFUL`; a `GAME TESTS COMPLETE` line with no `required tests failed` (the server does not print an "All tests successful" line); `host clean`; `provenance ok: 1 jar(s)`. Do not work around a missing or stale host jar by dropping the dependency — the dependency is the point.
 
 - [ ] **Step 4b: One probe this plan does not assume.** Record the output in `docs/deviations.md`, because Task 4 is built on it:
 
@@ -614,7 +614,7 @@ git add host.sha tools/prepare_host.py .gitignore
 git commit -m "feat: pin the host copy and add the patch pipeline"
 ```
 
-Expected: `All tests successful` with `mod_loads_and_host_is_present` passing. If it passes against upstream and fails against the copy, the copy is not pristine — that is exactly what `--verify` is for.
+Expected: `BUILD SUCCESSFUL` with no `required tests failed`. This run still uses the upstream jar, not `host/`; the copy's pristineness is proven by `--verify` (commit count and clean tree), not by this test. The run is a regression check, not a copy check.
 
 ---
 
@@ -628,7 +628,7 @@ Expected: `All tests successful` with `mod_loads_and_host_is_present` passing. I
 - Test: `src/main/java/fox/spiteful/forbidden/test/FmGameTests.java`
 
 **Interfaces:**
-- Produces for later tasks: `Aspect.register(String tag, int color, @Nullable Aspect[] components, int blend, Identifier texture) → Aspect`, `Aspect.values() → Aspect[]`, `Aspect.ordinal(Aspect) → int`, `Aspect.AIR … Aspect.TRAP` unchanged in name and order, and the 48 built-ins always at indices 0-47.
+- Produces for later tasks: `Aspect.register(String tag, int color, Aspect @Nullable [] components, int blend, @Nullable Identifier texture) → Aspect`, `Aspect.values() → Aspect[]`, an **instance** `aspect.ordinal() → int` (same call syntax as the enum), `Aspect.byOrdinal(int)`, `Aspect.builtinCount()`, `Aspect.AIR … Aspect.TRAP` unchanged in name and order, and the 48 built-ins always at indices 0-47.
 - Consumes: nothing from Task 2 beyond the patched copy.
 
 - [ ] **Step 1: Write the failing test** — append to `TESTS` and add the body:
@@ -1182,7 +1182,7 @@ git commit -m "feat: expose an add-on aspect hook and publish the host locally"
 
 Why this task exists: on 2026-10-20 the host author said in chat that he intends to port Forbidden Magic himself when he gets back to it («если вайбик найдется после перерыва то forbidden magic портану»). As of that day the host repo has no add-on content in it (one commit on `main`, no second addon, no FM issue or branch), so nothing is in flight — but the plan should not spend nine more tasks assuming it is the only attempt.
 
-- [ ] **Step 1: Write the draft.** Three paragraphs, in this order: what we measured (`Aspect` is an `enum` of 48, so an add-on cannot register an aspect; the change is two files plus three lines in `AspectOrb` and one registration point, and every one of the 1827 existing references survives), what we built (the patch series, with `build` and `runGameTestServer` output attached, plus the aspect registry game test), and the question: do you want the aspect API as a host feature, are you taking Forbidden Magic yourself, or should this stay a third-party add-on. Mention that the work is AI-assisted. Offer the seven sin aspects as the concrete use case, and note that a sibling TC4 port already ships data-driven add-on aspects with 32 add-ons on top.
+- [ ] **Step 1: Write the draft.** Three paragraphs, in this order: what we measured (`Aspect` is an `enum` of 48, so an add-on cannot register an aspect; the change is two files plus the `AspectOrb` index read and one registration point, and every one of the 1827 existing references survives), what we built (the patch series, with `build` and `runGameTestServer` output attached, plus the aspect registry game test), and the question: do you want the aspect API as a host feature, are you taking Forbidden Magic yourself, or should this stay a third-party add-on. Mention that the work is AI-assisted. Offer the seven sin aspects as the concrete use case, and note that a sibling TC4 port already ships data-driven add-on aspects with 32 add-ons on top.
 
 - [ ] **Step 2: Hand it to the user.** This project does not send it. No fork, no issue, no comment, no PR from `MxxFoxx2` without an explicit instruction.
 
@@ -1203,6 +1203,7 @@ author reply: <quote or "no reply">
 **Files:**
 - Create: `src/main/java/fox/spiteful/forbidden/FmConfig.java` (the `no_lust` switch only — the aspect guard reads it, so it must exist before `FmAspects.init()`)
 - Create: `src/main/java/fox/spiteful/forbidden/FmAspects.java`
+- Create: `src/main/java/fox/spiteful/forbidden/FmSetup.java` (runs the aspect registration after config load)
 - Create: `src/main/resources/assets/forbiddenmagic/textures/aspects/{luxuria,infernus,superbia,gula,invidia,desidia,ira}.png` — copied from `../ForbiddenMagic/src/main/resources/assets/forbidden/textures/aspects/`
 - Create: `tools/lang/en_us.toml`, `tools/lang/ru_ru.toml` (aspect names from `../ForbiddenMagic/src/main/resources/assets/forbidden/lang/en_US.lang`, keys `forbiddenmagic.aspect.<tag>`)
 - Modify: `ForbiddenMagic.java` (register `FmAspects` through `AddonAspects.addRegistrar`)
@@ -1246,7 +1247,7 @@ public final class FmConfig {
     public static ModConfigSpec.BooleanValue noLust;
 
     static {
-        noLust = BUILDER.comment("Enable to remove Luxuria aspect and related items.").define("general", "no_lust", false);
+        noLust = BUILDER.comment("Enable to remove Luxuria aspect and related items.").define("general.no_lust", false);
         SPEC = BUILDER.build();
     }
 
@@ -1254,11 +1255,11 @@ public final class FmConfig {
     }
 
     public static void register(ModContainer container) {
-        container.registerConfig(ModConfig.Type.SYNCED, SPEC);
+        container.registerConfig(ModConfig.Type.STARTUP, SPEC);
     }
 
     public static boolean lustDisabled() {
-        return noLust.get();
+        return SPEC.isLoaded() ? noLust.get() : noLust.getDefault();
     }
 }
 ```
@@ -1302,7 +1303,6 @@ public final class FmAspects {
                 SLOTH = api.register("desidia", 0x6E6E6E, new Aspect[]{Aspect.TRAP, Aspect.SOUL}, 771, texture("desidia"));
                 WRATH = api.register("ira", 0x870404, new Aspect[]{Aspect.WEAPON, Aspect.FIRE}, 771, texture("ira"));
             });
-            AddonAspects.init();
         } catch (NoSuchMethodError | NoClassDefFoundError absent) {
             throw new IllegalStateException("Forbidden Magic requires Thaumcraft 4: Reforged 1.2 or newer with the add-on aspect API", absent);
         }
@@ -1314,7 +1314,7 @@ public final class FmAspects {
 }
 ```
 
-Colours and blends are taken verbatim from `ForbiddenMagic/src/main/java/fox/spiteful/forbidden/DarkAspects.java:26-38`. In `ForbiddenMagic.java` add the two wiring lines in this order — the config registers before the aspects read it, mirroring `Forbidden.prelude`, which calls `Config.configurate()` before `DarkAspects.initAspects()`:
+Colours and blends are taken verbatim from `ForbiddenMagic/src/main/java/fox/spiteful/forbidden/DarkAspects.java:26-38`. In `ForbiddenMagic.java` the constructor registers the STARTUP config and the registrar, but it does **not** invoke the registrar: the config is not loaded yet, and the host's `SPEC.isLoaded() ? value.get() : value.getDefault()` fallback would silently use the default instead of the user's `no_lust`. The invocation moves to `FMLCommonSetupEvent`, which fires after config load on both client and server (the host subscribes the same event in `AlchemyTriggers`):
 
 ```java
     public ForbiddenMagic(IEventBus modEventBus, ModContainer modContainer) {
@@ -1323,6 +1323,30 @@ Colours and blends are taken verbatim from `ForbiddenMagic/src/main/java/fox/spi
         FmGameTests.register(modEventBus);
     }
 ```
+
+`FmSetup.java`:
+
+```java
+package fox.spiteful.forbidden;
+
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import thaumcraft.aspect.AddonAspects;
+
+@EventBusSubscriber(modid = ForbiddenMagic.MODID)
+public final class FmSetup {
+    private FmSetup() {
+    }
+
+    @SubscribeEvent
+    static void commonSetup(FMLCommonSetupEvent event) {
+        event.enqueueWork(AddonAspects::init);
+    }
+}
+```
+
+`AspectSync.rebuild` still calls `AddonAspects.init()`; it is idempotent and covers the server-side ordering. The client gets its registration from `FmSetup` before it can connect. Task 4's probe used the constructor shortcut because it had no config; this task replaces that shortcut with the common-setup path, so Task 4's commit must drop the `AddonAspects.init()` call along with the probe.
 
 The `luxuria` guard is not decoration: the original registers that aspect inside `if (!Config.noLust)` (`DarkAspects.java:28`). Note the dependency this creates: the count assertion above reads the flag (`builtin + 7` normally, `builtin + 6` with `no_lust` on), so it holds in both config states, and the kill-switch test in Task 7 additionally asserts that the aspect itself is gone — `FmAspects.LUST` is null and `Aspect.getAspect("luxuria")` is absent — rather than only counting.
 
@@ -1370,13 +1394,15 @@ git commit -m "feat: register the seven sin aspects"
     }
 ```
 
-- [ ] **Step 2: Translate the table.** Open `../ForbiddenMagic/src/main/java/fox/spiteful/forbidden/DarkAspects.java:41-196` and convert each `ThaumcraftApi.registerObjectTag(stack, list)` into one `register(target, aspects)` call inside a subclass, keeping every number. The rule for each line, applied in order:
+- [ ] **Step 2: Translate the table.** Open `../ForbiddenMagic/src/main/java/fox/spiteful/forbidden/DarkAspects.java:46-254` (method `addAspects`) and convert each `ThaumcraftApi.registerObjectTag(stack, list)` into one `register(target, aspects)` call inside a subclass, keeping every number. The rule for each line, applied in order:
 
 - `new ItemStack(Blocks.x)` → target `"minecraft:x"`; `new ItemStack(Items.x)` → `"minecraft:x"`.
-- `ItemApi.getItem("itemResource", n)` → host id from the mapping recorded in `docs/deviations.md`; the first entry is `thaumcraft:quartz? ` — resolve by reading `host/src/main/java/thaumcraft/registry/ModItems.java` and the FM 1.7.10 `ConfigItems.itemResource` metadata table, then record the choice in `docs/deviations.md`. Do not guess silently.
+- `new ItemStack(Items.skull, 1, 1)` → `minecraft:wither_skeleton_skull`; meta 4 → `minecraft:creeper_head`. The other metas in the table are not used.
+- `new ItemStack(Blocks.portal)` has no item form in the host: map it to `minecraft:obsidian` (the frame) and record that substitution in `docs/deviations.md`. The table contains no `ItemApi.getItem(...)` calls, so no `itemResource` mapping is needed here.
+- `OreDictionary` names become tags: `oreQuartz` → `#c:ores/quartz`. `itemBacon` has no host equivalent; omit the rule and record it in `docs/deviations.md` rather than inventing an item.
 - `OreDictionary.WILDCARD_VALUE` in the original means "any meta": with meta already split into ids in Task 7, this becomes the base id, and the deviation is recorded.
-- An `else` branch of a config flag becomes a `if (!FmConfig.noLust)` guard in Java, matching the original.
-- The mob loop (`DarkAspects.java:106-160`) becomes `entity("thaumcraft:brainy_zombie", list, nbt)` style calls using the ids recorded in `host/tools/entity_ids.json`, keeping the exact aspect amounts from the original.
+- An `else` branch of a config flag becomes a `if (!FmConfig.lustDisabled())` guard in Java, matching the original.
+- The mob loop (`DarkAspects.java:178-230`) becomes `entity("thaumcraft:brainy_zombie", list, nbt)` style calls using the ids recorded in `host/tools/entity_ids.json`, keeping the exact aspect amounts from the original.
 
 Skeleton, with the first three real entries:
 
@@ -1420,14 +1446,18 @@ Call `FmAspectTags.register()` from the mod constructor after `FmAspects.init()`
 
 ```java
     private static void everyTagTargetResolved(GameTestHelper helper) {
-        var registry = thaumcraft.aspect.AspectRegistry.active();
         List<String> unresolved = new ArrayList<>();
         for (String target : FmAspectTags.declaredTargets()) {
             if (target.startsWith("entity:")) {
-                continue;
-            }
-            Item item = BuiltInRegistries.ITEM.get(Identifier.parse(target.startsWith("#") ? "" : target));
-            if (target.startsWith("#") ? BuiltInRegistries.ITEM.getTagOrEmpty(net.minecraft.tags.TagKey.create(Registries.ITEM, Identifier.parse(target.substring(1)))).stream().findAny().isEmpty() : item == Items.AIR) {
+                if (BuiltInRegistries.ENTITY_TYPE.getOptional(Identifier.parse(target.substring("entity:".length()))).isEmpty()) {
+                    unresolved.add(target);
+                }
+            } else if (target.startsWith("#")) {
+                TagKey<Item> tag = TagKey.create(Registries.ITEM, Identifier.parse(target.substring(1)));
+                if (BuiltInRegistries.ITEM.getTagOrEmpty(tag).stream().findAny().isEmpty()) {
+                    unresolved.add(target);
+                }
+            } else if (BuiltInRegistries.ITEM.getOptional(Identifier.parse(target)).isEmpty()) {
                 unresolved.add(target);
             }
         }
@@ -1435,6 +1465,8 @@ Call `FmAspectTags.register()` from the mod constructor after `FmAspects.init()`
         helper.succeed();
     }
 ```
+
+The test needs `java.util.ArrayList`, `java.util.List`, `net.minecraft.core.registries.BuiltInRegistries`, `net.minecraft.resources.Identifier`, `net.minecraft.tags.TagKey`, and `net.minecraft.world.item.Item`; `Registries` is already imported for the GameTest registry.
 
 `FmAspectTags.declaredTargets()` returns the literal list of target strings the table writes, so the two are kept in the same file and cannot drift apart. Entity targets get the same treatment through a second list once Task 6 ports the mob table: an id that is not in `BuiltInRegistries.ENTITY_TYPE` is a bug in our port, not an optional-mod condition, and the difference has to be visible in a test rather than in a debug line nobody reads.
 
@@ -1453,6 +1485,7 @@ git commit -m "feat: port the add-on aspect tag table"
 
 **Files:**
 - Create: `src/main/java/fox/spiteful/forbidden/FmItems.java`
+- Create: `src/main/java/fox/spiteful/forbidden/FmCreativeTab.java`
 - Modify: `src/main/java/fox/spiteful/forbidden/FmConfig.java` (add the remaining switches; `no_lust` and its registration line stay exactly as Task 5 left them)
 - Create: `tools/id_map.json`, `tools/gen_resources.py`, `tools/lang/{en_us,ru_ru}.toml` item names
 - Test: `FmGameTests` — `shards_are_registered_with_seven_ids`, `no_lust_removes_luxuria_items`
@@ -1492,8 +1525,8 @@ public final class FmConfig {
     public static ModConfigSpec.IntValue gluttony;
 
     static {
-        noLust = BUILDER.comment("Enable to remove Luxuria aspect and related items.").define("general", "no_lust", false);
-        gluttony = BUILDER.comment("0 = Enabled, 1 = Disabled, 2 = Hardcore").defineInRange("general", "gluttony", 0, 0, 2);
+        noLust = BUILDER.comment("Enable to remove Luxuria aspect and related items.").define("general.no_lust", false);
+        gluttony = BUILDER.comment("0 = Enabled, 1 = Disabled, 2 = Hardcore").defineInRange("general.gluttony", 0, 0, 2);
         SPEC = BUILDER.build();
     }
 
@@ -1501,11 +1534,11 @@ public final class FmConfig {
     }
 
     public static void register(ModContainer container) {
-        container.registerConfig(net.neoforged.fml.config.ModConfig.Type.SYNCED, SPEC);
+        container.registerConfig(ModConfig.Type.STARTUP, SPEC);
     }
 
     public static boolean lustDisabled() {
-        return noLust.get();
+        return SPEC.isLoaded() ? noLust.get() : noLust.getDefault();
     }
 }
 ```
@@ -1544,7 +1577,38 @@ public final class FmItems {
 
 `SKULL_AXE` is registered as a plain item on purpose: the behaviour of `ItemSkullAxe` (extra head drop chance) belongs to the enchantment-and-tools slice, but the `SKULLAXE` recipe of Task 10 must resolve to a registered output, and an unregistered output is exactly what the closure test in Task 10 Step 1 forbids. The deviation — id and item exist, behaviour does not yet — gets its own row in `docs/deviations.md`, and its removal is a named line in `docs/roadmap.md`.
 
-Register `FmItems.ITEMS.register(modEventBus)` in the constructor. `docs/deviations.md` records the mapping `deadlyShards meta n → <vice>_shard` for all seven, taken from `ItemDeadlyShard.vices` at `items/ItemDeadlyShard.java:19`, and the original's `despair` substitution when `Config.noLust` is on (line 29-30) as a *removal* of the lust item, because on this loader a hidden item is a config-gated recipe, not a renamed icon.
+Register `FmItems.ITEMS.register(modEventBus)` in the constructor. `docs/deviations.md` records the mapping `deadlyShards meta n → <vice>_shard` for all seven, taken from `ItemDeadlyShard.vices` at `items/ItemDeadlyShard.java:19`, and the original's `despair` substitution when `Config.noLust` is on (line 29-30) as an *availability* removal of the lust item: the registry entry stays, but the item gets no tag, no drop, no recipe and no creative-tab slot.
+
+- [ ] **Step 3b: Add the items to the host's creative tab.** Reuse `thaumcraft:thaumcraft` rather than creating a second tab; the event listener also enforces the visible half of `no_lust`:
+
+```java
+package fox.spiteful.forbidden;
+
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
+import thaumcraft.registry.ModCreativeTabs;
+
+@EventBusSubscriber(modid = ForbiddenMagic.MODID)
+public final class FmCreativeTab {
+    private FmCreativeTab() {
+    }
+
+    @SubscribeEvent
+    static void addItems(BuildCreativeModeTabContentsEvent event) {
+        if (event.getTab() != ModCreativeTabs.THAUMCRAFT.get()) {
+            return;
+        }
+        for (var entry : FmItems.DEADLY_SHARDS.entrySet()) {
+            if (!entry.getKey().equals("lust") || !FmConfig.lustDisabled()) {
+                event.accept(entry.getValue().get());
+            }
+        }
+        event.accept(FmItems.GLUTTONY_SHARD.get());
+        event.accept(FmItems.SKULL_AXE.get());
+    }
+}
+```
 
 - [ ] **Step 4: Generate models and item definitions.** `tools/gen_resources.py` writes, for each registered item, `assets/forbiddenmagic/models/item/<name>.json` (`{"parent":"minecraft:item/generated","textures":{"layer0":"forbiddenmagic:items/<name>"}}`) and `assets/forbiddenmagic/items/<name>.json`.
 
@@ -1600,12 +1664,19 @@ cmd //c gradlew.bat runGameTestServer
 
 Expected: `shards_are_registered_with_seven_ids` green.
 
-- [ ] **Step 6: Prove the kill switch.** Add `no_lust_removes_luxuria_items`: set `FmConfig.noLust` to `true` in the test through the config instance, assert that `FmAspects.LUST` is null and that `Aspect.getAspect("luxuria")` is absent from the registry, that the lust shard carries no `luxuria` tag, and that the recipe registered in Task 10 is absent for lust entries, then restore. Run and confirm it fails before implementing the guard, then add the guard in `FmAspects.init`, `FmAspectTags` and `FmRecipes`.
+- [ ] **Step 6: Prove the kill switch with a second server run.** A STARTUP config is read before the static aspect registry is built, and the registry is never rebuilt at runtime, so flipping `FmConfig.noLust` inside a running GameTest cannot remove `luxuria` — that would test nothing. Instead write `run/config/forbiddenmagic-startup.toml`:
+
+```toml
+[general]
+no_lust = true
+```
+
+Run `runGameTestServer` again and assert, in tests that branch on `FmConfig.lustDisabled()`, that `FmAspects.LUST` is null, `Aspect.getAspect("luxuria")` is absent, the lust shard carries no `luxuria` tag, it is not offered to the creative tab, and the Task 10 recipe is absent for lust entries. Then delete the config file and re-run the default gate, which asserts seven aspects. The item record remaining registered is the documented deviation, not a silent leak: `DeferredRegister` cannot remove an entry, and the spec's increment gate says "убирает из выдачи", not "удаляет из реестра". Add the guards in `FmAspects.init`, `FmAspectTags`, `FmRecipes`, and the creative-tab listener, and record the two-run gate in `docs/deviations.md`.
 
 - [ ] **Step 7: Commit.**
 
 ```bash
-git add src/main/java/fox/spiteful/forbidden/FmItems.java src/main/java/fox/spiteful/forbidden/FmConfig.java tools/id_map.json tools/gen_resources.py tools/lang src/main/resources/assets/forbiddenmagic/textures/items docs/deviations.md
+git add src/main/java/fox/spiteful/forbidden/FmItems.java src/main/java/fox/spiteful/forbidden/FmCreativeTab.java src/main/java/fox/spiteful/forbidden/FmConfig.java tools/id_map.json tools/gen_resources.py tools/lang src/main/resources/assets/forbiddenmagic/textures/items docs/deviations.md
 git commit -m "feat: port the shard items and the config"
 ```
 
@@ -1621,7 +1692,7 @@ git commit -m "feat: port the shard items and the config"
 - Produces: `FmDrops.register()` doing `net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(FmDrops::onLivingDrops)`; `FmDrops.onLivingDrops(LivingDropsEvent)`; `FmDrops.rollWrath(int wrathBonus, int roll) → boolean`, `FmDrops.prideCount(int looting, int roll) → int`, `FmDrops.wrathShardStack() → ItemStack`, so the probabilities are testable without killing 1000 mobs.
 - Consumes: `FmItems`, `FmConfig`, host `thaumcraft.entity.TaintedMob`-equivalent marker from `host/src/main/java/thaumcraft/entity/TaintedMob.java`.
 
-- [ ] **Step 1: Write the failing tests.** Probabilities are the numbers in `FMEventHandler.java:164-230`: sloth on non-player death `randy.nextInt(30) < 4`; wrath on player-killed `IMob` `randy.nextInt(61) <= wrath` with `wrath` starting at 2; pride on bosses `2 + randy.nextInt(1 + looting)`; greed when `greed > 0` `randy.nextInt(20) <= greed`. Expose the rolls as pure functions and test the boundaries:
+- [ ] **Step 1: Write the failing tests.** Probabilities are the numbers in `FMEventHandler.java:164-230`, and every rule is nether-only (`level.dimension() == Level.NETHER`, the 1.7.10 check is `dimensionId == -1`): sloth on non-player death `randy.nextInt(30) < 4`, dropping `1 + randy.nextInt(3)` shards; wrath on player-killed `IMob` `randy.nextInt(61) <= wrath` with `wrath` starting at 2 plus weapon damage and enchantments; pride on bosses `2 + randy.nextInt(1 + looting)`; greed when `greed > 0` `randy.nextInt(20) <= greed`. Expose the rolls as pure functions and test the boundaries:
 
 ```java
     private static void mobKilledByPlayerDropsWrathShard(GameTestHelper helper) {
@@ -1636,7 +1707,7 @@ git commit -m "feat: port the shard items and the config"
 
 `prideCount(looting, roll)` mirrors `2 + randy.nextInt(1 + looting)`, so `roll` is the value `nextInt` already returned; `rollWrath(bonus, roll)` mirrors `randy.nextInt(61) <= wrath`.
 
-- [ ] **Step 2: Implement `FmDrops`** as a direct translation of the handler, replacing `event.entityLiving instanceof IMob` with the modern equivalent (`entity instanceof Enemy`), `getCurrentEquippedItem()` with `getInstrumentItem`/`getMainHandItem` as the host does it in its own drop code, and `EntityPigZombie` holding an envy shard with `EntityIdentifier.ZOMBIFIED_PIGLIN` — record each substitution in `docs/deviations.md`, because the loader changed the vocabulary, not the numbers.
+- [ ] **Step 2: Implement `FmDrops`** as a direct translation of the handler, replacing `event.entityLiving instanceof IMob` with `entity instanceof Enemy`, `getCurrentEquippedItem()` with `entity.getMainHandItem()`, and the `EntityPigZombie` plus held envy shard check with `entity.getType() == EntityType.ZOMBIFIED_PIGLIN && entity.getMainHandItem().is(FmItems.DEADLY_SHARDS.get("envy").get())`. Keep the nether-only guard and the sloth count `1 + random.nextInt(3)`. Record each substitution in `docs/deviations.md`, because the loader changed the vocabulary, not the numbers.
 
 - [ ] **Step 3: Run the tests, then verify the real path in game.** `cmd //c gradlew.bat runGameTestServer`, then kill a zombie in `runClient` with the game test namespace enabled and check the log line `forbiddenmagic: dropped forbiddenmagic:wrath_shard`. Add that log line as part of the implementation so the manual check has evidence.
 
@@ -1697,43 +1768,57 @@ git commit -m "feat: add the forbidden research category and shard entries"
 - Test: `FmGameTests` — `skull_axe_infusion_recipe_matches_original`, `every_ported_recipe_resolves_its_inputs`
 
 **Interfaces:**
-- Produces: registered `TcRecipes` entries keyed exactly as the original (`SKULLAXE`, `ROD_infernal`, `ARCANECAKE`, `WRATHCAGE`, `TAINTSTONE`), so `ResearchPage.infusion("SKULLAXE")` finds them.
+- Produces: registered `TcRecipes` entries keyed exactly as the original (`SKULLAXE`, `ROD_infernal`, `ARCANECAKE`, `WRATHCAGE`, `TAINTSTONE`), so `ResearchPage.infusion("SKULLAXE")` finds them. `FmRecipes.OWN_KEYS` contains exactly the keys actually registered; the other four are included only when every input has a ported or host item, otherwise they stay out of the slice and are listed in `docs/roadmap.md`.
 - Consumes: `InfusionRecipe(String key, String research, TcStack result, int instability, AspectList aspects, TcIngredient central, List<TcIngredient> components)`, `ShapedArcaneRecipe(String key, String research, TcStack result, AspectList aspects, int width, int height, List<TcIngredient> grid)`, `CrucibleRecipe(String key, String research, TcStack result, TcIngredient catalyst, AspectList aspects)`, `TcIngredient.item("namespace:path")`, `TcStack.of(...)`.
 
 - [ ] **Step 1: Write the closure test first**, because it is what makes this task honest: every ported recipe's inputs and outputs must resolve to a registered item.
 
 ```java
     private static void everyPortedRecipeResolvesItsInputs(GameTestHelper helper) {
-        for (thaumcraft.crafting.TcRecipe recipe : thaumcraft.crafting.TcRecipes.all()) {
-            if (!recipe.key().startsWith("forbiddenmagic:")) {
+        List<String> missing = new ArrayList<>();
+        for (TcRecipe recipe : TcRecipes.all()) {
+            if (!FmRecipes.OWN_KEYS.contains(recipe.key())) {
                 continue;
             }
-            List<Item> missing = new ArrayList<>();
             if (recipe instanceof InfusionRecipe infusion) {
-                collect(infusion.central(), missing);
-                infusion.components().forEach(component -> collect(component, missing));
-            } else if (recipe instanceof ArcaneRecipe arcane) {
-                collect(arcane.result(), missing);
-                if (arcane instanceof ShapedArcaneRecipe shaped) {
-                    shaped.grid().forEach(component -> collect(component, missing));
-                } else {
-                    ((ShapelessArcaneRecipe) arcane).ingredients().forEach(component -> collect(component, missing));
-                }
+                checkIngredient(infusion.central(), missing);
+                infusion.components().forEach(ingredient -> checkIngredient(ingredient, missing));
+                checkStack(infusion.result(), missing);
+            } else if (recipe instanceof ShapedArcaneRecipe shaped) {
+                checkStack(shaped.result(), missing);
+                shaped.grid().forEach(ingredient -> checkIngredient(ingredient, missing));
+            } else if (recipe instanceof ShapelessArcaneRecipe shapeless) {
+                checkStack(shapeless.result(), missing);
+                shapeless.ingredients().forEach(ingredient -> checkIngredient(ingredient, missing));
             } else if (recipe instanceof CrucibleRecipe crucible) {
-                collect(crucible.catalyst(), missing);
-                collect(crucible.result(), missing);
+                checkIngredient(crucible.catalyst(), missing);
+                checkStack(crucible.result(), missing);
             }
-            helper.assertTrue(missing.isEmpty(), recipe.key() + " references unregistered items: " + missing);
         }
+        helper.assertTrue(missing.isEmpty(), "unresolved recipe references: " + missing);
         helper.succeed();
     }
+
+    private static void checkIngredient(TcIngredient ingredient, List<String> missing) {
+        if (!ingredient.exists()) {
+            missing.add(ingredient.toString());
+        }
+    }
+
+    private static void checkStack(TcStack stack, List<String> missing) {
+        if (!stack.exists()) {
+            missing.add(stack.item().toString());
+        }
+    }
 ```
+
+`TcIngredient.exists()` and `TcStack.exists()` are public host methods, so the closure test needs no registry walking. Imports: `java.util.ArrayList`, `java.util.List`, and the `thaumcraft.crafting` types used (`TcRecipe`, `TcRecipes`, `InfusionRecipe`, `ShapedArcaneRecipe`, `ShapelessArcaneRecipe`, `CrucibleRecipe`, `TcIngredient`, `TcStack`). Host recipe keys are plain (`ConfigRecipes` registers `"Banner_0"`, research pages call `TcRecipes.get("...")` with the same plain string), so `OWN_KEYS` holds `"SKULLAXE"` etc., not `"forbiddenmagic:SKULLAXE"`.
 
 - [ ] **Step 2: Port the recipe set**, numbers verbatim from `ForbiddenRecipes.java:31-58`. `SkullAxe` (line 40) becomes:
 
 ```java
         TcRecipes.register(new InfusionRecipe(
-            "forbiddenmagic:SKULLAXE",
+            "SKULLAXE",
             "SKULLAXE",
             TcStack.of(ForbiddenMagic.id("skull_axe").toString(), 1),
             1,
@@ -1793,7 +1878,8 @@ git commit -m "feat: port the recipes inside the slice"
         helper.assertTrue(thaumcraft.research.ResearchManager.isComplete(player, "NETHERSHARDS"), "the auto-unlock entry is known after a join");
         ItemStack wrathShard = new ItemStack(FmItems.DEADLY_SHARDS.get("wrath").get());
         helper.assertTrue(thaumcraft.aspect.AspectRegistry.active().getObjectTags(wrathShard.getItem()).getAmount(FmAspects.WRATH) >= 2, "the wrath shard carries ira, the value DarkAspects gives it");
-        InfusionRecipe skullAxe = (InfusionRecipe) thaumcraft.crafting.TcRecipes.get("forbiddenmagic:SKULLAXE");
+        helper.assertTrue(FmDrops.rollWrath(2, 2), "the wrath drop rule fires at the original boundary");
+        InfusionRecipe skullAxe = (InfusionRecipe) thaumcraft.crafting.TcRecipes.get("SKULLAXE");
         helper.assertTrue(skullAxe != null, "skull axe recipe registered");
         helper.assertTrue(skullAxe.aspects().getAmount(FmAspects.WRATH) == 8, "skull axe costs eight ira");
         helper.succeed();
@@ -1832,11 +1918,11 @@ python tools/gen_resources.py && git status --porcelain src/generated
 git -C ../thaumcraft-4-reforged status --porcelain --untracked-files=no
 ```
 
-Expected, in order: build success, `All tests successful`, `host matches sha + patch series`, `host clean`, `provenance ok`, empty git status for generated resources, empty host status. Paste the actual output into the commit body of Step 5; a claim without it is not a pass.
+Expected, in order: build success, a `GAME TESTS COMPLETE` line with no `required tests failed`, `host matches sha + patch series`, `host clean`, `provenance ok`, empty git status for generated resources, empty host status. Paste the actual output into the commit body of Step 5; a claim without it is not a pass.
 
 - [ ] **Step 3: Write `README.md`** with, in this order: what it is and that it is an unofficial fork (spec 10 table verbatim), the three obligation lines from spec 11 (supported range `Thaumcraft 4: Reforged 1.2+` on `26.3`, "what is not in the port", tempo/no-promises), how to build the host copy (`python tools/prepare_host.py`, `cd host && cmd //c gradlew.bat publish`, then `cmd //c gradlew.bat build`), the AI-assistance disclosure, and links to `docs/roadmap.md` and `docs/deviations.md`.
 
-- [ ] **Step 4: Write `docs/upstream/issue-draft.md`** in Russian, structured as: the constraint (`Aspect` is an enum of 48, so an add-on cannot register an aspect), what we need (a registration point before `AspectSync.rebuild`, add-on-owned texture namespace, stable builtin indices), the precedent (Thaumcraft 4 Reconstructed already ships data-driven add-on aspects and 32 add-ons including Forbidden Magic ride on it), the patch series as proof, and the check outputs. State that the work was AI-assisted. Do not send it; the user does.
+- [ ] **Step 4: Update `docs/upstream/issue-draft.md`** (Task 4b created it) with the final gate outputs, in Russian, structured as: the constraint (`Aspect` is an enum of 48, so an add-on cannot register an aspect), what we need (a registration point before `AspectSync.rebuild`, add-on-owned texture namespace, stable builtin indices), the precedent (Thaumcraft 4 Reconstructed already ships data-driven add-on aspects and 32 add-ons including Forbidden Magic ride on it), the patch series as proof, and the check outputs. State that the work was AI-assisted. Do not send it; the user does.
 
 - [ ] **Step 5: Commit, then tag nothing and push nothing.**
 
@@ -1853,6 +1939,8 @@ Report the jar path and its size. Opening an issue, forking, or pushing to any r
 
 Spec coverage: section 3 and 4.2 → Tasks 3-4; 4.1 → Tasks 1-2; 4.3 → Tasks 5-10; 4.4 → the `docs/deviations.md` steps in 6, 8, 10; 4.5 → Task 7 Steps 4-5 and the regeneration check in Task 11 Step 2; 5.0 → Tasks 5-11; 6 gates → Task 11 Step 2 plus each task's own gate; 7 risks → Task 3 (ordinal), Task 4 Step 5 and Task 11 Step 2 (client/server registration), Task 5 (availability refusal), Task 8 Step 3 (manual evidence); 8 → Tasks 4 and 11; 10 → Task 11 Step 3; 11 → Task 11 Steps 3-5.
 
-Fixed during this review, recorded so the next reader does not re-introduce them: Task 1 no longer needs the maven artifact (it compiles against the already-built upstream jar, and Task 4 switches the dependency form); `runGameTestServer` moved from Task 1 to Task 2, because the structure template lives in `host/` which Task 2 creates; the probe aspect registered in Task 4 is explicitly retired in Task 5, since a release jar must not carry a test aspect; every `ResearchItem` and `Knowledge` call in Tasks 9 and 11 goes through a read-the-signature step first, because those getters were not verified when this plan was written; the vice-to-texture table in Task 7 is sourced from the original `registerIcons` code and the real filenames (`wrathshard.png`, `prideshard.png`, plus `.mcmeta` for the animated ones), not guessed.
+Fixed during this review, recorded so the next reader does not re-introduce them: Task 1 no longer needs the maven artifact (it compiles against the already-built upstream jar, and Task 4 switches the dependency form); `runGameTestServer` stays in Task 1 and repeats in Task 2, but it needs `--packs` pointing at the host's `src/gametest/packs` — the namespace property does not exclude the host's own programmatically registered tests, and without Outer Lands nine host tests fail; Task 1's early claim that no packs were needed was wrong. Task 5 moves the aspect registration from the constructor to `FMLCommonSetupEvent`, because a STARTUP config must be loaded before `no_lust` can suppress `luxuria`; the probe aspect in Task 4 is compound, because a primal add-on aspect joins `getPrimalAspects()` and breaks the wand's six vis slots (observed as 14 failing host tests); the probe is explicitly retired in Task 5. `Codec` uses `xmap`, not `map`; `AspectOrb` is not the only enum consumer — `WandVis` has two `switch (aspect)` statements. Host recipe keys are plain strings, so `SKULLAXE` must not be namespaced. The content counts were re-measured: 30 core research entries (31 unique keys minus `SUBCOLLAR`), 40 unique text pages (82 `ResearchPage` objects including recipe pages and config branches), 21 core recipes (22 unique minus `SUBCOLLAR`). Every `ResearchItem` and `Knowledge` call in Tasks 9 and 11 goes through a read-the-signature step first. The vice-to-texture table in Task 7 is sourced from the original `registerIcons` code and the real filenames (`wrathshard.png`, `prideshard.png`, plus `.mcmeta` for the animated ones), not guessed.
+
+Known limitation of the end-to-end test: it checks the data chain (tag → research → recipe lookup) and the pure drop boundary, but it does not construct a real `LivingDropsEvent`; the event wiring is covered by Task 8 Step 3's manual in-game check.
 
 Deliberately deferred, recorded rather than implemented: patch `0004-taint-block-tag` (decided in spec increment 8, this plan stops before it), the heretic villager trades (the lust-shard exchange needs villager registry work and the slice already obtains shards through drops), enchantments, wands, Wrath Cage, the taint wood set, and the full behaviour of `ItemSkullAxe` (id and item registered so the recipe closes). Each is in `docs/roadmap.md` with the reason.
