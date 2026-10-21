@@ -1382,7 +1382,7 @@ git commit -m "feat: register the seven sin aspects"
 
 **Interfaces:**
 - Produces: `FmAspectTags.register()` called from the mod constructor; every rule reads the same table the original reads.
-- Consumes: `thaumcraft.aspect.AspectRegistrar` (`protected register/fill/complex/copy/entity`, targets as `"namespace:path"` or `"#namespace:tag"`), `AspectSync.addRegistrar`.
+- Consumes: `thaumcraft.aspect.AspectRegistrar` (`protected register/fill/complex/copy/entity/entityCopy`, targets as `"namespace:path"` or `"#namespace:tag"`), `AspectSync.addRegistrar`. `entityCopy` is added by patch 0002 and merges with the host's base entity tags; plain `entity` replaces them.
 
 - [ ] **Step 1: Write the failing test.** The original *adds* `infernus` to netherrack without losing what TC already gave it, so the test pins merge semantics:
 
@@ -1406,7 +1406,8 @@ git commit -m "feat: register the seven sin aspects"
 - `OreDictionary` names become tags: `oreQuartz` → `#c:ores/quartz`. `itemBacon` has no host equivalent; omit the rule and record it in `docs/deviations.md` rather than inventing an item.
 - `OreDictionary.WILDCARD_VALUE` in the original means "any meta": with meta already split into ids in Task 7, this becomes the base id, and the deviation is recorded.
 - An `else` branch of a config flag becomes a `if (!FmConfig.lustDisabled())` guard in Java, matching the original.
-- The mob loop (`DarkAspects.java:178-230`) becomes `entity("thaumcraft:brainy_zombie", list, nbt)` style calls using the ids recorded in `host/tools/entity_ids.json`, keeping the exact aspect amounts from the original.
+- The mob loop (`DarkAspects.java:178-230`) becomes `entityCopy("thaumcraft:brainy_zombie", list, nbt)` calls using the ids recorded in `host/tools/entity_ids.json`, keeping the exact aspect amounts from the original. `entityCopy` merges with the host's base list; plain `entity` would drop `UNDEAD/MAN/EARTH` and similar base aspects.
+- In M1 register only targets that exist: vanilla/host items, `#minecraft:beds`, `#c:ores/quartz` and the mobs above. Shard tags belong to Task 7 (after the items exist); FM block/resource tags belong to the full §5.1.
 
 Skeleton, with the first three real entries:
 
@@ -1458,7 +1459,12 @@ Call `FmAspectTags.register()` from the mod constructor after `FmAspects.init()`
                 }
             } else if (target.startsWith("#")) {
                 TagKey<Item> tag = TagKey.create(Registries.ITEM, Identifier.parse(target.substring(1)));
-                if (BuiltInRegistries.ITEM.getTagOrEmpty(tag).stream().findAny().isEmpty()) {
+                boolean found = false;
+                for (Holder<Item> holder : BuiltInRegistries.ITEM.getTagOrEmpty(tag)) {
+                    found = true;
+                    break;
+                }
+                if (!found) {
                     unresolved.add(target);
                 }
             } else if (BuiltInRegistries.ITEM.getOptional(Identifier.parse(target)).isEmpty()) {
