@@ -148,7 +148,7 @@ public final class FmGameTests {
 
 The pattern is copied from the host's own `thaumcraft/test/GearGameTests.java:47-77`. The structure template is referenced **by identifier at runtime** (`thaumcraft:test/platform`): it ships inside the host jar, generated to `src/generated/resources/data/thaumcraft/structure/test/platform.nbt`, so the add-on copies no host file and the template resolves without packs. `--tests "${mod_id}:*"` restricts the run to our own three tests: the host's tests register into the same server through `RegisterGameTestsEvent` regardless of `neoforge.enabledGameTestNamespaces`, and one of them (`altar_guardian_population`) is sensitive to the RNG/order of the extended suite. Host tests are therefore a **separate gate**: the host's own `runGameTestServer` in `host/` runs 256/256, and the add-on's run checks only its own namespace. Verified 2026-10-21: the unfiltered run executed 259 tests and failed on the host's altar test; the filtered run executes 3 and the host-only run executes 256, both green.
 
-**Constructor wiring contract.** The mod constructor is the only place anything registers, and later tasks append exactly one call each, in this order (it matters: the config must load before the aspects, because `no_lust` gates the `luxuria` registration itself — the original reads `Config.configurate()` before `DarkAspects.initAspects()` in `Forbidden.prelude`; then aspects must exist before the tag table references them, items before recipes reference them, the availability check before anything touches the host API):
+**Constructor wiring contract.** The constructor registers the config, the aspect/tag registrars, `DeferredRegister`s, the drop listener and GameTests. The actual aspect objects are created later in `FMLCommonSetupEvent`, so anything whose `AspectList` mentions `FmAspects.*` must register **after** that event:
 
 ```java
     public ForbiddenMagic(IEventBus modEventBus, ModContainer modContainer) {
@@ -157,13 +157,13 @@ The pattern is copied from the host's own `thaumcraft/test/GearGameTests.java:47
         FmAspectTags.register();
         FmItems.ITEMS.register(modEventBus);
         FmDrops.register();
-        FmResearch.register();
-        FmRecipes.register();
         FmGameTests.register(modEventBus);
     }
 ```
 
-Task 1 lands the last line only; each task from 5 to 10 adds its own line and nothing else. `FmConfig` arrives in Task 5 carrying the `no_lust` switch alone, because the aspect guard reads it; Task 7 extends that same class with the remaining switches and must not move the registration line or redefine `no_lust`.
+`FmSetup.commonSetup` runs `AddonAspects.init()`, then `FmRecipes.register()`, then `FmResearch.register()`. Recipes go before research so their `ResearchPage.infusion("SKULLAXE")` resolves; both must be after aspects and after the item registry is populated. The config must load before the aspects, because `no_lust` gates the `luxuria` registration itself — the original reads `Config.configurate()` before `DarkAspects.initAspects()` in `Forbidden.prelude`.
+
+Task 1 lands the GameTests line only. `FmConfig` arrives in Task 5 carrying the `no_lust` switch alone; Task 7 extends that same class with the remaining switches and must not move the registration line or redefine `no_lust`. `FmResearch.register()` and `FmRecipes.register()` are **not** constructor calls, despite the earlier draft of this contract.
 
 - [ ] **Step 2: Run it and see it fail.** `cmd //c gradlew.bat build` → expected: failure, `settings.gradle` / sources missing (no project yet). This is the red state.
 
@@ -1208,7 +1208,8 @@ author reply: <quote or "no reply">
 - Create: `src/main/java/dev/visfox/forbiddenreforged/FmAspects.java`
 - Create: `src/main/java/dev/visfox/forbiddenreforged/FmSetup.java` (runs the aspect registration after config load)
 - Create: `src/main/resources/assets/forbiddenmagic/textures/aspects/{luxuria,infernus,superbia,gula,invidia,desidia,ira}.png` — copied from `../ForbiddenMagic/src/main/resources/assets/forbidden/textures/aspects/`
-- Create: `tools/lang/en_us.toml`, `tools/lang/ru_ru.toml` (aspect names from `../ForbiddenMagic/src/main/resources/assets/forbidden/lang/en_US.lang`, keys `forbiddenmagic.aspect.<tag>`)
+- Create: `tools/lang/en_us.toml`, `tools/lang/ru_ru.toml` (aspect names from `../ForbiddenMagic/src/main/resources/assets/forbidden/lang/en_US.lang`, host keys `tc.aspect.<tag>` — `Aspect.getDescription()` builds exactly that key)
+- Create: `tools/gen_resources.py` (lang subset now; Task 7 extends it to models and item definitions)
 - Modify: `ForbiddenMagic.java` (register `FmAspects` through `AddonAspects.addRegistrar`)
 - Test: `FmGameTests` — `sin_aspects_registered_with_own_textures`
 
@@ -1381,7 +1382,7 @@ git commit -m "feat: register the seven sin aspects"
 
 **Interfaces:**
 - Produces: `FmAspectTags.register()` called from the mod constructor; every rule reads the same table the original reads.
-- Consumes: `thaumcraft.aspect.AspectRegistrar` (`protected register/fill/complex/copy/entity`, targets as `"namespace:path"` or `"#namespace:tag"`), `AspectSync.addRegistrar`.
+- Consumes: `thaumcraft.aspect.AspectRegistrar` (`protected register/fill/complex/copy/entity/entityCopy`, targets as `"namespace:path"` or `"#namespace:tag"`), `AspectSync.addRegistrar`. `entityCopy` is added by patch 0002 and merges with the host's base entity tags; plain `entity` replaces them.
 
 - [ ] **Step 1: Write the failing test.** The original *adds* `infernus` to netherrack without losing what TC already gave it, so the test pins merge semantics:
 
@@ -1405,7 +1406,8 @@ git commit -m "feat: register the seven sin aspects"
 - `OreDictionary` names become tags: `oreQuartz` → `#c:ores/quartz`. `itemBacon` has no host equivalent; omit the rule and record it in `docs/deviations.md` rather than inventing an item.
 - `OreDictionary.WILDCARD_VALUE` in the original means "any meta": with meta already split into ids in Task 7, this becomes the base id, and the deviation is recorded.
 - An `else` branch of a config flag becomes a `if (!FmConfig.lustDisabled())` guard in Java, matching the original.
-- The mob loop (`DarkAspects.java:178-230`) becomes `entity("thaumcraft:brainy_zombie", list, nbt)` style calls using the ids recorded in `host/tools/entity_ids.json`, keeping the exact aspect amounts from the original.
+- The mob loop (`DarkAspects.java:178-230`) becomes `entityCopy("thaumcraft:brainy_zombie", list, nbt)` calls using the ids recorded in `host/tools/entity_ids.json`, keeping the exact aspect amounts from the original. `entityCopy` merges with the host's base list; plain `entity` would drop `UNDEAD/MAN/EARTH` and similar base aspects.
+- In M1 register only targets that exist: vanilla/host items, `#minecraft:beds`, `#c:ores/quartz` and the mobs above. Shard tags belong to Task 7 (after the items exist); FM block/resource tags belong to the full §5.1.
 
 Skeleton, with the first three real entries:
 
@@ -1457,7 +1459,12 @@ Call `FmAspectTags.register()` from the mod constructor after `FmAspects.init()`
                 }
             } else if (target.startsWith("#")) {
                 TagKey<Item> tag = TagKey.create(Registries.ITEM, Identifier.parse(target.substring(1)));
-                if (BuiltInRegistries.ITEM.getTagOrEmpty(tag).stream().findAny().isEmpty()) {
+                boolean found = false;
+                for (Holder<Item> holder : BuiltInRegistries.ITEM.getTagOrEmpty(tag)) {
+                    found = true;
+                    break;
+                }
+                if (!found) {
                     unresolved.add(target);
                 }
             } else if (BuiltInRegistries.ITEM.getOptional(Identifier.parse(target)).isEmpty()) {
@@ -1613,9 +1620,9 @@ public final class FmCreativeTab {
 }
 ```
 
-- [ ] **Step 4: Generate models and item definitions.** `tools/gen_resources.py` writes, for each registered item, `assets/forbiddenmagic/models/item/<name>.json` (`{"parent":"minecraft:item/generated","textures":{"layer0":"forbiddenmagic:items/<name>"}}`) and `assets/forbiddenmagic/items/<name>.json`.
+- [ ] **Step 4: Generate models and item definitions.** `tools/gen_resources.py` writes, for each registered item, `assets/forbiddenmagic/models/item/<name>.json` (`{"parent":"minecraft:item/generated","textures":{"layer0":"forbiddenmagic:item/<name>"}}`) and `assets/forbiddenmagic/items/<name>.json` (`{"model":{"type":"minecraft:model","model":"forbiddenmagic:item/<name>"}}`).
 
-The texture source filenames are read from the original, not guessed: `ItemDeadlyShard.registerIcons` (`items/ItemDeadlyShard.java:34-39`) registers `"forbidden:" + vices[x] + "shard"`, so `wrath_shard` comes from `wrathshard.png`, `envy_shard` from `envyshard.png`, `taint_shard` from `taintshard.png`, `pride_shard` from `prideshard.png`, `lust_shard` from `lustshard.png`, `sloth_shard` from `slothshard.png`, `greed_shard` from `greedshard.png`; `gluttony_shard` from `gluttonyshard.png` and `skull_axe` from `skullaxe.png` (`items/ItemGluttonyShard.java:20`, `items/tools/ItemSkullAxe.java`). Note two mismatches that must be recorded rather than patched over: when `Config.noLust` is set the original renames index 4 to `despair`, so `despairshard.png` exists but the modern port expresses that switch as a config-gated recipe (Step 6), and `prideshard.png`/`wrathshard.png` carry `.mcmeta` (animated frames) — copy the `.mcmeta` alongside, or the animation silently disappears.
+The texture source filenames are read from the original, not guessed: `ItemDeadlyShard.registerIcons` (`items/ItemDeadlyShard.java:34-39`) registers `"forbidden:" + vices[x] + "shard"`, so `wrath_shard` comes from `wrathshard.png`, `envy_shard` from `envyshard.png`, `taint_shard` from `taintshard.png`, `pride_shard` from `prideshard.png`, `lust_shard` from `lustshard.png`, `sloth_shard` from `slothshard.png`, `greed_shard` from `greedshard.png`; `gluttony_shard` from `gluttonyshard.png` and `skull_axe` from `skullaxe.png` (`items/ItemGluttonyShard.java:20`, `items/tools/ItemSkullAxe.java`). Note two mismatches that must be recorded rather than patched over: when `Config.noLust` is set the original renames index 4 to `despair`, so `despairshard.png` exists but the modern port expresses that switch as a config-gated recipe (Step 6), and `prideshard.png`, `wrathshard.png` и `taintshard.png` carry `.mcmeta` (animated frames) — copy the `.mcmeta` alongside, or the animation silently disappears. `despairshard.png` exists only for the original's `no_lust` renames; this port hides the lust shard without renaming, so it is not copied.
 
 The generator's item list is a literal table at the top of the file mapping our item name to the FM source filename, so the mapping is auditable instead of derived:
 
@@ -1633,7 +1640,7 @@ ITEM_TEXTURES = {
 }
 ```
 
-Copy every listed texture (and its `.mcmeta` when present) from `../ForbiddenMagic/src/main/resources/assets/forbidden/textures/items/` into `assets/forbiddenmagic/textures/items/` under the new name, and make the generator fail when a registered item has no entry in `ITEM_TEXTURES`:
+Copy every listed texture (and its `.mcmeta` when present) from `../ForbiddenMagic/src/main/resources/assets/forbidden/textures/items/` into `assets/forbiddenmagic/textures/item/` under the new name, and make the generator fail when a registered item has no entry in `ITEM_TEXTURES`:
 
 ```python
 missing = [name for name in registered_items if name not in ITEM_TEXTURES]
@@ -1679,7 +1686,7 @@ Run `runGameTestServer` again and assert, in tests that branch on `FmConfig.lust
 - [ ] **Step 7: Commit.**
 
 ```bash
-git add src/main/java/dev/visfox/forbiddenreforged/FmItems.java src/main/java/dev/visfox/forbiddenreforged/FmCreativeTab.java src/main/java/dev/visfox/forbiddenreforged/FmConfig.java tools/id_map.json tools/gen_resources.py tools/lang src/main/resources/assets/forbiddenmagic/textures/items docs/deviations.md
+git add src/main/java/dev/visfox/forbiddenreforged/FmItems.java src/main/java/dev/visfox/forbiddenreforged/FmCreativeTab.java src/main/java/dev/visfox/forbiddenreforged/FmConfig.java tools/id_map.json tools/gen_resources.py tools/lang src/main/resources/assets/forbiddenmagic/textures/item src/generated/resources/assets/forbiddenmagic/models src/generated/resources/assets/forbiddenmagic/items src/generated/resources/assets/forbiddenmagic/lang docs/deviations.md
 git commit -m "feat: port the shard items and the config"
 ```
 
@@ -1710,7 +1717,7 @@ git commit -m "feat: port the shard items and the config"
 
 `prideCount(looting, roll)` mirrors `2 + randy.nextInt(1 + looting)`, so `roll` is the value `nextInt` already returned; `rollWrath(bonus, roll)` mirrors `randy.nextInt(61) <= wrath`.
 
-- [ ] **Step 2: Implement `FmDrops`** as a direct translation of the handler, replacing `event.entityLiving instanceof IMob` with `entity instanceof Enemy`, `getCurrentEquippedItem()` with `entity.getMainHandItem()`, and the `EntityPigZombie` plus held envy shard check with `entity.getType() == EntityType.ZOMBIFIED_PIGLIN && entity.getMainHandItem().is(FmItems.DEADLY_SHARDS.get("envy").get())`. Keep the nether-only guard and the sloth count `1 + random.nextInt(3)`. Record each substitution in `docs/deviations.md`, because the loader changed the vocabulary, not the numbers.
+- [ ] **Step 2: Implement `FmDrops`** as a direct translation of the handler, replacing `event.entityLiving instanceof IMob` with `entity instanceof Enemy`, `getCurrentEquippedItem()` with `player.getMainHandItem()`, and the `EntityPigZombie` plus held envy shard check with `entity instanceof ZombifiedPiglin pig && pig.getMainHandItem().is(FmItems.DEADLY_SHARDS.get("envy").get())`. Keep the nether-only guard and the sloth count `1 + random.nextInt(3)`. Boss detection is explicit (`WitherBoss`, `EnderDragon`, `ThaumcraftBoss`) because `IBossDisplayData` is gone; wrath uses `ATTACK_DAMAGE - 1` plus the same enchantments and focus potency, greed uses looting plus focus treasure. The taint-shard block-break source is deferred to the full §5.1; M1 proves the chain on wrath. Record each substitution in `docs/deviations.md`, because the loader changed the vocabulary, not the numbers.
 
 - [ ] **Step 3: Run the tests, then verify the real path in game.** `cmd //c gradlew.bat runGameTestServer`, then kill a zombie in `runClient` with the game test namespace enabled and check the log line `forbiddenmagic: dropped forbiddenmagic:wrath_shard`. Add that log line as part of the implementation so the manual check has evidence.
 

@@ -1,0 +1,18 @@
+# Отступления от оригинала
+
+| Что | Оригинал 1.7.10 | Порт | Причина |
+|---|---|---|---|
+| Портал | `new ItemStack(Blocks.portal)` + `infernus` 4 | `minecraft:obsidian` + `infernus` 4 | у блока портала нет предметной формы; тег ставится на рамку |
+| `itemBacon` | OreDictionary `itemBacon` + `gula` 6 | не регистрируется | в хосте нет аналога; отмечено в `docs/roadmap.md` |
+| Теги FM-блоков и ресурсов | taint wood, star block, taint stone и т.д. | отложены до полного §5.1 | блоки и предметы ещё не портированы |
+| Теги осколков | meta 0-6 одного предмета | добавляются в Task 7 после регистрации id | порядок регистрации |
+| Метки сущностей | мутация `ThaumcraftApi.scanEntities` | `entityCopy` (merge) из патча 0002 | в API хоста не было слияния с базовыми метками |
+| `ItemMobCrystal` | предмет FM | портируется | ядровой предмет без сторонних импортов, нужен Клетке Гнева |
+| Осколок lust при `no_lust` | мета 4 переименовывается в `despair`, тег VOID 1 | предмет `lust_shard` остаётся зарегистрированным, но без тега, вне creative/дропа/рецептов | современный порт выражает отсутствие контента доступностью, а не переименованием |
+| Топор Череподрать | полноценный инструмент | зарегистрирован как обычный предмет | поведение инструмента входит в полный §5.1; рецепт замыкается уже в M1 |
+| `gluttony` 0/1/2 | рецепты Arcane Cake/Ring Food | поле конфига есть, рецепты — Task 10 | порядок инкрементов |
+| Бонус wrath | урон инструмента/меча + sharpness/power/fire aspect/flame/smite/bane | `ATTACK_DAMAGE - 1` + те же зачарования + focus potency | современный attribute API не даёт исходный modifier один-в-один; числа проверяются в GameTest границей |
+| Боссы для pride | `IBossDisplayData` | `WitherBoss`, `EnderDragon`, `ThaumcraftBoss` | явные типы вместо удалённого интерфейса |
+| Taint-осколок из tainted-блоков | `FMEventHandler` на блоке | отложен до полного §5.1 | M1 проверяет цепочку на wrath; источник taint добавится вместе с taint-деревом |
+| Иконка HELLFIRE | `new ItemStack(Blocks.fire)` | `minecraft:flint_and_steel` | у блока огня нет предметной формы |
+| Картинки в страницах исследований | `<IMG>forbidden:textures/misc/research.png...` | `<IMG>forbiddenmagic:textures/misc/research.png...` | namespace порта; файл скопирован в `assets/forbiddenmagic/textures/misc/` |

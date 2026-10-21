@@ -1,7 +1,14 @@
 package dev.visfox.forbiddenreforged.test;
 
+import io.netty.channel.embedded.EmbeddedChannel;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 import net.minecraft.core.Holder;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketFlow;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.FunctionGameTestInstance;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -9,6 +16,17 @@ import net.minecraft.gametest.framework.TestData;
 import net.minecraft.gametest.framework.TestEnvironmentDefinition;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.CommonListenerCookie;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.GameType;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModList;
@@ -16,20 +34,48 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.RegisterGameTestsEvent;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import dev.visfox.forbiddenreforged.ForbiddenMagic;
+import dev.visfox.forbiddenreforged.FmAspectTags;
 import dev.visfox.forbiddenreforged.FmAspects;
+import dev.visfox.forbiddenreforged.FmConfig;
+import dev.visfox.forbiddenreforged.FmCreativeTab;
+import dev.visfox.forbiddenreforged.FmDrops;
+import dev.visfox.forbiddenreforged.FmItems;
+import dev.visfox.forbiddenreforged.FmRecipes;
+import thaumcraft.crafting.InfusionRecipe;
+import thaumcraft.crafting.TcIngredient;
+import thaumcraft.crafting.TcRecipe;
+import thaumcraft.crafting.TcRecipes;
+import thaumcraft.crafting.TcStack;
 import thaumcraft.aspect.Aspect;
 import thaumcraft.aspect.AspectList;
+import thaumcraft.aspect.AspectRegistry;
+import thaumcraft.research.ResearchCategories;
+import thaumcraft.research.ResearchItem;
+import thaumcraft.research.ResearchManager;
 
 @EventBusSubscriber(modid = ForbiddenMagic.MODID)
 public final class FmGameTests {
     public static final DeferredRegister<Consumer<GameTestHelper>> FUNCTIONS =
         DeferredRegister.create(Registries.TEST_FUNCTION, ForbiddenMagic.MODID);
-    private static final String[] TESTS = {"mod_loads_and_host_is_present", "aspect_registry_keeps_builtin_order_and_combines", "addon_aspect_survives_client_sync"};
+    private static final String[] TESTS = {"mod_loads_and_host_is_present", "aspect_registry_keeps_builtin_order_and_combines", "addon_aspect_survives_client_sync", "sin_aspects_registered_with_own_textures", "sin_aspect_tags_merge_with_existing", "entity_aspect_tags_merge_with_existing", "every_tag_target_resolved", "shards_are_registered_with_seven_ids", "no_lust_removes_luxuria_items", "mob_killed_by_player_drops_wrath_shard", "boss_drops_pride_shards", "unattended_death_drops_sloth_shard", "forbidden_category_and_shard_entries_resolve", "skull_axe_infusion_recipe_matches_original", "every_ported_recipe_resolves_its_inputs", "chain_from_netherrack_to_wrath_shard"};
 
     static {
         FUNCTIONS.register(TESTS[0], () -> FmGameTests::modLoadsAndHostIsPresent);
         FUNCTIONS.register(TESTS[1], () -> FmGameTests::aspectRegistryKeepsBuiltinOrderAndCombines);
         FUNCTIONS.register(TESTS[2], () -> FmGameTests::addonAspectSurvivesClientSync);
+        FUNCTIONS.register(TESTS[3], () -> FmGameTests::sinAspectsRegisteredWithOwnTextures);
+        FUNCTIONS.register(TESTS[4], () -> FmGameTests::sinAspectTagsMergeWithExisting);
+        FUNCTIONS.register(TESTS[5], () -> FmGameTests::entityAspectTagsMergeWithExisting);
+        FUNCTIONS.register(TESTS[6], () -> FmGameTests::everyTagTargetResolved);
+        FUNCTIONS.register(TESTS[7], () -> FmGameTests::shardsAreRegisteredWithSevenIds);
+        FUNCTIONS.register(TESTS[8], () -> FmGameTests::noLustRemovesLuxuriaItems);
+        FUNCTIONS.register(TESTS[9], () -> FmGameTests::mobKilledByPlayerDropsWrathShard);
+        FUNCTIONS.register(TESTS[10], () -> FmGameTests::bossDropsPrideShards);
+        FUNCTIONS.register(TESTS[11], () -> FmGameTests::unattendedDeathDropsSlothShard);
+        FUNCTIONS.register(TESTS[12], () -> FmGameTests::forbiddenCategoryAndShardEntriesResolve);
+        FUNCTIONS.register(TESTS[13], () -> FmGameTests::skullAxeInfusionRecipeMatchesOriginal);
+        FUNCTIONS.register(TESTS[14], () -> FmGameTests::everyPortedRecipeResolvesItsInputs);
+        FUNCTIONS.register(TESTS[15], () -> FmGameTests::chainFromNetherrackToWrathShard);
     }
 
     private FmGameTests() {
@@ -71,15 +117,210 @@ public final class FmGameTests {
     }
 
     private static void addonAspectSurvivesClientSync(GameTestHelper helper) {
-        Aspect probe = FmAspects.PROBE;
-        helper.assertTrue(probe != null && probe.ordinal() >= Aspect.builtinCount(), "probe aspect must be an add-on aspect");
-        helper.assertValueEqual(Aspect.getAspect("probe"), probe, "by-tag lookup must find the add-on aspect");
-        AspectList list = new AspectList().add(probe, 3);
+        Aspect nether = FmAspects.NETHER;
+        helper.assertTrue(nether != null && nether.ordinal() >= Aspect.builtinCount(), "infernus must be an add-on aspect");
+        helper.assertValueEqual(Aspect.getAspect("infernus"), nether, "by-tag lookup must find the add-on aspect");
+        AspectList list = new AspectList().add(nether, 3);
         io.netty.buffer.ByteBuf buffer = io.netty.buffer.Unpooled.buffer();
         AspectList.STREAM_CODEC.encode(buffer, list);
         buffer.readerIndex(0);
         AspectList decoded = AspectList.STREAM_CODEC.decode(buffer);
-        helper.assertValueEqual(decoded.getAmount(probe), 3, "aspect amount must survive a network round trip");
+        helper.assertValueEqual(decoded.getAmount(nether), 3, "aspect amount must survive a network round trip");
         helper.succeed();
+    }
+
+    private static void sinAspectsRegisteredWithOwnTextures(GameTestHelper helper) {
+        helper.assertTrue(FmAspects.available(), "add-on aspect API missing: host too old");
+        Aspect[] sins = {FmAspects.NETHER, FmAspects.WRATH, FmAspects.ENVY, FmAspects.GLUTTONY, FmAspects.PRIDE, FmAspects.SLOTH};
+        for (Aspect aspect : sins) {
+            helper.assertTrue(aspect != null, "sin aspect must be registered");
+            helper.assertTrue(aspect.ordinal() >= Aspect.builtinCount(), aspect.getSerializedName() + " must be an add-on aspect");
+            helper.assertTrue(aspect.getImage().getNamespace().equals(ForbiddenMagic.MODID), aspect.getSerializedName() + " texture must live in the add-on namespace");
+        }
+        Aspect ira = Aspect.combine(Aspect.WEAPON, Aspect.FIRE);
+        helper.assertTrue(ira == FmAspects.WRATH, "combine(WEAPON, FIRE) must resolve to the add-on ira");
+        helper.assertTrue(Aspect.combine(Aspect.AIR, Aspect.FIRE) == Aspect.LIGHT, "adding ira must not disturb builtin combine");
+        int expected = FmConfig.lustDisabled() ? 6 : 7;
+        helper.assertValueEqual(Aspect.count(), Aspect.builtinCount() + expected, FmConfig.lustDisabled() ? "six add-on aspects: luxuria is switched off" : "exactly seven add-on aspects");
+        helper.succeed();
+    }
+
+    private static void sinAspectTagsMergeWithExisting(GameTestHelper helper) {
+        AspectRegistry active = AspectRegistry.active();
+        AspectList netherrack = active.getObjectTags(Items.NETHERRACK);
+        helper.assertTrue(netherrack != null && netherrack.getAmount(FmAspects.NETHER) >= 1, "netherrack must carry infernus");
+        helper.assertTrue(netherrack.getAmount(Aspect.FIRE) >= 1, "netherrack must keep its built-in fire aspect");
+        AspectList star = active.getObjectTags(Items.NETHER_STAR);
+        helper.assertTrue(star != null && star.getAmount(FmAspects.NETHER) >= 8 && star.getAmount(FmAspects.PRIDE) >= 8, "nether star must carry infernus 8 and superbia 8");
+        helper.succeed();
+    }
+
+    private static void entityAspectTagsMergeWithExisting(GameTestHelper helper) {
+        EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.getOptional(Identifier.parse("thaumcraft:brainy_zombie")).orElse(null);
+        helper.assertTrue(type != null, "brainy zombie type must exist");
+        Entity entity = type.create(helper.getLevel(), EntitySpawnReason.TRIGGERED);
+        helper.assertTrue(entity != null, "brainy zombie must be creatable");
+        AspectList tags = AspectRegistry.active().getEntityTags(entity);
+        helper.assertTrue(tags != null && tags.getAmount(Aspect.UNDEAD) >= 3, "brainy zombie keeps its base undead tag");
+        helper.assertTrue(tags.getAmount(FmAspects.WRATH) >= 3, "brainy zombie gains wrath from the FM table");
+        helper.succeed();
+    }
+
+    private static void everyTagTargetResolved(GameTestHelper helper) {
+        List<String> unresolved = new ArrayList<>();
+        for (String target : FmAspectTags.declaredTargets()) {
+            if (target.startsWith("entity:")) {
+                if (BuiltInRegistries.ENTITY_TYPE.getOptional(Identifier.parse(target.substring("entity:".length()))).isEmpty()) {
+                    unresolved.add(target);
+                }
+            } else if (target.startsWith("#")) {
+                TagKey<Item> tag = TagKey.create(Registries.ITEM, Identifier.parse(target.substring(1)));
+                boolean found = false;
+                for (Holder<Item> holder : BuiltInRegistries.ITEM.getTagOrEmpty(tag)) {
+                    found = true;
+                    break;
+                }
+                if (!found) {
+                    unresolved.add(target);
+                }
+            } else if (BuiltInRegistries.ITEM.getOptional(Identifier.parse(target)).isEmpty()) {
+                unresolved.add(target);
+            }
+        }
+        helper.assertTrue(unresolved.isEmpty(), "unresolved aspect tag targets: " + unresolved);
+        helper.succeed();
+    }
+
+    private static void shardsAreRegisteredWithSevenIds(GameTestHelper helper) {
+        helper.assertValueEqual(FmItems.DEADLY_SHARDS.size(), 7, "the original registers seven vices");
+        for (var entry : FmItems.DEADLY_SHARDS.entrySet()) {
+            if (entry.getKey().equals("lust") && FmConfig.lustDisabled()) {
+                continue;
+            }
+            Item item = entry.getValue().get();
+            helper.assertTrue(BuiltInRegistries.ITEM.getKey(item).getNamespace().equals(ForbiddenMagic.MODID), entry.getKey() + " must be namespaced to the port");
+            AspectList tags = AspectRegistry.active().getObjectTags(item);
+            helper.assertTrue(tags != null && tags.size() > 0, entry.getKey() + " must carry an aspect tag");
+        }
+        helper.succeed();
+    }
+
+    private static void noLustRemovesLuxuriaItems(GameTestHelper helper) {
+        ForbiddenMagic.LOGGER.info("no_lust gate: disabled={}, luxuria={}", FmConfig.lustDisabled(), Aspect.getAspect("luxuria"));
+        if (!FmConfig.lustDisabled()) {
+            helper.succeed();
+            return;
+        }
+        helper.assertTrue(FmAspects.LUST == null && Aspect.getAspect("luxuria") == null, "luxuria must be absent from the registry");
+        helper.assertFalse(FmCreativeTab.visible("lust"), "lust shard must not be offered to the creative tab");
+        AspectList tags = AspectRegistry.active().getObjectTags(FmItems.DEADLY_SHARDS.get("lust").get());
+        helper.assertTrue(tags == null || tags.size() == 0, "lust shard must carry no aspect tag");
+        helper.succeed();
+    }
+
+    private static void mobKilledByPlayerDropsWrathShard(GameTestHelper helper) {
+        helper.assertTrue(FmDrops.rollWrath(2, 2), "chance 2 must drop at roll 2, the original uses nextInt(61) <= wrath");
+        helper.assertFalse(FmDrops.rollWrath(2, 3), "chance 2 must not drop at roll 3");
+        helper.assertValueEqual(FmDrops.wrathShardStack().getItem(), FmItems.DEADLY_SHARDS.get("wrath").get(), "wrath drop must be the wrath shard");
+        helper.succeed();
+    }
+
+    private static void bossDropsPrideShards(GameTestHelper helper) {
+        helper.assertValueEqual(FmDrops.prideCount(0, 0), 2, "boss without looting drops two pride shards");
+        helper.assertValueEqual(FmDrops.prideCount(2, 1), 3, "looting 2 with roll 1 gives three");
+        helper.succeed();
+    }
+
+    private static void unattendedDeathDropsSlothShard(GameTestHelper helper) {
+        helper.assertTrue(FmDrops.rollSloth(3), "sloth drops on the last allowed roll");
+        helper.assertFalse(FmDrops.rollSloth(4), "sloth must not drop on roll 4");
+        helper.assertValueEqual(FmDrops.slothCount(0), 1, "minimum sloth drop is one");
+        helper.assertValueEqual(FmDrops.slothCount(2), 3, "maximum sloth drop is three");
+        helper.succeed();
+    }
+
+    private static void forbiddenCategoryAndShardEntriesResolve(GameTestHelper helper) {
+        ResearchItem shards = ResearchCategories.getResearch("NETHERSHARDS");
+        helper.assertTrue(shards != null, "NETHERSHARDS must be registered");
+        helper.assertValueEqual(shards.category(), "FORBIDDEN", "category");
+        helper.assertValueEqual(shards.column(), -8, "column");
+        helper.assertValueEqual(shards.row(), -5, "row");
+        helper.assertTrue(shards.isStub() && shards.isRound() && shards.isAutoUnlock(), "stub, round and auto-unlock as in the original");
+        ResearchItem axe = ResearchCategories.getResearch("SKULLAXE");
+        helper.assertTrue(axe != null, "SKULLAXE must be registered");
+        helper.assertTrue(axe.isConcealed(), "SKULLAXE must stay concealed");
+        helper.assertValueEqual(axe.warp(), 1, "SKULLAXE carries one warp point as in the original");
+        helper.assertValueEqual(axe.parents(), List.of("NETHERSHARDS", "THAUMIUM", "INFUSION"), "SKULLAXE parents, in order");
+        helper.succeed();
+    }
+
+    private static void skullAxeInfusionRecipeMatchesOriginal(GameTestHelper helper) {
+        InfusionRecipe recipe = (InfusionRecipe) TcRecipes.get("SKULLAXE");
+        helper.assertTrue(recipe != null, "skull axe recipe must be registered");
+        helper.assertValueEqual(recipe.instability(), 1, "instability");
+        helper.assertValueEqual(recipe.aspects().getAmount(FmAspects.WRATH), 8, "wrath cost");
+        helper.assertValueEqual(recipe.aspects().getAmount(Aspect.WEAPON), 8, "weapon cost");
+        helper.assertValueEqual(recipe.aspects().getAmount(FmAspects.NETHER), 8, "nether cost");
+        helper.assertValueEqual(recipe.components().size(), 4, "four components");
+        helper.succeed();
+    }
+
+    private static void everyPortedRecipeResolvesItsInputs(GameTestHelper helper) {
+        List<String> missing = new ArrayList<>();
+        for (TcRecipe recipe : TcRecipes.all()) {
+            if (!FmRecipes.OWN_KEYS.contains(recipe.key())) {
+                continue;
+            }
+            if (recipe instanceof InfusionRecipe infusion) {
+                checkIngredient(infusion.central(), missing);
+                infusion.components().forEach(ingredient -> checkIngredient(ingredient, missing));
+                checkStack(infusion.result(), missing);
+            }
+        }
+        helper.assertTrue(missing.isEmpty(), "unresolved recipe references: " + missing);
+        helper.succeed();
+    }
+
+    private static void checkIngredient(TcIngredient ingredient, List<String> missing) {
+        if (!ingredient.exists()) {
+            missing.add(ingredient.toString());
+        }
+    }
+
+    private static void checkStack(TcStack stack, List<String> missing) {
+        if (!stack.exists()) {
+            missing.add(stack.item().toString());
+        }
+    }
+
+    private static void chainFromNetherrackToWrathShard(GameTestHelper helper) {
+        ServerPlayer player = mockPlayer(helper);
+        AspectList tags = AspectRegistry.active().getObjectTags(Items.NETHERRACK);
+        helper.assertTrue(tags != null && tags.getAmount(FmAspects.NETHER) >= 1, "netherrack yields infernus");
+        helper.assertTrue(ResearchCategories.getResearch("NETHERSHARDS") != null, "shard research exists");
+        ResearchManager.grantAutoUnlock(player);
+        helper.assertTrue(ResearchManager.isComplete(player, "NETHERSHARDS"), "the auto-unlock entry is known after a join");
+        ItemStack wrathShard = new ItemStack(FmItems.DEADLY_SHARDS.get("wrath").get());
+        AspectList shardTags = AspectRegistry.active().getObjectTags(wrathShard.getItem());
+        helper.assertTrue(shardTags != null && shardTags.getAmount(FmAspects.WRATH) >= 2, "the wrath shard carries ira");
+        helper.assertTrue(FmDrops.rollWrath(2, 2), "the wrath drop rule fires at the original boundary");
+        InfusionRecipe skullAxe = (InfusionRecipe) TcRecipes.get("SKULLAXE");
+        helper.assertTrue(skullAxe != null, "skull axe recipe registered");
+        helper.assertValueEqual(skullAxe.aspects().getAmount(FmAspects.WRATH), 8, "skull axe costs eight ira");
+        helper.succeed();
+    }
+
+    private static ServerPlayer mockPlayer(GameTestHelper helper) {
+        ServerPlayer player = (ServerPlayer) helper.makeMockServerPlayer(GameType.SURVIVAL);
+        CommonListenerCookie cookie = CommonListenerCookie.createInitial(player.getGameProfile(), false);
+        Connection connection = new Connection(PacketFlow.SERVERBOUND);
+        new EmbeddedChannel(connection);
+        new ServerGamePacketListenerImpl(helper.getLevel().getServer(), connection, player, cookie) {
+            @Override
+            public void send(Packet<?> packet) {
+            }
+        };
+        player.connection.markClientLoaded();
+        return player;
     }
 }
