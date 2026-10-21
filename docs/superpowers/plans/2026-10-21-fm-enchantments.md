@@ -1080,9 +1080,10 @@ git commit -m "feat: add the five enchantment infusion recipes"
 
 **Files:**
 - Create: `src/main/java/dev/visfox/forbiddenreforged/FmTinkerer.java`
-- Create: `src/main/java/dev/visfox/forbiddenreforged/FmTinkererData.java`
 - Modify: `src/main/java/dev/visfox/forbiddenreforged/FmSetup.java`
 - Test: `tests/java/dev/visfox/forbiddenreforged/test/FmGameTests.java`
+
+TT не входит в compile classpath (All Rights Reserved, отдельная сборка), поэтому интеграция вызывает публичный API через reflection, как и оригинал. Сборка порта от TT не зависит.
 
 **Interfaces:**
 - Produces: `FmTinkerer.register()`, `FmTinkerer.registeredCount() → int`.
@@ -1115,7 +1116,15 @@ Expected: компиляция падает на `FmTinkerer`.
 ```java
 package dev.visfox.forbiddenreforged;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.util.Map;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.item.enchantment.Enchantment;
 import net.neoforged.fml.ModList;
+import thaumcraft.aspect.Aspect;
+import thaumcraft.aspect.AspectList;
 
 public final class FmTinkerer {
     private static int registered;
@@ -1128,8 +1137,18 @@ public final class FmTinkerer {
             return;
         }
         try {
-            registered = FmTinkererData.register();
-        } catch (NoClassDefFoundError error) {
+            Class<?> manager = Class.forName("thaumictinkerer.enchanting.EnchantmentManager");
+            Method data = manager.getMethod("data");
+            Map<Object, Object> costs = (Map<Object, Object>) data.invoke(null);
+            Class<?> datum = Class.forName("thaumictinkerer.enchanting.EnchantmentManager$Data");
+            Constructor<?> constructor = datum.getConstructor(ResourceKey.class, net.minecraft.resources.Identifier.class, boolean.class, AspectList.class, String.class);
+            add(costs, constructor, FmEnchantments.WRATH, "textures/misc/wrath.png", new AspectList().add(Aspect.ENTROPY, 6).add(Aspect.FIRE, 6), "WRATH");
+            add(costs, constructor, FmEnchantments.GREEDY, "textures/misc/greedy.png", new AspectList().add(Aspect.ENTROPY, 50).add(Aspect.EARTH, 30).add(Aspect.ORDER, 20), "GREEDY");
+            add(costs, constructor, FmEnchantments.EDUCATIONAL, "textures/misc/educational.png", new AspectList().add(Aspect.AIR, 10).add(Aspect.FIRE, 10).add(Aspect.WATER, 10).add(Aspect.EARTH, 10).add(Aspect.ORDER, 15).add(Aspect.ENTROPY, 15), "EDUCATIONAL");
+            add(costs, constructor, FmEnchantments.CONSUMING, "textures/misc/consuming.png", new AspectList().add(Aspect.ENTROPY, 10), "CONSUMING");
+            add(costs, constructor, FmEnchantments.CORRUPTING, "textures/misc/corrupting.png", new AspectList().add(Aspect.ENTROPY, 20).add(Aspect.FIRE, 15).add(Aspect.EARTH, 10), "CORRUPTING");
+            registered = 5;
+        } catch (ReflectiveOperationException | LinkageError error) {
             ForbiddenMagic.LOGGER.warn("Thaumic Tinkerer is present but its enchantment API is missing", error);
         }
     }
@@ -1137,35 +1156,10 @@ public final class FmTinkerer {
     public static int registeredCount() {
         return registered;
     }
-}
-```
 
-`FmTinkererData.java`:
-
-```java
-package dev.visfox.forbiddenreforged;
-
-import net.minecraft.world.item.enchantment.Enchantment;
-import net.minecraft.resources.ResourceKey;
-import thaumcraft.aspect.Aspect;
-import thaumcraft.aspect.AspectList;
-import thaumictinkerer.enchanting.EnchantmentManager;
-
-final class FmTinkererData {
-    private FmTinkererData() {
-    }
-
-    static int register() {
-        add(FmEnchantments.WRATH, "textures/misc/wrath.png", new AspectList().add(Aspect.ENTROPY, 6).add(Aspect.FIRE, 6), "WRATH");
-        add(FmEnchantments.GREEDY, "textures/misc/greedy.png", new AspectList().add(Aspect.ENTROPY, 50).add(Aspect.EARTH, 30).add(Aspect.ORDER, 20), "GREEDY");
-        add(FmEnchantments.EDUCATIONAL, "textures/misc/educational.png", new AspectList().add(Aspect.AIR, 10).add(Aspect.FIRE, 10).add(Aspect.WATER, 10).add(Aspect.EARTH, 10).add(Aspect.ORDER, 15).add(Aspect.ENTROPY, 15), "EDUCATIONAL");
-        add(FmEnchantments.CONSUMING, "textures/misc/consuming.png", new AspectList().add(Aspect.ENTROPY, 10), "CONSUMING");
-        add(FmEnchantments.CORRUPTING, "textures/misc/corrupting.png", new AspectList().add(Aspect.ENTROPY, 20).add(Aspect.FIRE, 15).add(Aspect.EARTH, 10), "CORRUPTING");
-        return 5;
-    }
-
-    private static void add(ResourceKey<Enchantment> key, String texture, AspectList aspects, String research) {
-        EnchantmentManager.data().put(key, new EnchantmentManager.Data(key, ForbiddenMagic.id(texture), false, aspects, research));
+    private static void add(Map<Object, Object> costs, Constructor<?> constructor, ResourceKey<Enchantment> key, String texture, AspectList aspects, String research) throws ReflectiveOperationException {
+        Object datum = constructor.newInstance(key, ForbiddenMagic.id(texture), false, aspects, research);
+        costs.put(key, datum);
     }
 }
 ```

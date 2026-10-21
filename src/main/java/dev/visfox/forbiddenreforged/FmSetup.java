@@ -16,6 +16,7 @@ public final class FmSetup {
             AddonAspects.init();
             FmRecipes.register();
             FmResearch.register();
+            FmTinkerer.register();
         });
     }
 }
