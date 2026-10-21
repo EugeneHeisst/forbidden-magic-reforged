@@ -29,6 +29,7 @@ import dev.visfox.forbiddenreforged.FmAspectTags;
 import dev.visfox.forbiddenreforged.FmAspects;
 import dev.visfox.forbiddenreforged.FmConfig;
 import dev.visfox.forbiddenreforged.FmCreativeTab;
+import dev.visfox.forbiddenreforged.FmDrops;
 import dev.visfox.forbiddenreforged.FmItems;
 import thaumcraft.aspect.Aspect;
 import thaumcraft.aspect.AspectList;
@@ -38,7 +39,7 @@ import thaumcraft.aspect.AspectRegistry;
 public final class FmGameTests {
     public static final DeferredRegister<Consumer<GameTestHelper>> FUNCTIONS =
         DeferredRegister.create(Registries.TEST_FUNCTION, ForbiddenMagic.MODID);
-    private static final String[] TESTS = {"mod_loads_and_host_is_present", "aspect_registry_keeps_builtin_order_and_combines", "addon_aspect_survives_client_sync", "sin_aspects_registered_with_own_textures", "sin_aspect_tags_merge_with_existing", "entity_aspect_tags_merge_with_existing", "every_tag_target_resolved", "shards_are_registered_with_seven_ids", "no_lust_removes_luxuria_items"};
+    private static final String[] TESTS = {"mod_loads_and_host_is_present", "aspect_registry_keeps_builtin_order_and_combines", "addon_aspect_survives_client_sync", "sin_aspects_registered_with_own_textures", "sin_aspect_tags_merge_with_existing", "entity_aspect_tags_merge_with_existing", "every_tag_target_resolved", "shards_are_registered_with_seven_ids", "no_lust_removes_luxuria_items", "mob_killed_by_player_drops_wrath_shard", "boss_drops_pride_shards", "unattended_death_drops_sloth_shard"};
 
     static {
         FUNCTIONS.register(TESTS[0], () -> FmGameTests::modLoadsAndHostIsPresent);
@@ -50,6 +51,9 @@ public final class FmGameTests {
         FUNCTIONS.register(TESTS[6], () -> FmGameTests::everyTagTargetResolved);
         FUNCTIONS.register(TESTS[7], () -> FmGameTests::shardsAreRegisteredWithSevenIds);
         FUNCTIONS.register(TESTS[8], () -> FmGameTests::noLustRemovesLuxuriaItems);
+        FUNCTIONS.register(TESTS[9], () -> FmGameTests::mobKilledByPlayerDropsWrathShard);
+        FUNCTIONS.register(TESTS[10], () -> FmGameTests::bossDropsPrideShards);
+        FUNCTIONS.register(TESTS[11], () -> FmGameTests::unattendedDeathDropsSlothShard);
     }
 
     private FmGameTests() {
@@ -189,6 +193,27 @@ public final class FmGameTests {
         helper.assertFalse(FmCreativeTab.visible("lust"), "lust shard must not be offered to the creative tab");
         AspectList tags = AspectRegistry.active().getObjectTags(FmItems.DEADLY_SHARDS.get("lust").get());
         helper.assertTrue(tags == null || tags.size() == 0, "lust shard must carry no aspect tag");
+        helper.succeed();
+    }
+
+    private static void mobKilledByPlayerDropsWrathShard(GameTestHelper helper) {
+        helper.assertTrue(FmDrops.rollWrath(2, 2), "chance 2 must drop at roll 2, the original uses nextInt(61) <= wrath");
+        helper.assertFalse(FmDrops.rollWrath(2, 3), "chance 2 must not drop at roll 3");
+        helper.assertValueEqual(FmDrops.wrathShardStack().getItem(), FmItems.DEADLY_SHARDS.get("wrath").get(), "wrath drop must be the wrath shard");
+        helper.succeed();
+    }
+
+    private static void bossDropsPrideShards(GameTestHelper helper) {
+        helper.assertValueEqual(FmDrops.prideCount(0, 0), 2, "boss without looting drops two pride shards");
+        helper.assertValueEqual(FmDrops.prideCount(2, 1), 3, "looting 2 with roll 1 gives three");
+        helper.succeed();
+    }
+
+    private static void unattendedDeathDropsSlothShard(GameTestHelper helper) {
+        helper.assertTrue(FmDrops.rollSloth(3), "sloth drops on the last allowed roll");
+        helper.assertFalse(FmDrops.rollSloth(4), "sloth must not drop on roll 4");
+        helper.assertValueEqual(FmDrops.slothCount(0), 1, "minimum sloth drop is one");
+        helper.assertValueEqual(FmDrops.slothCount(2), 3, "maximum sloth drop is three");
         helper.succeed();
     }
 }

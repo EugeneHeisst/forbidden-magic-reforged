@@ -18,6 +18,7 @@ public final class ForbiddenMagic {
         FmAspects.init();
         FmAspectTags.register();
         FmItems.ITEMS.register(modEventBus);
+        FmDrops.register();
         FmGameTests.register(modEventBus);
     }
 
