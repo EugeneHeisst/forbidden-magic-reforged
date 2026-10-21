@@ -31,7 +31,10 @@ public final class FmTinkerer {
             add(costs, constructor, FmEnchantments.EDUCATIONAL, "textures/misc/educational.png", new AspectList().add(Aspect.AIR, 10).add(Aspect.FIRE, 10).add(Aspect.WATER, 10).add(Aspect.EARTH, 10).add(Aspect.ORDER, 15).add(Aspect.ENTROPY, 15), "EDUCATIONAL");
             add(costs, constructor, FmEnchantments.CONSUMING, "textures/misc/consuming.png", new AspectList().add(Aspect.ENTROPY, 10), "CONSUMING");
             add(costs, constructor, FmEnchantments.CORRUPTING, "textures/misc/corrupting.png", new AspectList().add(Aspect.ENTROPY, 20).add(Aspect.FIRE, 15).add(Aspect.EARTH, 10), "CORRUPTING");
-            registered = 5;
+            add(costs, constructor, FmEnchantments.CLUSTER, "textures/misc/lucrative.png", new AspectList().add(Aspect.FIRE, 5).add(Aspect.EARTH, 5).add(Aspect.ORDER, 5), "CLUSTER");
+            add(costs, constructor, FmEnchantments.IMPACT, "textures/misc/impact.png", new AspectList().add(Aspect.ENTROPY, 30).add(Aspect.EARTH, 30), "IMPACT");
+            add(costs, constructor, FmEnchantments.VOIDTOUCHED, "textures/misc/voidtouched.png", new AspectList().add(Aspect.ENTROPY, 70), "VOIDTOUCHED");
+            registered = 8;
         } catch (ReflectiveOperationException | LinkageError error) {
             ForbiddenMagic.LOGGER.warn("Thaumic Tinkerer is present but its enchantment API is missing", error);
         }

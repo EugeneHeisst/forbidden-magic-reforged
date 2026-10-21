@@ -450,7 +450,7 @@ public final class FmGameTests {
         if (!loaded) {
             helper.assertValueEqual(FmTinkerer.registeredCount(), 0, "no TT means no registered costs");
         } else {
-            helper.assertValueEqual(FmTinkerer.registeredCount(), 5, "TT receives five enchantment costs");
+            helper.assertValueEqual(FmTinkerer.registeredCount(), 8, "TT receives eight enchantment costs");
         }
         helper.succeed();
     }
