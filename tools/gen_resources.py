@@ -121,11 +121,37 @@ def generate_blocks() -> None:
     })
     print(f"blocks: {len(BLOCK_TEXTURES) + 1} models and blockstates")
 
+
+PLANT_MODELS = {
+    "taint_leaves": ("cube_all", "taint_leaves"),
+    "taint_sapling": ("cross", "sapling_taint"),
+}
+
+
+def generate_plants() -> None:
+    for name, (parent, texture) in sorted(PLANT_MODELS.items()):
+        write_json(ASSETS / "blockstates" / f"{name}.json", {"variants": {"": {"model": f"forbiddenmagic:block/{name}"}}})
+        model = {
+            "parent": f"minecraft:block/{parent}",
+            "render_type": "minecraft:cutout",
+        }
+        if parent == "cube_all":
+            model["textures"] = {"all": f"forbiddenmagic:block/{texture}"}
+        else:
+            model["textures"] = {"cross": f"forbiddenmagic:block/{texture}"}
+        write_json(ASSETS / "models" / "block" / f"{name}.json", model)
+        write_json(ASSETS / "models" / "item" / f"{name}.json", {"parent": f"forbiddenmagic:block/{name}"})
+        write_json(ASSETS / "items" / f"{name}.json", {
+            "model": {"type": "minecraft:model", "model": f"forbiddenmagic:block/{name}"},
+        })
+    print(f"plants: {len(PLANT_MODELS)} models and blockstates")
+
 def main() -> int:
     generate_lang()
     generate_items()
     generate_morph_items()
     generate_blocks()
+    generate_plants()
     return 0
 
 

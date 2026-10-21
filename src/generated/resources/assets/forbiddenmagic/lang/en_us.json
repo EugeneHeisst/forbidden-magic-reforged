@@ -1,7 +1,9 @@
 {
   "block.forbiddenmagic.star_block": "Nether Star Block",
+  "block.forbiddenmagic.taint_leaves": "Tainted Leaves",
   "block.forbiddenmagic.taint_log": "Tainted Log",
   "block.forbiddenmagic.taint_planks": "Tainted Planks",
+  "block.forbiddenmagic.taint_sapling": "Tainted Sapling",
   "block.forbiddenmagic.taint_stone_brick": "Tainted Stone Bricks",
   "block.forbiddenmagic.taint_stone_smooth": "Tainted Stone",
   "enchantment.forbiddenmagic.cluster": "Fiery Core",

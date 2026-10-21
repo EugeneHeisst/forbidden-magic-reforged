@@ -53,6 +53,7 @@ import dev.visfox.forbiddenreforged.FmRecipes;
 import dev.visfox.forbiddenreforged.FmTinkerer;
 import dev.visfox.forbiddenreforged.MorphState;
 import dev.visfox.forbiddenreforged.MorphToolItem;
+import dev.visfox.forbiddenreforged.TaintTree;
 import thaumcraft.crafting.InfusionRecipe;
 import thaumcraft.crafting.InfusionEnchantmentRecipe;
 import thaumcraft.crafting.TcIngredient;
@@ -70,7 +71,7 @@ import thaumcraft.research.ResearchManager;
 public final class FmGameTests {
     public static final DeferredRegister<Consumer<GameTestHelper>> FUNCTIONS =
         DeferredRegister.create(Registries.TEST_FUNCTION, ForbiddenMagic.MODID);
-    private static final String[] TESTS = {"mod_loads_and_host_is_present", "aspect_registry_keeps_builtin_order_and_combines", "addon_aspect_survives_client_sync", "sin_aspects_registered_with_own_textures", "sin_aspect_tags_merge_with_existing", "entity_aspect_tags_merge_with_existing", "every_tag_target_resolved", "shards_are_registered_with_seven_ids", "no_lust_removes_luxuria_items", "mob_killed_by_player_drops_wrath_shard", "boss_drops_pride_shards", "unattended_death_drops_sloth_shard", "forbidden_category_and_shard_entries_resolve", "skull_axe_infusion_recipe_matches_original", "every_ported_recipe_resolves_its_inputs", "chain_from_netherrack_to_wrath_shard", "enchantments_resolve_with_expected_shape", "emerald_fragment_is_registered", "consuming_destroys_garbage", "corrupting_yields_sin_shards", "greedy_drops_match_kills", "educational_multiplies_experience", "wrath_adds_damage", "enchantment_research_present", "enchantment_recipes_cover_five", "tinkerer_integration_is_optional", "morph_tools_are_registered", "morph_phase_rotates_sets", "impact_covers_a_three_by_three_plane", "voidtouched_repairs_and_warps", "morph_enchantments_and_exclusivity", "cluster_replaces_drops_with_clusters", "morph_research_entries_present", "morph_recipes_match_the_original", "taint_material_blocks_are_registered", "taint_blocks_carry_tool_tags", "materials_have_crafting_recipes", "blocks_drop_themselves"};
+    private static final String[] TESTS = {"mod_loads_and_host_is_present", "aspect_registry_keeps_builtin_order_and_combines", "addon_aspect_survives_client_sync", "sin_aspects_registered_with_own_textures", "sin_aspect_tags_merge_with_existing", "entity_aspect_tags_merge_with_existing", "every_tag_target_resolved", "shards_are_registered_with_seven_ids", "no_lust_removes_luxuria_items", "mob_killed_by_player_drops_wrath_shard", "boss_drops_pride_shards", "unattended_death_drops_sloth_shard", "forbidden_category_and_shard_entries_resolve", "skull_axe_infusion_recipe_matches_original", "every_ported_recipe_resolves_its_inputs", "chain_from_netherrack_to_wrath_shard", "enchantments_resolve_with_expected_shape", "emerald_fragment_is_registered", "consuming_destroys_garbage", "corrupting_yields_sin_shards", "greedy_drops_match_kills", "educational_multiplies_experience", "wrath_adds_damage", "enchantment_research_present", "enchantment_recipes_cover_five", "tinkerer_integration_is_optional", "morph_tools_are_registered", "morph_phase_rotates_sets", "impact_covers_a_three_by_three_plane", "voidtouched_repairs_and_warps", "morph_enchantments_and_exclusivity", "cluster_replaces_drops_with_clusters", "morph_research_entries_present", "morph_recipes_match_the_original", "taint_material_blocks_are_registered", "taint_blocks_carry_tool_tags", "materials_have_crafting_recipes", "blocks_drop_themselves", "taint_sapling_grows_a_tree"};
 
     static {
         FUNCTIONS.register(TESTS[0], () -> FmGameTests::modLoadsAndHostIsPresent);
@@ -111,6 +112,7 @@ public final class FmGameTests {
         FUNCTIONS.register(TESTS[35], () -> FmGameTests::taintBlocksCarryToolTags);
         FUNCTIONS.register(TESTS[36], () -> FmGameTests::materialsHaveCraftingRecipes);
         FUNCTIONS.register(TESTS[37], () -> FmGameTests::blocksDropThemselves);
+        FUNCTIONS.register(TESTS[38], () -> FmGameTests::taintSaplingGrowsATree);
     }
 
     private FmGameTests() {
@@ -603,6 +605,25 @@ public final class FmGameTests {
             var drops = Block.getDrops(level.getBlockState(pos), level, pos, null);
             helper.assertTrue(drops.stream().anyMatch(stack -> stack.is(block.asItem())), BuiltInRegistries.BLOCK.getKey(block) + " must drop itself");
         }
+        helper.succeed();
+    }
+
+    private static void taintSaplingGrowsATree(GameTestHelper helper) {
+        BlockPos soil = new BlockPos(2, 4, 2);
+        helper.getLevel().setBlockAndUpdate(soil, net.minecraft.world.level.block.Blocks.DIRT.defaultBlockState());
+        BlockPos sapling = soil.above();
+        helper.getLevel().setBlockAndUpdate(sapling, FmBlocks.TAINT_SAPLING.get().defaultBlockState());
+        boolean grown = TaintTree.grow(helper.getLevel(), sapling, RandomSource.create(3L));
+        helper.assertTrue(grown, "tree must grow on open ground");
+        helper.assertTrue(helper.getLevel().getBlockState(sapling).is(FmBlocks.TAINT_LOG.get()), "trunk replaces the sapling");
+        boolean canopy = false;
+        for (BlockPos cursor : BlockPos.betweenClosed(sapling.above(2).offset(-2, 0, -2), sapling.above(7).offset(2, 0, 2))) {
+            if (helper.getLevel().getBlockState(cursor).is(FmBlocks.TAINT_LEAVES.get())) {
+                canopy = true;
+                break;
+            }
+        }
+        helper.assertTrue(canopy, "canopy sits above the trunk");
         helper.succeed();
     }
 
