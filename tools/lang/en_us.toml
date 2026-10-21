@@ -39,3 +39,10 @@ SKULLAXE = "Off with their heads!"
 
 [forbiddenmagic.research_page.SKULLAXE]
 1 = "Some monsters just really boil your blood. Skeletons! Always clacking around and using you for target practice. Or those Creepers! They just creep around blowing things up like they own the place! You wish you could just chop all their smug heads off and place them on pikes.<BR><BR>Fortunately, you've discovered an item that will let you do just that.  The Axe of the Skulltaker has a chance to remove the heads of monsters it slays. It might even work on other humans! Unfortunately, the infusion leaves the axe far too bloodthirsty to effectively cleave through boring plant matter."
+
+[enchantment.forbiddenmagic]
+wrath = "Wrath"
+greedy = "Capitalist"
+consuming = "Consuming"
+educational = "Educational"
+corrupting = "Corrupting"
