@@ -146,12 +146,46 @@ def generate_plants() -> None:
         })
     print(f"plants: {len(PLANT_MODELS)} models and blockstates")
 
+
+def generate_umbral_plants() -> None:
+    write_json(ASSETS / "blockstates" / "umbral_rose.json", {"variants": {"": {"model": "forbiddenmagic:block/umbral_rose"}}})
+    write_json(ASSETS / "models" / "block" / "umbral_rose.json", {
+        "parent": "minecraft:block/cross",
+        "render_type": "minecraft:cutout",
+        "textures": {"cross": "forbiddenmagic:block/flower_black"},
+    })
+    write_json(ASSETS / "models" / "item" / "umbral_rose.json", {"parent": "forbiddenmagic:block/umbral_rose"})
+    write_json(ASSETS / "items" / "umbral_rose.json", {
+        "model": {"type": "minecraft:model", "model": "forbiddenmagic:block/umbral_rose"},
+    })
+    write_json(ASSETS / "blockstates" / "umbral_rose_bush.json", {
+        "variants": {
+            "half=lower": {"model": "forbiddenmagic:block/umbral_rose_bush_bottom"},
+            "half=upper": {"model": "forbiddenmagic:block/umbral_rose_bush_top"},
+        }
+    })
+    for half, texture in (("bottom", "umbral_rose_bottom"), ("top", "umbral_rose_top")):
+        write_json(ASSETS / "models" / "block" / f"umbral_rose_bush_{half}.json", {
+            "parent": "minecraft:block/cross",
+            "render_type": "minecraft:cutout",
+            "textures": {"cross": f"forbiddenmagic:block/{texture}"},
+        })
+    write_json(ASSETS / "models" / "item" / "umbral_rose_bush.json", {
+        "parent": "minecraft:item/generated",
+        "textures": {"layer0": "forbiddenmagic:block/umbral_rose_top"},
+    })
+    write_json(ASSETS / "items" / "umbral_rose_bush.json", {
+        "model": {"type": "minecraft:model", "model": "forbiddenmagic:item/umbral_rose_bush"},
+    })
+    print("umbral plants: 4 models and 2 blockstates")
+
 def main() -> int:
     generate_lang()
     generate_items()
     generate_morph_items()
     generate_blocks()
     generate_plants()
+    generate_umbral_plants()
     return 0
 
 

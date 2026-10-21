@@ -36,5 +36,9 @@ public final class FmCreativeTab {
         event.accept(FmBlocks.TAINT_STONE_SMOOTH.get().asItem());
         event.accept(FmBlocks.TAINT_STONE_BRICK.get().asItem());
         event.accept(FmBlocks.STAR_BLOCK.get().asItem());
+        event.accept(FmBlocks.TAINT_LEAVES.get().asItem());
+        event.accept(FmBlocks.TAINT_SAPLING.get().asItem());
+        event.accept(FmBlocks.UMBRAL_ROSE.get().asItem());
+        event.accept(FmBlocks.UMBRAL_ROSE_BUSH.get().asItem());
     }
 }
