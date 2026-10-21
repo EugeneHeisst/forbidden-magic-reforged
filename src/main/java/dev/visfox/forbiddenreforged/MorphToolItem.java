@@ -1,6 +1,8 @@
 package dev.visfox.forbiddenreforged;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -15,8 +17,13 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import thaumcraft.item.gear.WarpingGear;
 import thaumcraft.registry.ModSounds;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MorphToolItem extends Item implements WarpingGear {
     public MorphToolItem(Properties properties) {
@@ -63,5 +70,55 @@ public class MorphToolItem extends Item implements WarpingGear {
     @Override
     public int getWarp(ItemStack stack, Player player) {
         return 0;
+    }
+
+    public static List<BlockPos> impactArea(Direction facing, BlockPos origin) {
+        Direction.Axis axis = facing.getAxis();
+        List<BlockPos> area = new ArrayList<>(9);
+        for (int first = -1; first <= 1; first++) {
+            for (int second = -1; second <= 1; second++) {
+                area.add(switch (axis) {
+                    case Y -> origin.offset(first, 0, second);
+                    case X -> origin.offset(0, first, second);
+                    case Z -> origin.offset(first, second, 0);
+                });
+            }
+        }
+        return area;
+    }
+
+    public static Direction dominantDirection(Vec3 look) {
+        double x = Math.abs(look.x);
+        double y = Math.abs(look.y);
+        double z = Math.abs(look.z);
+        if (y >= x && y >= z) {
+            return look.y >= 0 ? Direction.UP : Direction.DOWN;
+        }
+        if (x >= z) {
+            return look.x >= 0 ? Direction.EAST : Direction.WEST;
+        }
+        return look.z >= 0 ? Direction.SOUTH : Direction.NORTH;
+    }
+
+    @Override
+    public boolean mineBlock(ItemStack stack, Level level, BlockState state, BlockPos pos, LivingEntity owner) {
+        if (!level.isClientSide()
+            && FmEnchantments.level(level.registryAccess(), stack, FmEnchantments.IMPACT) > 0
+            && stack.isCorrectToolForDrops(state)) {
+            Direction facing = dominantDirection(owner.getLookAngle());
+            for (BlockPos target : impactArea(facing, pos)) {
+                if (target.equals(pos)) {
+                    continue;
+                }
+                BlockState neighbour = level.getBlockState(target);
+                if (neighbour.isAir() || !stack.isCorrectToolForDrops(neighbour)
+                    || neighbour.getDestroySpeed(level, target) < 0.0F) {
+                    continue;
+                }
+                stack.hurtAndBreak(1, owner, EquipmentSlot.MAINHAND);
+                level.destroyBlock(target, true, owner, 512);
+            }
+        }
+        return super.mineBlock(stack, level, state, pos, owner);
     }
 }

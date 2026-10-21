@@ -4,6 +4,8 @@ import io.netty.channel.embedded.EmbeddedChannel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.Connection;
@@ -48,6 +50,7 @@ import dev.visfox.forbiddenreforged.FmItems;
 import dev.visfox.forbiddenreforged.FmRecipes;
 import dev.visfox.forbiddenreforged.FmTinkerer;
 import dev.visfox.forbiddenreforged.MorphState;
+import dev.visfox.forbiddenreforged.MorphToolItem;
 import thaumcraft.crafting.InfusionRecipe;
 import thaumcraft.crafting.InfusionEnchantmentRecipe;
 import thaumcraft.crafting.TcIngredient;
@@ -65,7 +68,7 @@ import thaumcraft.research.ResearchManager;
 public final class FmGameTests {
     public static final DeferredRegister<Consumer<GameTestHelper>> FUNCTIONS =
         DeferredRegister.create(Registries.TEST_FUNCTION, ForbiddenMagic.MODID);
-    private static final String[] TESTS = {"mod_loads_and_host_is_present", "aspect_registry_keeps_builtin_order_and_combines", "addon_aspect_survives_client_sync", "sin_aspects_registered_with_own_textures", "sin_aspect_tags_merge_with_existing", "entity_aspect_tags_merge_with_existing", "every_tag_target_resolved", "shards_are_registered_with_seven_ids", "no_lust_removes_luxuria_items", "mob_killed_by_player_drops_wrath_shard", "boss_drops_pride_shards", "unattended_death_drops_sloth_shard", "forbidden_category_and_shard_entries_resolve", "skull_axe_infusion_recipe_matches_original", "every_ported_recipe_resolves_its_inputs", "chain_from_netherrack_to_wrath_shard", "enchantments_resolve_with_expected_shape", "emerald_fragment_is_registered", "consuming_destroys_garbage", "corrupting_yields_sin_shards", "greedy_drops_match_kills", "educational_multiplies_experience", "wrath_adds_damage", "enchantment_research_present", "enchantment_recipes_cover_five", "tinkerer_integration_is_optional", "morph_tools_are_registered", "morph_phase_rotates_sets"};
+    private static final String[] TESTS = {"mod_loads_and_host_is_present", "aspect_registry_keeps_builtin_order_and_combines", "addon_aspect_survives_client_sync", "sin_aspects_registered_with_own_textures", "sin_aspect_tags_merge_with_existing", "entity_aspect_tags_merge_with_existing", "every_tag_target_resolved", "shards_are_registered_with_seven_ids", "no_lust_removes_luxuria_items", "mob_killed_by_player_drops_wrath_shard", "boss_drops_pride_shards", "unattended_death_drops_sloth_shard", "forbidden_category_and_shard_entries_resolve", "skull_axe_infusion_recipe_matches_original", "every_ported_recipe_resolves_its_inputs", "chain_from_netherrack_to_wrath_shard", "enchantments_resolve_with_expected_shape", "emerald_fragment_is_registered", "consuming_destroys_garbage", "corrupting_yields_sin_shards", "greedy_drops_match_kills", "educational_multiplies_experience", "wrath_adds_damage", "enchantment_research_present", "enchantment_recipes_cover_five", "tinkerer_integration_is_optional", "morph_tools_are_registered", "morph_phase_rotates_sets", "impact_covers_a_three_by_three_plane", "voidtouched_repairs_and_warps"};
 
     static {
         FUNCTIONS.register(TESTS[0], () -> FmGameTests::modLoadsAndHostIsPresent);
@@ -96,6 +99,8 @@ public final class FmGameTests {
         FUNCTIONS.register(TESTS[25], () -> FmGameTests::tinkererIntegrationIsOptional);
         FUNCTIONS.register(TESTS[26], () -> FmGameTests::morphToolsAreRegistered);
         FUNCTIONS.register(TESTS[27], () -> FmGameTests::morphPhaseRotatesSets);
+        FUNCTIONS.register(TESTS[28], () -> FmGameTests::impactCoversAThreeByThreePlane);
+        FUNCTIONS.register(TESTS[29], () -> FmGameTests::voidtouchedRepairsAndWarps);
     }
 
     private FmGameTests() {
@@ -465,6 +470,23 @@ public final class FmGameTests {
         MorphState wrapped = state.store(ItemEnchantments.EMPTY, "Smite").advance().advance();
         helper.assertValueEqual(wrapped.phase(), 0, "three phases wrap back to zero");
         helper.assertValueEqual(wrapped.currentName(), "Sharpness", "the first slot name returns");
+        helper.succeed();
+    }
+
+    private static void impactCoversAThreeByThreePlane(GameTestHelper helper) {
+        java.util.List<BlockPos> area = MorphToolItem.impactArea(Direction.UP, BlockPos.ZERO);
+        helper.assertValueEqual(area.size(), 9, "impact covers nine blocks");
+        helper.assertTrue(area.contains(new BlockPos(-1, 0, 1)) && area.contains(new BlockPos(1, 0, -1)), "impact stays in the horizontal plane");
+        helper.assertTrue(MorphToolItem.impactArea(Direction.EAST, BlockPos.ZERO).contains(new BlockPos(0, 1, 1)), "east impact uses the vertical plane");
+        helper.assertValueEqual(MorphToolItem.dominantDirection(new net.minecraft.world.phys.Vec3(0.2, -3.0, 0.1)), Direction.DOWN, "look direction maps to a face");
+        helper.succeed();
+    }
+
+    private static void voidtouchedRepairsAndWarps(GameTestHelper helper) {
+        ItemStack stack = new ItemStack(FmItems.MORPH_PICKAXE.get());
+        ServerPlayer player = mockPlayer(helper);
+        MorphToolItem item = (MorphToolItem) stack.getItem();
+        helper.assertValueEqual(item.getWarp(stack, player), 0, "plain morph tool carries no warp");
         helper.succeed();
     }
 
