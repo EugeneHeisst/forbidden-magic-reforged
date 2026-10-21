@@ -12,6 +12,9 @@ public final class FmSetup {
 
     @SubscribeEvent
     static void commonSetup(FMLCommonSetupEvent event) {
-        event.enqueueWork(AddonAspects::init);
+        event.enqueueWork(() -> {
+            AddonAspects.init();
+            FmResearch.register();
+        });
     }
 }

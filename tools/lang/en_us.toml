@@ -17,3 +17,25 @@ sloth_shard = "Sloth Shard"
 greed_shard = "Greed Shard"
 gluttony_shard = "Gluttony Shard"
 skull_axe = "Axe of the Skulltaker"
+
+[tc.research_name]
+NETHERSHARDS = "Nether Shards"
+HELLFIRE = "Lord of Hellfire"
+SKULLAXE = "Axe of the Skulltaker"
+
+[tc.research_text]
+NETHERSHARDS = "Aim to misbehave."
+HELLFIRE = "Never get stranded again"
+SKULLAXE = "Off with their heads!"
+
+[forbiddenmagic.research_page.NETHERSHARDS]
+1 = "Strange energies swirl through the Nether. On occasion, they have been known to solidify into crystal shards when certain sympathetic events occur."
+2 = "These crystals are imbued with different vices and have many uses for more unscrupulous Thaumaturges.<BR>There are seven documented types of nether shard, each attuned to a different \"deadly sin.\"<BR><BR><IMG>forbiddenmagic:textures/misc/research.png:0:0:111:16:1</IMG><BR>"
+2b = "These crystals are imbued with different vices and have many uses for more unscrupulous Thaumaturges.<BR>There are six documented types of nether shard, each attuned to a different \"deadly sin.\"<BR><BR><IMG>forbiddenmagic:textures/misc/research.png:0:16:95:16:1</IMG><BR>"
+3 = "Wrath Shards crystallize around acts of violence. The more excessive the physical force used, the more likely it is for a Wrath Shard to appear.<BR><BR>Sloth Shards congeal when proxies and accidents are used to collect resources without effort.<BR><BR>Envy Shards are taken from those who have them by those that covet them.<BR><BR>Pride Shards materialize when a creature of truly great power is cut down to size.<BR><BR>Gluttony Shards crystallize when someone feasts.<BR><BR>Greed Shards appear when enchantment is used to turn a profit."
+
+[forbiddenmagic.research_page.HELLFIRE]
+1 = "Getting stranded in the Nether is the worst. You go through all the trouble of grabbing what you need, but before you can go home, some stupid ghast decides to rain on your parade by blasting the portal shut. Sure, this can be amended by carrying a flint and steel around, but who actually walks around with those things?<BR><BR>You've discovered a way to use vis in your wand to light fires on certain materials.  Right click with a focus-less wand in your hand on the top of netherrack or obsidian to light a flame using some Ignis from your wand."
+
+[forbiddenmagic.research_page.SKULLAXE]
+1 = "Some monsters just really boil your blood. Skeletons! Always clacking around and using you for target practice. Or those Creepers! They just creep around blowing things up like they own the place! You wish you could just chop all their smug heads off and place them on pikes.<BR><BR>Fortunately, you've discovered an item that will let you do just that.  The Axe of the Skulltaker has a chance to remove the heads of monsters it slays. It might even work on other humans! Unfortunately, the infusion leaves the axe far too bloodthirsty to effectively cleave through boring plant matter."

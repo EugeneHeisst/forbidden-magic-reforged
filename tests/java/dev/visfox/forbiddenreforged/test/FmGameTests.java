@@ -34,12 +34,14 @@ import dev.visfox.forbiddenreforged.FmItems;
 import thaumcraft.aspect.Aspect;
 import thaumcraft.aspect.AspectList;
 import thaumcraft.aspect.AspectRegistry;
+import thaumcraft.research.ResearchCategories;
+import thaumcraft.research.ResearchItem;
 
 @EventBusSubscriber(modid = ForbiddenMagic.MODID)
 public final class FmGameTests {
     public static final DeferredRegister<Consumer<GameTestHelper>> FUNCTIONS =
         DeferredRegister.create(Registries.TEST_FUNCTION, ForbiddenMagic.MODID);
-    private static final String[] TESTS = {"mod_loads_and_host_is_present", "aspect_registry_keeps_builtin_order_and_combines", "addon_aspect_survives_client_sync", "sin_aspects_registered_with_own_textures", "sin_aspect_tags_merge_with_existing", "entity_aspect_tags_merge_with_existing", "every_tag_target_resolved", "shards_are_registered_with_seven_ids", "no_lust_removes_luxuria_items", "mob_killed_by_player_drops_wrath_shard", "boss_drops_pride_shards", "unattended_death_drops_sloth_shard"};
+    private static final String[] TESTS = {"mod_loads_and_host_is_present", "aspect_registry_keeps_builtin_order_and_combines", "addon_aspect_survives_client_sync", "sin_aspects_registered_with_own_textures", "sin_aspect_tags_merge_with_existing", "entity_aspect_tags_merge_with_existing", "every_tag_target_resolved", "shards_are_registered_with_seven_ids", "no_lust_removes_luxuria_items", "mob_killed_by_player_drops_wrath_shard", "boss_drops_pride_shards", "unattended_death_drops_sloth_shard", "forbidden_category_and_shard_entries_resolve"};
 
     static {
         FUNCTIONS.register(TESTS[0], () -> FmGameTests::modLoadsAndHostIsPresent);
@@ -54,6 +56,7 @@ public final class FmGameTests {
         FUNCTIONS.register(TESTS[9], () -> FmGameTests::mobKilledByPlayerDropsWrathShard);
         FUNCTIONS.register(TESTS[10], () -> FmGameTests::bossDropsPrideShards);
         FUNCTIONS.register(TESTS[11], () -> FmGameTests::unattendedDeathDropsSlothShard);
+        FUNCTIONS.register(TESTS[12], () -> FmGameTests::forbiddenCategoryAndShardEntriesResolve);
     }
 
     private FmGameTests() {
@@ -214,6 +217,21 @@ public final class FmGameTests {
         helper.assertFalse(FmDrops.rollSloth(4), "sloth must not drop on roll 4");
         helper.assertValueEqual(FmDrops.slothCount(0), 1, "minimum sloth drop is one");
         helper.assertValueEqual(FmDrops.slothCount(2), 3, "maximum sloth drop is three");
+        helper.succeed();
+    }
+
+    private static void forbiddenCategoryAndShardEntriesResolve(GameTestHelper helper) {
+        ResearchItem shards = ResearchCategories.getResearch("NETHERSHARDS");
+        helper.assertTrue(shards != null, "NETHERSHARDS must be registered");
+        helper.assertValueEqual(shards.category(), "FORBIDDEN", "category");
+        helper.assertValueEqual(shards.column(), -8, "column");
+        helper.assertValueEqual(shards.row(), -5, "row");
+        helper.assertTrue(shards.isStub() && shards.isRound() && shards.isAutoUnlock(), "stub, round and auto-unlock as in the original");
+        ResearchItem axe = ResearchCategories.getResearch("SKULLAXE");
+        helper.assertTrue(axe != null, "SKULLAXE must be registered");
+        helper.assertTrue(axe.isConcealed(), "SKULLAXE must stay concealed");
+        helper.assertValueEqual(axe.warp(), 1, "SKULLAXE carries one warp point as in the original");
+        helper.assertValueEqual(axe.parents(), List.of("NETHERSHARDS", "THAUMIUM", "INFUSION"), "SKULLAXE parents, in order");
         helper.succeed();
     }
 }
