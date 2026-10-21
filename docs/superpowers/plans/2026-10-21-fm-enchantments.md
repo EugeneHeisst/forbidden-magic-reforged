@@ -1178,7 +1178,7 @@ Expected: build success, `All 26 required tests passed`.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/main/java/dev/visfox/forbiddenreforged/FmTinkerer.java src/main/java/dev/visfox/forbiddenreforged/FmTinkererData.java src/main/java/dev/visfox/forbiddenreforged/FmSetup.java tests/java/dev/visfox/forbiddenreforged/test/FmGameTests.java
+git add src/main/java/dev/visfox/forbiddenreforged/FmTinkerer.java src/main/java/dev/visfox/forbiddenreforged/FmSetup.java tests/java/dev/visfox/forbiddenreforged/test/FmGameTests.java
 git commit -m "feat: register enchantment costs with Thaumic Tinkerer"
 ```
 
