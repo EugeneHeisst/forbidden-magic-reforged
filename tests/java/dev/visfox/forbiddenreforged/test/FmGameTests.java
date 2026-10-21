@@ -20,6 +20,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
@@ -39,6 +40,7 @@ import dev.visfox.forbiddenreforged.FmAspects;
 import dev.visfox.forbiddenreforged.FmConfig;
 import dev.visfox.forbiddenreforged.FmCreativeTab;
 import dev.visfox.forbiddenreforged.FmDrops;
+import dev.visfox.forbiddenreforged.FmEnchantmentEffects;
 import dev.visfox.forbiddenreforged.FmEnchantments;
 import dev.visfox.forbiddenreforged.FmItems;
 import dev.visfox.forbiddenreforged.FmRecipes;
@@ -58,7 +60,7 @@ import thaumcraft.research.ResearchManager;
 public final class FmGameTests {
     public static final DeferredRegister<Consumer<GameTestHelper>> FUNCTIONS =
         DeferredRegister.create(Registries.TEST_FUNCTION, ForbiddenMagic.MODID);
-    private static final String[] TESTS = {"mod_loads_and_host_is_present", "aspect_registry_keeps_builtin_order_and_combines", "addon_aspect_survives_client_sync", "sin_aspects_registered_with_own_textures", "sin_aspect_tags_merge_with_existing", "entity_aspect_tags_merge_with_existing", "every_tag_target_resolved", "shards_are_registered_with_seven_ids", "no_lust_removes_luxuria_items", "mob_killed_by_player_drops_wrath_shard", "boss_drops_pride_shards", "unattended_death_drops_sloth_shard", "forbidden_category_and_shard_entries_resolve", "skull_axe_infusion_recipe_matches_original", "every_ported_recipe_resolves_its_inputs", "chain_from_netherrack_to_wrath_shard", "enchantments_resolve_with_expected_shape", "emerald_fragment_is_registered"};
+    private static final String[] TESTS = {"mod_loads_and_host_is_present", "aspect_registry_keeps_builtin_order_and_combines", "addon_aspect_survives_client_sync", "sin_aspects_registered_with_own_textures", "sin_aspect_tags_merge_with_existing", "entity_aspect_tags_merge_with_existing", "every_tag_target_resolved", "shards_are_registered_with_seven_ids", "no_lust_removes_luxuria_items", "mob_killed_by_player_drops_wrath_shard", "boss_drops_pride_shards", "unattended_death_drops_sloth_shard", "forbidden_category_and_shard_entries_resolve", "skull_axe_infusion_recipe_matches_original", "every_ported_recipe_resolves_its_inputs", "chain_from_netherrack_to_wrath_shard", "enchantments_resolve_with_expected_shape", "emerald_fragment_is_registered", "consuming_destroys_garbage", "corrupting_yields_sin_shards"};
 
     static {
         FUNCTIONS.register(TESTS[0], () -> FmGameTests::modLoadsAndHostIsPresent);
@@ -79,6 +81,8 @@ public final class FmGameTests {
         FUNCTIONS.register(TESTS[15], () -> FmGameTests::chainFromNetherrackToWrathShard);
         FUNCTIONS.register(TESTS[16], () -> FmGameTests::enchantmentsResolveWithExpectedShape);
         FUNCTIONS.register(TESTS[17], () -> FmGameTests::emeraldFragmentIsRegistered);
+        FUNCTIONS.register(TESTS[18], () -> FmGameTests::consumingDestroysGarbage);
+        FUNCTIONS.register(TESTS[19], () -> FmGameTests::corruptingYieldsSinShards);
     }
 
     private FmGameTests() {
@@ -331,6 +335,44 @@ public final class FmGameTests {
         ItemStack stack = new ItemStack(FmItems.EMERALD_FRAGMENT.get());
         helper.assertFalse(stack.isEmpty(), "emerald fragment must exist");
         helper.assertValueEqual(BuiltInRegistries.ITEM.getKey(stack.getItem()), Identifier.parse("forbiddenmagic:emerald_fragment"), "emerald fragment id");
+        helper.succeed();
+    }
+
+    private static void consumingDestroysGarbage(GameTestHelper helper) {
+        helper.assertTrue(FmEnchantmentEffects.isGarbage(new ItemStack(Items.DIRT)), "dirt is garbage");
+        helper.assertTrue(FmEnchantmentEffects.isGarbage(new ItemStack(Items.COBBLESTONE)), "cobblestone is garbage");
+        helper.assertTrue(FmEnchantmentEffects.isGarbage(new ItemStack(Items.SAND)), "sand is garbage");
+        helper.assertTrue(FmEnchantmentEffects.isGarbage(new ItemStack(Items.GRAVEL)), "gravel is garbage");
+        helper.assertTrue(FmEnchantmentEffects.isGarbage(new ItemStack(Items.NETHERRACK)), "netherrack is garbage");
+        helper.assertFalse(FmEnchantmentEffects.isGarbage(new ItemStack(Items.DIAMOND)), "diamond is not garbage");
+        helper.succeed();
+    }
+
+    private static void corruptingYieldsSinShards(GameTestHelper helper) {
+        RandomSource random = RandomSource.create(1234L);
+        java.util.Set<Item> pool = java.util.Set.of(
+            FmItems.DEADLY_SHARDS.get("wrath").get(),
+            FmItems.DEADLY_SHARDS.get("envy").get(),
+            FmItems.DEADLY_SHARDS.get("pride").get(),
+            FmItems.DEADLY_SHARDS.get("lust").get(),
+            FmItems.DEADLY_SHARDS.get("sloth").get(),
+            FmItems.DEADLY_SHARDS.get("greed").get(),
+            FmItems.GLUTTONY_SHARD.get()
+        );
+        for (int roll = 0; roll < 200; roll++) {
+            ItemStack shard = FmEnchantmentEffects.sinShard(random);
+            helper.assertTrue(pool.contains(shard.getItem()), "sin shard must come from the pool");
+            if (FmConfig.lustDisabled()) {
+                helper.assertFalse(shard.getItem() == FmItems.DEADLY_SHARDS.get("lust").get(), "no_lust keeps lust out of the pool");
+            }
+        }
+        int hits = 0;
+        for (int roll = 0; roll < 300; roll++) {
+            if (FmEnchantmentEffects.corruptRoll(random)) {
+                hits++;
+            }
+        }
+        helper.assertTrue(hits > 50 && hits < 150, "corruption fires roughly one time in three");
         helper.succeed();
     }
 
