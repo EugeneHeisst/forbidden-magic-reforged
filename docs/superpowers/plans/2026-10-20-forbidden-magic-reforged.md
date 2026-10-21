@@ -142,13 +142,13 @@ public final class FmGameTests {
 
 The pattern is copied from the host's own `thaumcraft/test/GearGameTests.java:47-77`, including the `thaumcraft:test/platform` structure template. That template is loaded from `host/src/gametest/packs`, which only exists after Task 2 — so Task 1 verifies compilation and the two tree checks, and the game-test run itself becomes part of the gate from Task 2 onward.
 
-**Constructor wiring contract.** The mod constructor is the only place anything registers, and later tasks append exactly one call each, in this order (it matters: aspects must exist before the tag table references them, items before recipes reference them, the availability check before anything touches the host API):
+**Constructor wiring contract.** The mod constructor is the only place anything registers, and later tasks append exactly one call each, in this order (it matters: the config must load before the aspects, because `no_lust` gates the `luxuria` registration itself — the original reads `Config.configurate()` before `DarkAspects.initAspects()` in `Forbidden.prelude`; then aspects must exist before the tag table references them, items before recipes reference them, the availability check before anything touches the host API):
 
 ```java
     public ForbiddenMagic(IEventBus modEventBus, ModContainer modContainer) {
+        FmConfig.register(modContainer);
         FmAspects.init();
         FmAspectTags.register();
-        FmConfig.register(modContainer);
         FmItems.ITEMS.register(modEventBus);
         FmDrops.register();
         FmResearch.register();
@@ -157,7 +157,7 @@ The pattern is copied from the host's own `thaumcraft/test/GearGameTests.java:47
     }
 ```
 
-Task 1 lands the last line only; each task from 5 to 10 adds its own line and nothing else.
+Task 1 lands the last line only; each task from 5 to 10 adds its own line and nothing else. `FmConfig` arrives in Task 5 carrying the `no_lust` switch alone, because the aspect guard reads it; Task 7 extends that same class with the remaining switches and must not move the registration line or redefine `no_lust`.
 
 - [ ] **Step 2: Run it and see it fail.** `cmd //c gradlew.bat build` → expected: failure, `settings.gradle` / sources missing (no project yet). This is the red state.
 
@@ -437,6 +437,19 @@ python tools/check_provenance.py
 
 Expected: `BUILD SUCCESSFUL`, `host clean`, `provenance ok: 1 jar(s)`. `runGameTestServer` is not run in this task: the structure template it needs comes from `host/`, which Task 2 creates. Do not work around the missing host jar by dropping the dependency — the dependency is the point.
 
+- [ ] **Step 4b: Two probes whose answers this plan does not assume.** Record both outputs in `docs/deviations.md` as you find them, because Tasks 2 and 4 are built on them:
+
+```bash
+cmd //c gradlew.bat dependencies --configuration localRuntime | grep -i thaumcraft
+python - <<'PY'
+from pathlib import Path
+for name in sorted(Path("../thaumcraft-4-reforged/src/gametest/packs").rglob("*.nbt")):
+    print(name)
+PY
+```
+
+Expected: the first prints the host jar on the runtime classpath — that is the evidence that ModDevGradle treats a plain jar dependency as a loadable mod, which is what the host itself relies on for JEI (`compileOnly` + `localRuntime` in its `build.gradle`). If it does not appear, the add-on will compile but not load, and the fix is `neoForge { runs { client { ... } } }` mod-declaration rather than the dependency form — settle it here, not in Task 4. The second prints at least one structure named under `test/platform`; if the path differs, adjust the template identifier used in `FmGameTests`.
+
 - [ ] **Step 5: Commit.**
 
 ```bash
@@ -483,16 +496,15 @@ def run(*args: str, cwd: Path | None = None) -> None:
 
 
 def clone() -> None:
-    if HOST.exists():
-        subprocess.run(["git", "-C", str(HOST), "fetch"], text=True)
-        run("git", "-C", str(HOST), "checkout", "--detach", sha(), "--", ".", cwd=None)
-        return
-    subprocess.run(
-        ["git", "clone", "--no-hardlinks", "--no-checkout", str(UPSTREAM), str(HOST)],
-        check=True,
-        text=True,
-    )
-    run("git", "-C", str(HOST), "checkout", "--detach", sha())
+    if not HOST.exists():
+        subprocess.run(
+            ["git", "clone", "--no-hardlinks", str(UPSTREAM), str(HOST)],
+            check=True,
+            text=True,
+        )
+    run("git", "-C", str(HOST), "fetch", "--all")
+    run("git", "-C", str(HOST), "checkout", "--force", "--detach", sha())
+    run("git", "-C", str(HOST), "clean", "--force", "--directory")
 
 
 def apply_patches() -> None:
@@ -504,19 +516,21 @@ def apply_patches() -> None:
         if check.returncode != 0:
             raise SystemExit(f"patch does not apply cleanly: {patch.name}")
     for patch in sorted(PATCHES.glob("*.patch")):
-        run("git", "-C", str(HOST), "apply", "--ignore-space-change", str(patch))
+        run("git", "-C", str(HOST), "am", "--3way", "--no-gpg-sign", str(patch))
 
 
 def verify() -> None:
     if not HOST.exists():
         raise SystemExit("host/ missing: run without --verify first")
-    for patch in sorted(PATCHES.glob("*.patch")):
-        reverse = subprocess.run(
-            ["git", "-C", str(HOST), "apply", "--reverse", "--check", "--ignore-space-change", str(patch)],
-            text=True,
-        )
-        if reverse.returncode != 0:
-            raise SystemExit(f"host/ is not the patched state of {patch.name}")
+    expected = sha()
+    base = subprocess.run(
+        ["git", "-C", str(HOST), "rev-list", "--max-count=1", f"{expected}..HEAD", "--reverse"],
+        capture_output=True,
+        text=True,
+    ).stdout.split()
+    patch_count = len(list(PATCHES.glob("*.patch")))
+    if len(base) != patch_count:
+        raise SystemExit(f"host/ is {len(base)} commits ahead, patches/ holds {patch_count}")
     dirty = subprocess.run(
         ["git", "-C", str(HOST), "status", "--porcelain", "--untracked-files=no"],
         capture_output=True,
@@ -524,7 +538,7 @@ def verify() -> None:
     ).stdout
     if dirty.strip():
         raise SystemExit("host/ has unpatched edits, they must live in patches/ instead:\n" + dirty)
-    print("host matches sha + patch series")
+    print(f"host matches sha + {patch_count} patch commit(s)")
 
 
 def main() -> int:
@@ -621,6 +635,7 @@ import org.jspecify.annotations.Nullable;
 import thaumcraft.Thaumcraft;
 
 public final class Aspect implements StringRepresentable {
+    private static final Map<String, Aspect> BY_TAG = new LinkedHashMap<>();
     public static final Aspect AIR = primal("aer", 0xFFFF7E, "e", 1);
     public static final Aspect EARTH = primal("terra", 0x56C000, "2", 1);
     public static final Aspect FIRE = primal("ignis", 0xFF5A01, "c", 1);
@@ -670,7 +685,6 @@ public final class Aspect implements StringRepresentable {
     public static final Aspect MECHANISM = compound("machina", 0x8080A0, MOTION, TOOL, 1);
     public static final Aspect TRAP = compound("vinculum", 0x9A8080, MOTION, ENTROPY, 1);
 
-    private static final Map<String, Aspect> BY_TAG = new LinkedHashMap<>();
     public static final Codec<Aspect> CODEC = Codec.STRING.map(Aspect::byTagOrThrow, Aspect::getTag);
     public static final StreamCodec<ByteBuf, Aspect> STREAM_CODEC = ByteBufCodecs.STRING_UTF8.map(Aspect::byTagOrThrow, Aspect::getTag);
 
@@ -847,7 +861,7 @@ public final class Aspect implements StringRepresentable {
 }
 ```
 
-`BUILTIN_COUNT` is assigned after the 48 static fields are initialised, because Java runs field initialisers top to bottom; anything registered later lands at index 48 and above.
+`BUILTIN_COUNT` is assigned after the 48 static fields are initialised, because Java runs static initialisers strictly top to bottom; anything registered later lands at index 48 and above. **This ordering is load-bearing and is the first thing to break under "cleanup":** `BY_TAG` must be declared *before* the constants, because `primal()` and `compound()` write into it while the constants are being initialised — move the map down and the class throws `NullPointerException` in `<clinit>` the moment anything touches an aspect, which is at mod construction, not at first use.
 
 - [ ] **Step 3: Rework the three `ordinal()` sites in `AspectOrb.java`** so index stability is guaranteed and unknown indices degrade to AIR instead of throwing:
 
@@ -1076,6 +1090,7 @@ git commit -m "feat: expose an add-on aspect hook and publish the host locally"
 ### Task 5: The seven aspects, with the availability check
 
 **Files:**
+- Create: `src/main/java/fox/spiteful/forbidden/FmConfig.java` (the `no_lust` switch only — the aspect guard reads it, so it must exist before `FmAspects.init()`)
 - Create: `src/main/java/fox/spiteful/forbidden/FmAspects.java`
 - Create: `src/main/resources/assets/forbiddenmagic/textures/aspects/{luxuria,infernus,superbia,gula,invidia,desidia,ira}.png` — copied from `../ForbiddenMagic/src/main/resources/assets/forbidden/textures/aspects/`
 - Create: `tools/lang/en_us.toml`, `tools/lang/ru_ru.toml` (aspect names from `../ForbiddenMagic/src/main/resources/assets/forbidden/lang/en_US.lang`, keys `forbiddenmagic.aspect.<tag>`)
@@ -1083,7 +1098,7 @@ git commit -m "feat: expose an add-on aspect hook and publish the host locally"
 - Test: `FmGameTests` — `sin_aspects_registered_with_own_textures`
 
 **Interfaces:**
-- Produces: `FmAspects.LUST/NETHER/PRIDE/GLUTTONY/ENVY/SLOTH/WRATH` (names as in the original) and `FmAspects.available() → boolean`.
+- Produces: `FmAspects.LUST/NETHER/PRIDE/GLUTTONY/ENVY/SLOTH/WRATH` (names as in the original) and `FmAspects.available() → boolean`. `LUST` is `null` when `no_lust` is on, exactly as the original leaves it unset, so every later use is a null check rather than an assumption.
 - Consumes: `AddonAspects.addRegistrar`, `Aspect.register`, host patched version check.
 
 - [ ] **Step 1: Write the failing test.**
@@ -1096,14 +1111,48 @@ git commit -m "feat: expose an add-on aspect hook and publish the host locally"
             helper.assertTrue(aspect.ordinal() >= Aspect.builtinCount(), aspect.getSerializedName() + " must be an add-on aspect");
             helper.assertTrue(Identifier.isValidNamespace(aspect.getImage().getNamespace()) && aspect.getImage().getNamespace().equals("forbiddenmagic"), aspect.getSerializedName() + " texture must live in the add-on namespace");
         }
-        Aspect wrath = Aspect.combine(Aspect.WEAPON, Aspect.FIRE);
-        helper.assertTrue(wrath == Aspect.WEAPON || wrath != FmAspects.WRATH, "builtin WEAPON must not be shadowed by ira");
-        helper.assertValueEqual(Aspect.count(), Aspect.builtinCount() + 7, "exactly seven add-on aspects");
+        Aspect ira = Aspect.combine(Aspect.WEAPON, Aspect.FIRE);
+        helper.assertTrue(ira == FmAspects.WRATH, "combine(WEAPON, FIRE) must resolve to the add-on ira");
+        helper.assertTrue(Aspect.combine(Aspect.AIR, Aspect.FIRE) == Aspect.LIGHT, "adding ira must not disturb builtin combine");
+        int expected = FmConfig.lustDisabled() ? 6 : 7;
+        helper.assertValueEqual(Aspect.count(), Aspect.builtinCount() + expected, FmConfig.lustDisabled() ? "six add-on aspects: luxuria is switched off" : "exactly seven add-on aspects");
         helper.succeed();
     }
 ```
 
-- [ ] **Step 2: Run and confirm red**, then write `FmAspects.java` with the availability check that produces a legible refusal instead of `NoSuchMethodError`:
+- [ ] **Step 2: Run and confirm red** (it will not compile: `Aspect.register`, the class form and `FmConfig` do not exist yet), then write `FmConfig.java` — the `no_lust` switch alone, with the original default and tooltip, so the guard below can read it:
+
+```java
+package fox.spiteful.forbidden;
+
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.config.ModConfig;
+import net.neoforged.neoforge.common.ModConfigSpec;
+
+public final class FmConfig {
+    private static final ModConfigSpec.Builder BUILDER = new ModConfigSpec.Builder();
+    public static final ModConfigSpec SPEC;
+    public static ModConfigSpec.BooleanValue noLust;
+
+    static {
+        noLust = BUILDER.comment("Enable to remove Luxuria aspect and related items.").define("general", "no_lust", false);
+        SPEC = BUILDER.build();
+    }
+
+    private FmConfig() {
+    }
+
+    public static void register(ModContainer container) {
+        container.registerConfig(ModConfig.Type.SYNCED, SPEC);
+    }
+
+    public static boolean lustDisabled() {
+        return noLust.get();
+    }
+}
+```
+
+Then `FmAspects.java` with the availability check that produces a legible refusal instead of `NoSuchMethodError`:
 
 ```java
 package fox.spiteful.forbidden;
@@ -1132,7 +1181,9 @@ public final class FmAspects {
     public static void init() {
         try {
             AddonAspects.addRegistrar(api -> {
-                LUST = api.register("luxuria", 0xFFC1CE, new Aspect[]{Aspect.FLESH, Aspect.HUNGER}, 1, texture("luxuria"));
+                if (!FmConfig.lustDisabled()) {
+                    LUST = api.register("luxuria", 0xFFC1CE, new Aspect[]{Aspect.FLESH, Aspect.HUNGER}, 1, texture("luxuria"));
+                }
                 NETHER = api.register("infernus", 0xFF0000, new Aspect[]{Aspect.FIRE, Aspect.MAGIC}, 771, texture("infernus"));
                 PRIDE = api.register("superbia", 0x9639FF, new Aspect[]{Aspect.FLIGHT, Aspect.VOID}, 1, texture("superbia"));
                 GLUTTONY = api.register("gula", 0xD59C46, new Aspect[]{Aspect.HUNGER, Aspect.VOID}, 1, texture("gula"));
@@ -1151,7 +1202,17 @@ public final class FmAspects {
 }
 ```
 
-Colours and blends are taken verbatim from `ForbiddenMagic/src/main/java/fox/spiteful/forbidden/DarkAspects.java:26-38`. Call `FmAspects.init()` as the **first** statement of the mod constructor.
+Colours and blends are taken verbatim from `ForbiddenMagic/src/main/java/fox/spiteful/forbidden/DarkAspects.java:26-38`. In `ForbiddenMagic.java` add the two wiring lines in this order — the config registers before the aspects read it, mirroring `Forbidden.prelude`, which calls `Config.configurate()` before `DarkAspects.initAspects()`:
+
+```java
+    public ForbiddenMagic(IEventBus modEventBus, ModContainer modContainer) {
+        FmConfig.register(modContainer);
+        FmAspects.init();
+        FmGameTests.register(modEventBus);
+    }
+```
+
+The `luxuria` guard is not decoration: the original registers that aspect inside `if (!Config.noLust)` (`DarkAspects.java:28`). Note the dependency this creates: the count assertion above reads the flag (`builtin + 7` normally, `builtin + 6` with `no_lust` on), so it holds in both config states, and the kill-switch test in Task 7 additionally asserts that the aspect itself is gone — `FmAspects.LUST` is null and `Aspect.getAspect("luxuria")` is absent — rather than only counting.
 
 Retire the probe in the same commit: delete the `PROBE` field and its registration line, and re-point Task 4's `addon_aspect_survives_client_sync` at `FmAspects.NETHER` (keep the encode/decode round trip, change only the aspect). A released jar must not register a test aspect — the count assertion above (`builtin + 7`) is what enforces that.
 
@@ -1167,7 +1228,7 @@ Expected: test green; provenance still ok, because textures live under `assets/f
 - [ ] **Step 4: Commit.**
 
 ```bash
-git add src/main/java/fox/spiteful/forbidden/FmAspects.java src/main/java/fox/spiteful/forbidden/ForbiddenMagic.java src/main/resources/assets/forbiddenmagic/textures/aspects tools/lang
+git add src/main/java/fox/spiteful/forbidden/FmConfig.java src/main/java/fox/spiteful/forbidden/FmAspects.java src/main/java/fox/spiteful/forbidden/ForbiddenMagic.java src/main/resources/assets/forbiddenmagic/textures/aspects tools/lang
 git commit -m "feat: register the seven sin aspects"
 ```
 
@@ -1257,12 +1318,13 @@ git commit -m "feat: port the add-on aspect tag table"
 ### Task 7: Shard items as seven ids, config, models
 
 **Files:**
-- Create: `src/main/java/fox/spiteful/forbidden/FmItems.java`, `src/main/java/fox/spiteful/forbidden/FmConfig.java`
+- Create: `src/main/java/fox/spiteful/forbidden/FmItems.java`
+- Modify: `src/main/java/fox/spiteful/forbidden/FmConfig.java` (add the remaining switches; `no_lust` and its registration line stay exactly as Task 5 left them)
 - Create: `tools/id_map.json`, `tools/gen_resources.py`, `tools/lang/{en_us,ru_ru}.toml` item names
 - Test: `FmGameTests` — `shards_are_registered_with_seven_ids`, `no_lust_removes_luxuria_items`
 
 **Interfaces:**
-- Produces: `FmItems.DEADLY_SHARDS` (`Map<String, DeferredItem<Item>>` keyed by vice name: `wrath`, `envy`, `taint`, `pride`, `lust`, `sloth`, `greed`), `FmItems.GLUTTONY_SHARD`, `FmItems.SKULL_AXE`, `FmConfig.noLust`, `FmItems.id(String vice) → Identifier`.
+- Produces: `FmItems.DEADLY_SHARDS` (`Map<String, DeferredItem<Item>>` keyed by vice name: `wrath`, `envy`, `taint`, `pride`, `lust`, `sloth`, `greed`), `FmItems.GLUTTONY_SHARD`, `FmItems.SKULL_AXE`, `FmConfig.gluttony`, `FmItems.id(String vice) → Identifier`.
 - Consumes: nothing new from the host except `Registration.food`.
 
 - [ ] **Step 1: Write the failing test.**
@@ -1280,12 +1342,13 @@ git commit -m "feat: port the add-on aspect tag table"
     }
 ```
 
-- [ ] **Step 2: Write `FmConfig.java`** — only the switches the B slice needs, with the original defaults from `ForbiddenMagic/…/Config.java:29-40` (`noLust = false`, `gluttony = 0`, `silverfishEmeralds = true`) and the original tooltips:
+- [ ] **Step 2: Extend `FmConfig.java`** — `no_lust` and `register(ModContainer)` are already there from Task 5 and must not be touched; add only the switch this task needs, with the original default from `ForbiddenMagic/…/Config.java:29-40` (`gluttony = 0`) and the original tooltip. The result is the same class Task 5 created plus one field:
 
 ```java
 package fox.spiteful.forbidden;
 
 import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
 public final class FmConfig {
@@ -1403,7 +1466,7 @@ cmd //c gradlew.bat runGameTestServer
 
 Expected: `shards_are_registered_with_seven_ids` green.
 
-- [ ] **Step 6: Prove the kill switch.** Add `no_lust_removes_luxuria_items`: set `FmConfig.noLust` to `true` in the test through the config instance, assert that the lust shard carries no `luxuria` tag and that the recipe registered in Task 10 is absent for lust entries, then restore. Run and confirm it fails before implementing the guard, then add the guard in `FmAspectTags` and `FmRecipes`.
+- [ ] **Step 6: Prove the kill switch.** Add `no_lust_removes_luxuria_items`: set `FmConfig.noLust` to `true` in the test through the config instance, assert that `FmAspects.LUST` is null and that `Aspect.getAspect("luxuria")` is absent from the registry, that the lust shard carries no `luxuria` tag, and that the recipe registered in Task 10 is absent for lust entries, then restore. Run and confirm it fails before implementing the guard, then add the guard in `FmAspects.init`, `FmAspectTags` and `FmRecipes`.
 
 - [ ] **Step 7: Commit.**
 
