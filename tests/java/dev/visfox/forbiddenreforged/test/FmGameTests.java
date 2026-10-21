@@ -31,6 +31,12 @@ import dev.visfox.forbiddenreforged.FmConfig;
 import dev.visfox.forbiddenreforged.FmCreativeTab;
 import dev.visfox.forbiddenreforged.FmDrops;
 import dev.visfox.forbiddenreforged.FmItems;
+import dev.visfox.forbiddenreforged.FmRecipes;
+import thaumcraft.crafting.InfusionRecipe;
+import thaumcraft.crafting.TcIngredient;
+import thaumcraft.crafting.TcRecipe;
+import thaumcraft.crafting.TcRecipes;
+import thaumcraft.crafting.TcStack;
 import thaumcraft.aspect.Aspect;
 import thaumcraft.aspect.AspectList;
 import thaumcraft.aspect.AspectRegistry;
@@ -41,7 +47,7 @@ import thaumcraft.research.ResearchItem;
 public final class FmGameTests {
     public static final DeferredRegister<Consumer<GameTestHelper>> FUNCTIONS =
         DeferredRegister.create(Registries.TEST_FUNCTION, ForbiddenMagic.MODID);
-    private static final String[] TESTS = {"mod_loads_and_host_is_present", "aspect_registry_keeps_builtin_order_and_combines", "addon_aspect_survives_client_sync", "sin_aspects_registered_with_own_textures", "sin_aspect_tags_merge_with_existing", "entity_aspect_tags_merge_with_existing", "every_tag_target_resolved", "shards_are_registered_with_seven_ids", "no_lust_removes_luxuria_items", "mob_killed_by_player_drops_wrath_shard", "boss_drops_pride_shards", "unattended_death_drops_sloth_shard", "forbidden_category_and_shard_entries_resolve"};
+    private static final String[] TESTS = {"mod_loads_and_host_is_present", "aspect_registry_keeps_builtin_order_and_combines", "addon_aspect_survives_client_sync", "sin_aspects_registered_with_own_textures", "sin_aspect_tags_merge_with_existing", "entity_aspect_tags_merge_with_existing", "every_tag_target_resolved", "shards_are_registered_with_seven_ids", "no_lust_removes_luxuria_items", "mob_killed_by_player_drops_wrath_shard", "boss_drops_pride_shards", "unattended_death_drops_sloth_shard", "forbidden_category_and_shard_entries_resolve", "skull_axe_infusion_recipe_matches_original", "every_ported_recipe_resolves_its_inputs"};
 
     static {
         FUNCTIONS.register(TESTS[0], () -> FmGameTests::modLoadsAndHostIsPresent);
@@ -57,6 +63,8 @@ public final class FmGameTests {
         FUNCTIONS.register(TESTS[10], () -> FmGameTests::bossDropsPrideShards);
         FUNCTIONS.register(TESTS[11], () -> FmGameTests::unattendedDeathDropsSlothShard);
         FUNCTIONS.register(TESTS[12], () -> FmGameTests::forbiddenCategoryAndShardEntriesResolve);
+        FUNCTIONS.register(TESTS[13], () -> FmGameTests::skullAxeInfusionRecipeMatchesOriginal);
+        FUNCTIONS.register(TESTS[14], () -> FmGameTests::everyPortedRecipeResolvesItsInputs);
     }
 
     private FmGameTests() {
@@ -233,5 +241,44 @@ public final class FmGameTests {
         helper.assertValueEqual(axe.warp(), 1, "SKULLAXE carries one warp point as in the original");
         helper.assertValueEqual(axe.parents(), List.of("NETHERSHARDS", "THAUMIUM", "INFUSION"), "SKULLAXE parents, in order");
         helper.succeed();
+    }
+
+    private static void skullAxeInfusionRecipeMatchesOriginal(GameTestHelper helper) {
+        InfusionRecipe recipe = (InfusionRecipe) TcRecipes.get("SKULLAXE");
+        helper.assertTrue(recipe != null, "skull axe recipe must be registered");
+        helper.assertValueEqual(recipe.instability(), 1, "instability");
+        helper.assertValueEqual(recipe.aspects().getAmount(FmAspects.WRATH), 8, "wrath cost");
+        helper.assertValueEqual(recipe.aspects().getAmount(Aspect.WEAPON), 8, "weapon cost");
+        helper.assertValueEqual(recipe.aspects().getAmount(FmAspects.NETHER), 8, "nether cost");
+        helper.assertValueEqual(recipe.components().size(), 4, "four components");
+        helper.succeed();
+    }
+
+    private static void everyPortedRecipeResolvesItsInputs(GameTestHelper helper) {
+        List<String> missing = new ArrayList<>();
+        for (TcRecipe recipe : TcRecipes.all()) {
+            if (!FmRecipes.OWN_KEYS.contains(recipe.key())) {
+                continue;
+            }
+            if (recipe instanceof InfusionRecipe infusion) {
+                checkIngredient(infusion.central(), missing);
+                infusion.components().forEach(ingredient -> checkIngredient(ingredient, missing));
+                checkStack(infusion.result(), missing);
+            }
+        }
+        helper.assertTrue(missing.isEmpty(), "unresolved recipe references: " + missing);
+        helper.succeed();
+    }
+
+    private static void checkIngredient(TcIngredient ingredient, List<String> missing) {
+        if (!ingredient.exists()) {
+            missing.add(ingredient.toString());
+        }
+    }
+
+    private static void checkStack(TcStack stack, List<String> missing) {
+        if (!stack.exists()) {
+            missing.add(stack.item().toString());
+        }
     }
 }
