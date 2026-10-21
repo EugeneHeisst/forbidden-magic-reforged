@@ -523,9 +523,12 @@ def clone() -> None:
             check=True,
             text=True,
         )
+    run("git", "-C", str(HOST), "config", "core.autocrlf", "false")
     run("git", "-C", str(HOST), "fetch", "--all")
     run("git", "-C", str(HOST), "checkout", "--force", "--detach", sha())
-    run("git", "-C", str(HOST), "clean", "--force", "--directory")
+    run("git", "-C", str(HOST), "read-tree", "HEAD")
+    run("git", "-C", str(HOST), "checkout-index", "-a", "-f")
+    run("git", "-C", str(HOST), "clean", "-f", "-d")
 
 
 def apply_patches() -> None:
@@ -536,22 +539,30 @@ def apply_patches() -> None:
         )
         if check.returncode != 0:
             raise SystemExit(f"patch does not apply cleanly: {patch.name}")
-    for patch in sorted(PATCHES.glob("*.patch")):
-        run("git", "-C", str(HOST), "am", "--3way", "--no-gpg-sign", str(patch))
+        run("git", "-C", str(HOST), "am", "--3way", "--ignore-space-change", "--no-gpg-sign", str(patch))
 
 
 def verify() -> None:
     if not HOST.exists():
         raise SystemExit("host/ missing: run without --verify first")
     expected = sha()
-    base = subprocess.run(
-        ["git", "-C", str(HOST), "rev-list", "--max-count=1", f"{expected}..HEAD", "--reverse"],
-        capture_output=True,
+    ancestor = subprocess.run(
+        ["git", "-C", str(HOST), "merge-base", "--is-ancestor", expected, "HEAD"],
         text=True,
-    ).stdout.split()
+    )
+    if ancestor.returncode != 0:
+        raise SystemExit(f"host/ does not descend from pinned sha {expected}")
+    count = int(
+        subprocess.run(
+            ["git", "-C", str(HOST), "rev-list", "--count", f"{expected}..HEAD"],
+            capture_output=True,
+            text=True,
+            check=True,
+        ).stdout.strip()
+    )
     patch_count = len(list(PATCHES.glob("*.patch")))
-    if len(base) != patch_count:
-        raise SystemExit(f"host/ is {len(base)} commits ahead, patches/ holds {patch_count}")
+    if count != patch_count:
+        raise SystemExit(f"host/ is {count} commits ahead, patches/ holds {patch_count}")
     dirty = subprocess.run(
         ["git", "-C", str(HOST), "status", "--porcelain", "--untracked-files=no"],
         capture_output=True,
@@ -581,6 +592,8 @@ if __name__ == "__main__":
     sys.exit(main())
 ```
 
+`read-tree HEAD` + `checkout-index -a -f` — не украшение. На этой машине системный `core.autocrlf=true`, и после `checkout --force` stat-кэш индекса считает файлы неизменными, поэтому рабочее дерево остаётся в CRLF при LF в индексе, а `git status` при этом чист — то есть правки в `host/` молча шли бы с CRLF. `read-tree` сбрасывает stat-кэш, `checkout-index` перезаписывает все файлы при локальном `core.autocrlf=false`, и дерево становится LF. Проверено 2026-10-21: без этих двух строк `build.gradle` в `host/` оставался CRLF, с ними `git ls-files --eol` даёт `i/lf w/lf` и `git status` пуст.
+
 - [ ] **Step 3: Create `host.sha` with the single line `69a47a1b238e3ac15fa5d4b10e61ccb6a4a80dbf`, add `host/` and `maven/` to `.gitignore`, and run:**
 
 ```bash
@@ -589,7 +602,7 @@ python tools/prepare_host.py --verify
 git -C ../thaumcraft-4-reforged status --porcelain --untracked-files=no
 ```
 
-Expected: clone succeeds, `host matches sha + patch series` (no patches yet, so an empty pass is valid), host tree empty.
+Expected: clone succeeds, `host matches sha + 0 patch commit(s)` (no patches yet, so an empty pass is valid), host tree empty.
 
 - [ ] **Step 4: Prove the patch pipeline fails loudly.** Introduce `patches/probe.patch` by hand (one dummy context line changed in a host file), run `python tools/prepare_host.py` and confirm exit non-zero with `patch does not apply cleanly: probe.patch`. Delete the probe patch afterwards. A pipeline that cannot fail is not a gate.
 
