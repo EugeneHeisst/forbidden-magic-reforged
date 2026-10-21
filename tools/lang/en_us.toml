@@ -27,11 +27,19 @@ morph_axe = "Chameleon Axe"
 NETHERSHARDS = "Nether Shards"
 HELLFIRE = "Lord of Hellfire"
 SKULLAXE = "Axe of the Skulltaker"
+MORPHTOOLS = "Chameleon Tools"
+CLUSTER = "Enchantment: Fiery Core"
+IMPACT = "Enchantment: Impact"
+VOIDTOUCHED = "Enchantment: Voidtouched"
 
 [tc.research_text]
 NETHERSHARDS = "Aim to misbehave."
 HELLFIRE = "Never get stranded again"
 SKULLAXE = "Off with their heads!"
+MORPHTOOLS = "There's an enchantment for that..."
+CLUSTER = "Chameleon of the Core"
+IMPACT = "Someday that wall is gonna fall."
+VOIDTOUCHED = "Colour Out of Space"
 
 [forbiddenmagic.research_page.NETHERSHARDS]
 1 = "Strange energies swirl through the Nether. On occasion, they have been known to solidify into crystal shards when certain sympathetic events occur."
@@ -69,3 +77,15 @@ voidtouched = "Voidtouched"
 
 [forbiddenmagic.research_page.EDUCATIONAL]
 1 = "You've created an enchantment to infuse a weapon with the very essence of knowledge and learning. Hammering such learning into monsters' heads will result in them dropping more experience than normal, depending on the level of enchantment."
+
+[forbiddenmagic.research_page.MORPHTOOLS]
+1 = "Chameleon Tools are like three tools in one. When first enchanted, right-clicking while sneaking with the tool in your hand changes it to a blank new enchanting slate, allowing you to enchant it with a completely different set of enchantments. Each tool can hold up to three separate enchantment sets which can be alternated between by right-clicking while sneaking.<BR><BR>The tools have no innate way to remove enchantments once fully enchanted, so make each enchantment count!"
+
+[forbiddenmagic.research_page.CLUSTER]
+1 = "You've discovered an enchantment to allow the Chameleon Pickaxe to imitate the effects of the Pickaxe of the Core.  A Chameleon Pickaxe with the Fiery Core enchantment has a chance of dropping clusters when mining certain ores.  Clusters are a lot purer than raw ore and can be smelted for two of the ore's normal smelting result.  Higher levels of Fiery Core increase the chance of dropping clusters."
+
+[forbiddenmagic.research_page.IMPACT]
+1 = "The Shovel of the Earthmover mines larger areas than most tools. With the Impact enchantment, so can your Chameleon Pickaxe and Shovel.<BR><BR>A Chameleon Tool with the Impact enchantment mines a 3 x 3 area of blocks instead of just one, making exploratory mining and flattening areas much easier."
+
+[forbiddenmagic.research_page.VOIDTOUCHED]
+1 = "Voidmetal's ability to flow back into place after being damaged is fascinating. You sure wish your Chameleon Tools had the same properties...<BR><BR>The Voidtouched enchant gives a Chameleon Tool the same regenerating quality as Void Tools.<BR><BR>Chameleon Tools affected by the enchantment appear to be made of living scaled flesh which morphs back into shape when hurt. Just looking at it is disturbing for your sanity."

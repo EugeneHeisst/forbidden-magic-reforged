@@ -68,7 +68,7 @@ import thaumcraft.research.ResearchManager;
 public final class FmGameTests {
     public static final DeferredRegister<Consumer<GameTestHelper>> FUNCTIONS =
         DeferredRegister.create(Registries.TEST_FUNCTION, ForbiddenMagic.MODID);
-    private static final String[] TESTS = {"mod_loads_and_host_is_present", "aspect_registry_keeps_builtin_order_and_combines", "addon_aspect_survives_client_sync", "sin_aspects_registered_with_own_textures", "sin_aspect_tags_merge_with_existing", "entity_aspect_tags_merge_with_existing", "every_tag_target_resolved", "shards_are_registered_with_seven_ids", "no_lust_removes_luxuria_items", "mob_killed_by_player_drops_wrath_shard", "boss_drops_pride_shards", "unattended_death_drops_sloth_shard", "forbidden_category_and_shard_entries_resolve", "skull_axe_infusion_recipe_matches_original", "every_ported_recipe_resolves_its_inputs", "chain_from_netherrack_to_wrath_shard", "enchantments_resolve_with_expected_shape", "emerald_fragment_is_registered", "consuming_destroys_garbage", "corrupting_yields_sin_shards", "greedy_drops_match_kills", "educational_multiplies_experience", "wrath_adds_damage", "enchantment_research_present", "enchantment_recipes_cover_five", "tinkerer_integration_is_optional", "morph_tools_are_registered", "morph_phase_rotates_sets", "impact_covers_a_three_by_three_plane", "voidtouched_repairs_and_warps", "morph_enchantments_and_exclusivity", "cluster_replaces_drops_with_clusters"};
+    private static final String[] TESTS = {"mod_loads_and_host_is_present", "aspect_registry_keeps_builtin_order_and_combines", "addon_aspect_survives_client_sync", "sin_aspects_registered_with_own_textures", "sin_aspect_tags_merge_with_existing", "entity_aspect_tags_merge_with_existing", "every_tag_target_resolved", "shards_are_registered_with_seven_ids", "no_lust_removes_luxuria_items", "mob_killed_by_player_drops_wrath_shard", "boss_drops_pride_shards", "unattended_death_drops_sloth_shard", "forbidden_category_and_shard_entries_resolve", "skull_axe_infusion_recipe_matches_original", "every_ported_recipe_resolves_its_inputs", "chain_from_netherrack_to_wrath_shard", "enchantments_resolve_with_expected_shape", "emerald_fragment_is_registered", "consuming_destroys_garbage", "corrupting_yields_sin_shards", "greedy_drops_match_kills", "educational_multiplies_experience", "wrath_adds_damage", "enchantment_research_present", "enchantment_recipes_cover_five", "tinkerer_integration_is_optional", "morph_tools_are_registered", "morph_phase_rotates_sets", "impact_covers_a_three_by_three_plane", "voidtouched_repairs_and_warps", "morph_enchantments_and_exclusivity", "cluster_replaces_drops_with_clusters", "morph_research_entries_present"};
 
     static {
         FUNCTIONS.register(TESTS[0], () -> FmGameTests::modLoadsAndHostIsPresent);
@@ -103,6 +103,7 @@ public final class FmGameTests {
         FUNCTIONS.register(TESTS[29], () -> FmGameTests::voidtouchedRepairsAndWarps);
         FUNCTIONS.register(TESTS[30], () -> FmGameTests::morphEnchantmentsAndExclusivity);
         FUNCTIONS.register(TESTS[31], () -> FmGameTests::clusterReplacesDropsWithClusters);
+        FUNCTIONS.register(TESTS[32], () -> FmGameTests::morphResearchEntriesPresent);
     }
 
     private FmGameTests() {
@@ -522,6 +523,19 @@ public final class FmGameTests {
             1.0F,
             RandomSource.create(1L));
         helper.assertValueEqual(BuiltInRegistries.ITEM.getKey(replaced.getItem()), Identifier.parse("thaumcraft:native_iron_cluster"), "iron ore yields a native cluster");
+        helper.succeed();
+    }
+
+    private static void morphResearchEntriesPresent(GameTestHelper helper) {
+        ResearchItem morph = ResearchCategories.getResearch("MORPHTOOLS");
+        helper.assertTrue(morph != null, "morph research must exist");
+        helper.assertValueEqual(morph.warp(), 4, "morph research carries warp 4");
+        helper.assertValueEqual(morph.pages().size(), 5, "morph research has text and four recipes");
+        helper.assertTrue(ResearchCategories.getResearch("CLUSTER") != null, "cluster research exists");
+        helper.assertTrue(ResearchCategories.getResearch("IMPACT") != null, "impact research exists");
+        ResearchItem voidtouched = ResearchCategories.getResearch("VOIDTOUCHED");
+        helper.assertTrue(voidtouched != null, "voidtouched research exists");
+        helper.assertValueEqual(voidtouched.warp(), 3, "voidtouched research carries warp 3");
         helper.succeed();
     }
 

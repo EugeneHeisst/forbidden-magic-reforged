@@ -59,6 +59,38 @@ public final class FmResearch {
             .setConcealed()
             .setWarp(1)
             .registerResearchItem();
+        new ResearchItem("MORPHTOOLS", "FORBIDDEN", new AspectList().add(Aspect.TOOL, 2).add(FmAspects.ENVY, 3).add(Aspect.EXCHANGE, 2), -9, -3, 3, TcStack.of("forbiddenmagic:morph_pickaxe", 1))
+            .setPages(
+                ResearchPage.text("forbiddenmagic.research_page.MORPHTOOLS.1"),
+                ResearchPage.infusion("MORPHPICK"),
+                ResearchPage.infusion("MORPHSWORD"),
+                ResearchPage.infusion("MORPHSHOVEL"),
+                ResearchPage.infusion("MORPHAXE")
+            )
+            .setParents("NETHERSHARDS")
+            .setParentsHidden("THAUMIUM", "INFUSIONENCHANTMENT")
+            .setConcealed()
+            .setWarp(4)
+            .registerResearchItem();
+        if (FmConfig.enchantmentsEnabled()) {
+            new ResearchItem("CLUSTER", "FORBIDDEN", new AspectList().add(Aspect.METAL, 1).add(Aspect.FIRE, 4).add(FmAspects.ENVY, 3), -10, -1, 3, ForbiddenMagic.id("textures/misc/lucrative.png"))
+                .setPages(ResearchPage.text("forbiddenmagic.research_page.CLUSTER.1"), ResearchPage.infusionEnchantment("CLUSTER"))
+                .setParents("MORPHTOOLS", "ELEMENTALPICK")
+                .setSecondary()
+                .setConcealed()
+                .registerResearchItem();
+            new ResearchItem("IMPACT", "FORBIDDEN", new AspectList().add(Aspect.ENTROPY, 8).add(Aspect.TOOL, 10).add(Aspect.MINE, 16).add(FmAspects.ENVY, 10), -9, -1, 3, ForbiddenMagic.id("textures/misc/impact.png"))
+                .setPages(ResearchPage.text("forbiddenmagic.research_page.IMPACT.1"), ResearchPage.infusionEnchantment("IMPACT"))
+                .setParents("MORPHTOOLS", "ELEMENTALSHOVEL")
+                .setConcealed()
+                .registerResearchItem();
+            new ResearchItem("VOIDTOUCHED", "FORBIDDEN", new AspectList().add(Aspect.ELDRITCH, 16).add(Aspect.TOOL, 10).add(Aspect.CRAFT, 8).add(FmAspects.ENVY, 32), -8, -1, 3, ForbiddenMagic.id("textures/misc/voidtouched.png"))
+                .setPages(ResearchPage.text("forbiddenmagic.research_page.VOIDTOUCHED.1"), ResearchPage.infusionEnchantment("VOIDTOUCHED"))
+                .setParents("MORPHTOOLS", "VOIDMETAL")
+                .setConcealed()
+                .setWarp(3)
+                .registerResearchItem();
+        }
         if (FmConfig.enchantmentsEnabled()) {
             new ResearchItem("WRATH", "FORBIDDEN", new AspectList().add(FmAspects.WRATH, 16).add(Aspect.WEAPON, 20).add(Aspect.MAGIC, 10), -6, -3, 3, ForbiddenMagic.id("textures/misc/wrath.png"))
                 .setPages(ResearchPage.text("forbiddenmagic.research_page.WRATH.1"), ResearchPage.infusionEnchantment("WRATH"))
