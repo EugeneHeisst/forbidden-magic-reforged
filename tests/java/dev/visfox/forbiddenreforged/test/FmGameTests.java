@@ -68,7 +68,7 @@ import thaumcraft.research.ResearchManager;
 public final class FmGameTests {
     public static final DeferredRegister<Consumer<GameTestHelper>> FUNCTIONS =
         DeferredRegister.create(Registries.TEST_FUNCTION, ForbiddenMagic.MODID);
-    private static final String[] TESTS = {"mod_loads_and_host_is_present", "aspect_registry_keeps_builtin_order_and_combines", "addon_aspect_survives_client_sync", "sin_aspects_registered_with_own_textures", "sin_aspect_tags_merge_with_existing", "entity_aspect_tags_merge_with_existing", "every_tag_target_resolved", "shards_are_registered_with_seven_ids", "no_lust_removes_luxuria_items", "mob_killed_by_player_drops_wrath_shard", "boss_drops_pride_shards", "unattended_death_drops_sloth_shard", "forbidden_category_and_shard_entries_resolve", "skull_axe_infusion_recipe_matches_original", "every_ported_recipe_resolves_its_inputs", "chain_from_netherrack_to_wrath_shard", "enchantments_resolve_with_expected_shape", "emerald_fragment_is_registered", "consuming_destroys_garbage", "corrupting_yields_sin_shards", "greedy_drops_match_kills", "educational_multiplies_experience", "wrath_adds_damage", "enchantment_research_present", "enchantment_recipes_cover_five", "tinkerer_integration_is_optional", "morph_tools_are_registered", "morph_phase_rotates_sets", "impact_covers_a_three_by_three_plane", "voidtouched_repairs_and_warps"};
+    private static final String[] TESTS = {"mod_loads_and_host_is_present", "aspect_registry_keeps_builtin_order_and_combines", "addon_aspect_survives_client_sync", "sin_aspects_registered_with_own_textures", "sin_aspect_tags_merge_with_existing", "entity_aspect_tags_merge_with_existing", "every_tag_target_resolved", "shards_are_registered_with_seven_ids", "no_lust_removes_luxuria_items", "mob_killed_by_player_drops_wrath_shard", "boss_drops_pride_shards", "unattended_death_drops_sloth_shard", "forbidden_category_and_shard_entries_resolve", "skull_axe_infusion_recipe_matches_original", "every_ported_recipe_resolves_its_inputs", "chain_from_netherrack_to_wrath_shard", "enchantments_resolve_with_expected_shape", "emerald_fragment_is_registered", "consuming_destroys_garbage", "corrupting_yields_sin_shards", "greedy_drops_match_kills", "educational_multiplies_experience", "wrath_adds_damage", "enchantment_research_present", "enchantment_recipes_cover_five", "tinkerer_integration_is_optional", "morph_tools_are_registered", "morph_phase_rotates_sets", "impact_covers_a_three_by_three_plane", "voidtouched_repairs_and_warps", "morph_enchantments_and_exclusivity"};
 
     static {
         FUNCTIONS.register(TESTS[0], () -> FmGameTests::modLoadsAndHostIsPresent);
@@ -101,6 +101,7 @@ public final class FmGameTests {
         FUNCTIONS.register(TESTS[27], () -> FmGameTests::morphPhaseRotatesSets);
         FUNCTIONS.register(TESTS[28], () -> FmGameTests::impactCoversAThreeByThreePlane);
         FUNCTIONS.register(TESTS[29], () -> FmGameTests::voidtouchedRepairsAndWarps);
+        FUNCTIONS.register(TESTS[30], () -> FmGameTests::morphEnchantmentsAndExclusivity);
     }
 
     private FmGameTests() {
@@ -487,6 +488,27 @@ public final class FmGameTests {
         ServerPlayer player = mockPlayer(helper);
         MorphToolItem item = (MorphToolItem) stack.getItem();
         helper.assertValueEqual(item.getWarp(stack, player), 0, "plain morph tool carries no warp");
+        stack.enchant(helper.getLevel().registryAccess().lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(FmEnchantments.VOIDTOUCHED), 1);
+        helper.assertValueEqual(item.getWarp(stack, player), 1, "voidtouched morph tool carries warp 1");
+        helper.succeed();
+    }
+
+    private static void morphEnchantmentsAndExclusivity(GameTestHelper helper) {
+        var registry = helper.getLevel().registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
+        helper.assertValueEqual(registry.getOrThrow(FmEnchantments.CLUSTER).value().getMaxLevel(), 4, "cluster max level");
+        helper.assertValueEqual(registry.getOrThrow(FmEnchantments.IMPACT).value().getMaxLevel(), 1, "impact max level");
+        helper.assertValueEqual(registry.getOrThrow(FmEnchantments.VOIDTOUCHED).value().getMaxLevel(), 1, "voidtouched max level");
+        helper.assertTrue(registry.getOrThrow(FmEnchantments.CLUSTER).value().isSupportedItem(new ItemStack(FmItems.MORPH_PICKAXE.get())), "cluster fits the chameleon pickaxe");
+        helper.assertFalse(registry.getOrThrow(FmEnchantments.IMPACT).value().isSupportedItem(new ItemStack(FmItems.MORPH_SWORD.get())), "impact does not fit the sword");
+        helper.assertFalse(net.minecraft.world.item.enchantment.Enchantment.areCompatible(
+            registry.getOrThrow(FmEnchantments.CLUSTER), registry.getOrThrow(net.minecraft.world.item.enchantment.Enchantments.FORTUNE)),
+            "cluster excludes fortune");
+        helper.assertFalse(net.minecraft.world.item.enchantment.Enchantment.areCompatible(
+            registry.getOrThrow(FmEnchantments.CONSUMING), registry.getOrThrow(net.minecraft.world.item.enchantment.Enchantments.SILK_TOUCH)),
+            "consuming excludes silk touch");
+        helper.assertFalse(net.minecraft.world.item.enchantment.Enchantment.areCompatible(
+            registry.getOrThrow(FmEnchantments.GREEDY), registry.getOrThrow(net.minecraft.world.item.enchantment.Enchantments.LOOTING)),
+            "greedy excludes looting");
         helper.succeed();
     }
 

@@ -51,6 +51,9 @@ greedy = "Capitalist"
 consuming = "Consuming"
 educational = "Educational"
 corrupting = "Corrupting"
+cluster = "Fiery Core"
+impact = "Impact"
+voidtouched = "Voidtouched"
 
 [forbiddenmagic.research_page.WRATH]
 1 = "Ugh. You need more excessively violent weapons to kill things with. Enchanting is a good start, but there's only so much Sharpness you can squeeze into a typical sword before it starts to liquefy and sprout daisies instead. Your weapons just aren't killing things hard enough.<BR><BR>To amend this, you've created a special enchantment to force even more violence and death into a weapon. The Wrath enchantment increases the offensive power of a weapon, but is still compatible with Sharpness, Bane of Arthropods, and Smite."

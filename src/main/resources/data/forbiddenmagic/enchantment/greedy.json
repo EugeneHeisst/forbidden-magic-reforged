@@ -4,6 +4,7 @@
     "translate": "enchantment.forbiddenmagic.greedy"
   },
   "effects": {},
+  "exclusive_set": "#forbiddenmagic:exclusive_set/trade",
   "max_cost": {
     "base": 70,
     "per_level_above_first": 0

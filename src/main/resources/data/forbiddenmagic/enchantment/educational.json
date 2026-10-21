@@ -4,6 +4,7 @@
     "translate": "enchantment.forbiddenmagic.educational"
   },
   "effects": {},
+  "exclusive_set": "#forbiddenmagic:exclusive_set/trade",
   "max_cost": {
     "base": 51,
     "per_level_above_first": 10

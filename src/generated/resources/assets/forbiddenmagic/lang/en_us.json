@@ -1,8 +1,11 @@
 {
+  "enchantment.forbiddenmagic.cluster": "Fiery Core",
   "enchantment.forbiddenmagic.consuming": "Consuming",
   "enchantment.forbiddenmagic.corrupting": "Corrupting",
   "enchantment.forbiddenmagic.educational": "Educational",
   "enchantment.forbiddenmagic.greedy": "Capitalist",
+  "enchantment.forbiddenmagic.impact": "Impact",
+  "enchantment.forbiddenmagic.voidtouched": "Voidtouched",
   "enchantment.forbiddenmagic.wrath": "Wrath",
   "forbiddenmagic.research_page.CONSUMING.1": "Sick of having to empty your pack of worthless junk, you've devised an enchantment that will automatically destroy common, unwanted materials.  Any Cobblestone, Dirt, Gravel, or Netherrack mined by a Consuming tool will be destroyed instead of falling to the ground.",
   "forbiddenmagic.research_page.CORRUPTING.1": "The Nether is great and all, but it's also kind of a... Hell Hole.<BR><BR>The Corrupting enchant allows you to harvest Nether Shards without having to be in the Nether.  A pickaxe enchanted with Corrupting will randomly corrupt harvested elemental shards, changing them into nether shards. The shards only seem susceptible while they are encased in infused stone, so corrupting a shard cluster will have no effect.",

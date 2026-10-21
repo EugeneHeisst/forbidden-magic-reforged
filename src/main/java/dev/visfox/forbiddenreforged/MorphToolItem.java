@@ -69,7 +69,7 @@ public class MorphToolItem extends Item implements WarpingGear {
 
     @Override
     public int getWarp(ItemStack stack, Player player) {
-        return 0;
+        return FmEnchantments.level(player.level().registryAccess(), stack, FmEnchantments.VOIDTOUCHED) > 0 ? 1 : 0;
     }
 
     public static List<BlockPos> impactArea(Direction facing, BlockPos origin) {

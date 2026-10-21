@@ -4,6 +4,7 @@
     "translate": "enchantment.forbiddenmagic.consuming"
   },
   "effects": {},
+  "exclusive_set": "#forbiddenmagic:exclusive_set/consuming",
   "max_cost": {
     "base": 51,
     "per_level_above_first": 10
