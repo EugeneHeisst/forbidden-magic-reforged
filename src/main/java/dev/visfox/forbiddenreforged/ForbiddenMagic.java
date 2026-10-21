@@ -14,6 +14,7 @@ public final class ForbiddenMagic {
     public static final Logger LOGGER = LogManager.getLogger(MODID);
 
     public ForbiddenMagic(IEventBus modEventBus, ModContainer modContainer) {
+        FmConfig.register(modContainer);
         FmAspects.init();
         FmGameTests.register(modEventBus);
     }

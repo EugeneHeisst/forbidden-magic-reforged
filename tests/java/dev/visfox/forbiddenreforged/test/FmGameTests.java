@@ -17,6 +17,7 @@ import net.neoforged.neoforge.event.RegisterGameTestsEvent;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import dev.visfox.forbiddenreforged.ForbiddenMagic;
 import dev.visfox.forbiddenreforged.FmAspects;
+import dev.visfox.forbiddenreforged.FmConfig;
 import thaumcraft.aspect.Aspect;
 import thaumcraft.aspect.AspectList;
 
@@ -24,12 +25,13 @@ import thaumcraft.aspect.AspectList;
 public final class FmGameTests {
     public static final DeferredRegister<Consumer<GameTestHelper>> FUNCTIONS =
         DeferredRegister.create(Registries.TEST_FUNCTION, ForbiddenMagic.MODID);
-    private static final String[] TESTS = {"mod_loads_and_host_is_present", "aspect_registry_keeps_builtin_order_and_combines", "addon_aspect_survives_client_sync"};
+    private static final String[] TESTS = {"mod_loads_and_host_is_present", "aspect_registry_keeps_builtin_order_and_combines", "addon_aspect_survives_client_sync", "sin_aspects_registered_with_own_textures"};
 
     static {
         FUNCTIONS.register(TESTS[0], () -> FmGameTests::modLoadsAndHostIsPresent);
         FUNCTIONS.register(TESTS[1], () -> FmGameTests::aspectRegistryKeepsBuiltinOrderAndCombines);
         FUNCTIONS.register(TESTS[2], () -> FmGameTests::addonAspectSurvivesClientSync);
+        FUNCTIONS.register(TESTS[3], () -> FmGameTests::sinAspectsRegisteredWithOwnTextures);
     }
 
     private FmGameTests() {
@@ -71,15 +73,31 @@ public final class FmGameTests {
     }
 
     private static void addonAspectSurvivesClientSync(GameTestHelper helper) {
-        Aspect probe = FmAspects.PROBE;
-        helper.assertTrue(probe != null && probe.ordinal() >= Aspect.builtinCount(), "probe aspect must be an add-on aspect");
-        helper.assertValueEqual(Aspect.getAspect("probe"), probe, "by-tag lookup must find the add-on aspect");
-        AspectList list = new AspectList().add(probe, 3);
+        Aspect nether = FmAspects.NETHER;
+        helper.assertTrue(nether != null && nether.ordinal() >= Aspect.builtinCount(), "infernus must be an add-on aspect");
+        helper.assertValueEqual(Aspect.getAspect("infernus"), nether, "by-tag lookup must find the add-on aspect");
+        AspectList list = new AspectList().add(nether, 3);
         io.netty.buffer.ByteBuf buffer = io.netty.buffer.Unpooled.buffer();
         AspectList.STREAM_CODEC.encode(buffer, list);
         buffer.readerIndex(0);
         AspectList decoded = AspectList.STREAM_CODEC.decode(buffer);
-        helper.assertValueEqual(decoded.getAmount(probe), 3, "aspect amount must survive a network round trip");
+        helper.assertValueEqual(decoded.getAmount(nether), 3, "aspect amount must survive a network round trip");
+        helper.succeed();
+    }
+
+    private static void sinAspectsRegisteredWithOwnTextures(GameTestHelper helper) {
+        helper.assertTrue(FmAspects.available(), "add-on aspect API missing: host too old");
+        Aspect[] sins = {FmAspects.NETHER, FmAspects.WRATH, FmAspects.ENVY, FmAspects.GLUTTONY, FmAspects.PRIDE, FmAspects.SLOTH};
+        for (Aspect aspect : sins) {
+            helper.assertTrue(aspect != null, "sin aspect must be registered");
+            helper.assertTrue(aspect.ordinal() >= Aspect.builtinCount(), aspect.getSerializedName() + " must be an add-on aspect");
+            helper.assertTrue(aspect.getImage().getNamespace().equals(ForbiddenMagic.MODID), aspect.getSerializedName() + " texture must live in the add-on namespace");
+        }
+        Aspect ira = Aspect.combine(Aspect.WEAPON, Aspect.FIRE);
+        helper.assertTrue(ira == FmAspects.WRATH, "combine(WEAPON, FIRE) must resolve to the add-on ira");
+        helper.assertTrue(Aspect.combine(Aspect.AIR, Aspect.FIRE) == Aspect.LIGHT, "adding ira must not disturb builtin combine");
+        int expected = FmConfig.lustDisabled() ? 6 : 7;
+        helper.assertValueEqual(Aspect.count(), Aspect.builtinCount() + expected, FmConfig.lustDisabled() ? "six add-on aspects: luxuria is switched off" : "exactly seven add-on aspects");
         helper.succeed();
     }
 }
