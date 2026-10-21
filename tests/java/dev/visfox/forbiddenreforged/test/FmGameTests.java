@@ -28,6 +28,8 @@ import dev.visfox.forbiddenreforged.ForbiddenMagic;
 import dev.visfox.forbiddenreforged.FmAspectTags;
 import dev.visfox.forbiddenreforged.FmAspects;
 import dev.visfox.forbiddenreforged.FmConfig;
+import dev.visfox.forbiddenreforged.FmCreativeTab;
+import dev.visfox.forbiddenreforged.FmItems;
 import thaumcraft.aspect.Aspect;
 import thaumcraft.aspect.AspectList;
 import thaumcraft.aspect.AspectRegistry;
@@ -36,7 +38,7 @@ import thaumcraft.aspect.AspectRegistry;
 public final class FmGameTests {
     public static final DeferredRegister<Consumer<GameTestHelper>> FUNCTIONS =
         DeferredRegister.create(Registries.TEST_FUNCTION, ForbiddenMagic.MODID);
-    private static final String[] TESTS = {"mod_loads_and_host_is_present", "aspect_registry_keeps_builtin_order_and_combines", "addon_aspect_survives_client_sync", "sin_aspects_registered_with_own_textures", "sin_aspect_tags_merge_with_existing", "entity_aspect_tags_merge_with_existing", "every_tag_target_resolved"};
+    private static final String[] TESTS = {"mod_loads_and_host_is_present", "aspect_registry_keeps_builtin_order_and_combines", "addon_aspect_survives_client_sync", "sin_aspects_registered_with_own_textures", "sin_aspect_tags_merge_with_existing", "entity_aspect_tags_merge_with_existing", "every_tag_target_resolved", "shards_are_registered_with_seven_ids", "no_lust_removes_luxuria_items"};
 
     static {
         FUNCTIONS.register(TESTS[0], () -> FmGameTests::modLoadsAndHostIsPresent);
@@ -46,6 +48,8 @@ public final class FmGameTests {
         FUNCTIONS.register(TESTS[4], () -> FmGameTests::sinAspectTagsMergeWithExisting);
         FUNCTIONS.register(TESTS[5], () -> FmGameTests::entityAspectTagsMergeWithExisting);
         FUNCTIONS.register(TESTS[6], () -> FmGameTests::everyTagTargetResolved);
+        FUNCTIONS.register(TESTS[7], () -> FmGameTests::shardsAreRegisteredWithSevenIds);
+        FUNCTIONS.register(TESTS[8], () -> FmGameTests::noLustRemovesLuxuriaItems);
     }
 
     private FmGameTests() {
@@ -158,6 +162,33 @@ public final class FmGameTests {
             }
         }
         helper.assertTrue(unresolved.isEmpty(), "unresolved aspect tag targets: " + unresolved);
+        helper.succeed();
+    }
+
+    private static void shardsAreRegisteredWithSevenIds(GameTestHelper helper) {
+        helper.assertValueEqual(FmItems.DEADLY_SHARDS.size(), 7, "the original registers seven vices");
+        for (var entry : FmItems.DEADLY_SHARDS.entrySet()) {
+            if (entry.getKey().equals("lust") && FmConfig.lustDisabled()) {
+                continue;
+            }
+            Item item = entry.getValue().get();
+            helper.assertTrue(BuiltInRegistries.ITEM.getKey(item).getNamespace().equals(ForbiddenMagic.MODID), entry.getKey() + " must be namespaced to the port");
+            AspectList tags = AspectRegistry.active().getObjectTags(item);
+            helper.assertTrue(tags != null && tags.size() > 0, entry.getKey() + " must carry an aspect tag");
+        }
+        helper.succeed();
+    }
+
+    private static void noLustRemovesLuxuriaItems(GameTestHelper helper) {
+        ForbiddenMagic.LOGGER.info("no_lust gate: disabled={}, luxuria={}", FmConfig.lustDisabled(), Aspect.getAspect("luxuria"));
+        if (!FmConfig.lustDisabled()) {
+            helper.succeed();
+            return;
+        }
+        helper.assertTrue(FmAspects.LUST == null && Aspect.getAspect("luxuria") == null, "luxuria must be absent from the registry");
+        helper.assertFalse(FmCreativeTab.visible("lust"), "lust shard must not be offered to the creative tab");
+        AspectList tags = AspectRegistry.active().getObjectTags(FmItems.DEADLY_SHARDS.get("lust").get());
+        helper.assertTrue(tags == null || tags.size() == 0, "lust shard must carry no aspect tag");
         helper.succeed();
     }
 }

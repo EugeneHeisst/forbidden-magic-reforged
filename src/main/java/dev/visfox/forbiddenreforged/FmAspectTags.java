@@ -61,6 +61,18 @@ public final class FmAspectTags {
                 DECLARED.add("minecraft:lead");
                 register("minecraft:lead", tags().add(Aspect.BEAST, 2).add(Aspect.CLOTH, 2).add(Aspect.SLIME, 1).add(FmAspects.LUST, 2));
             }
+            addShard("wrath", tags().add(FmAspects.NETHER, 1).add(FmAspects.WRATH, 2).add(Aspect.CRYSTAL, 1));
+            addShard("envy", tags().add(FmAspects.NETHER, 1).add(FmAspects.ENVY, 2).add(Aspect.CRYSTAL, 1));
+            addShard("taint", tags().add(Aspect.TAINT, 3).add(Aspect.CRYSTAL, 1));
+            addShard("pride", tags().add(FmAspects.NETHER, 1).add(FmAspects.PRIDE, 2).add(Aspect.CRYSTAL, 1));
+            if (!FmConfig.lustDisabled()) {
+                addShard("lust", tags().add(FmAspects.NETHER, 1).add(FmAspects.LUST, 2).add(Aspect.CRYSTAL, 1));
+            }
+            addShard("sloth", tags().add(FmAspects.NETHER, 1).add(FmAspects.SLOTH, 2).add(Aspect.CRYSTAL, 1));
+            addShard("greed", tags().add(FmAspects.NETHER, 1).add(Aspect.GREED, 2).add(Aspect.CRYSTAL, 1));
+            String gluttony = FmItems.GLUTTONY_SHARD.getId().toString();
+            DECLARED.add(gluttony);
+            register(gluttony, tags().add(FmAspects.NETHER, 1).add(FmAspects.GLUTTONY, 2).add(Aspect.CRYSTAL, 1));
             addEntity("thaumcraft:brainy_zombie", tags().add(FmAspects.WRATH, 3));
             addEntity("thaumcraft:giant_brainy_zombie", tags().add(FmAspects.WRATH, 4));
             addEntity("thaumcraft:firebat", tags().add(FmAspects.WRATH, 1).add(FmAspects.NETHER, 2));
@@ -87,6 +99,12 @@ public final class FmAspectTags {
                 merged.add(aspect, additions.getAmount(aspect));
             }
             register(target, merged);
+        }
+
+        private void addShard(String vice, AspectList aspects) {
+            String target = FmItems.DEADLY_SHARDS.get(vice).getId().toString();
+            DECLARED.add(target);
+            register(target, aspects);
         }
 
         private void addEntity(String target, AspectList additions, Object... nbt) {

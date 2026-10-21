@@ -4,7 +4,20 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 LANG_SOURCE = ROOT / "tools" / "lang"
-LANG_OUTPUT = ROOT / "src" / "generated" / "resources" / "assets" / "forbiddenmagic" / "lang"
+ASSETS = ROOT / "src" / "generated" / "resources" / "assets" / "forbiddenmagic"
+TEXTURES = ROOT / "src" / "main" / "resources" / "assets" / "forbiddenmagic" / "textures" / "item"
+
+ITEM_TEXTURES = {
+    "wrath_shard": "wrathshard",
+    "envy_shard": "envyshard",
+    "taint_shard": "taintshard",
+    "pride_shard": "prideshard",
+    "lust_shard": "lustshard",
+    "sloth_shard": "slothshard",
+    "greed_shard": "greedshard",
+    "gluttony_shard": "gluttonyshard",
+    "skull_axe": "skullaxe",
+}
 
 
 def flatten(value: object, prefix: str = "") -> dict[str, str]:
@@ -16,14 +29,37 @@ def flatten(value: object, prefix: str = "") -> dict[str, str]:
     return {prefix.rstrip("."): str(value)}
 
 
-def main() -> int:
-    LANG_OUTPUT.mkdir(parents=True, exist_ok=True)
+def write_json(path: Path, data: object) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(data, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def generate_lang() -> None:
     for source in sorted(LANG_SOURCE.glob("*.toml")):
         data = tomllib.loads(source.read_text(encoding="utf-8"))
         entries = flatten(data)
-        target = LANG_OUTPUT / (source.stem + ".json")
-        target.write_text(json.dumps(entries, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-        print(f"{target.relative_to(ROOT)}: {len(entries)} keys")
+        write_json(ASSETS / "lang" / (source.stem + ".json"), entries)
+        print(f"lang/{source.stem}.json: {len(entries)} keys")
+
+
+def generate_items() -> None:
+    missing = [name for name in ITEM_TEXTURES if not (TEXTURES / f"{name}.png").is_file()]
+    if missing:
+        raise SystemExit(f"no texture for {missing}")
+    for name in sorted(ITEM_TEXTURES):
+        write_json(ASSETS / "models" / "item" / f"{name}.json", {
+            "parent": "minecraft:item/generated",
+            "textures": {"layer0": f"forbiddenmagic:item/{name}"},
+        })
+        write_json(ASSETS / "items" / f"{name}.json", {
+            "model": {"type": "minecraft:model", "model": f"forbiddenmagic:item/{name}"},
+        })
+    print(f"items: {len(ITEM_TEXTURES)} models and definitions")
+
+
+def main() -> int:
+    generate_lang()
+    generate_items()
     return 0
 
 

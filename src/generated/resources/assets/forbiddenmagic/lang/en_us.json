@@ -1,4 +1,13 @@
 {
+  "item.forbiddenmagic.envy_shard": "Envy Shard",
+  "item.forbiddenmagic.gluttony_shard": "Gluttony Shard",
+  "item.forbiddenmagic.greed_shard": "Greed Shard",
+  "item.forbiddenmagic.lust_shard": "Lust Shard",
+  "item.forbiddenmagic.pride_shard": "Pride Shard",
+  "item.forbiddenmagic.skull_axe": "Axe of the Skulltaker",
+  "item.forbiddenmagic.sloth_shard": "Sloth Shard",
+  "item.forbiddenmagic.taint_shard": "Taint Shard",
+  "item.forbiddenmagic.wrath_shard": "Wrath Shard",
   "tc.aspect.desidia": "Sloth, Laziness, Procrastination",
   "tc.aspect.gula": "Gluttony, Consumption, Indulgence",
   "tc.aspect.infernus": "The Nether, Demons, Hellfire",
