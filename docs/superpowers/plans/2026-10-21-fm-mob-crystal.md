@@ -167,8 +167,10 @@ public final class FmSpawnerMobs {
     }
 
     private static boolean isBoss(EntityType<?> type) {
-        return type == EntityType.WITHER || type == EntityType.ENDER_DRAGON
-            || type.create(/* уровень недоступен в статике */ null, EntitySpawnReason.TRIGGERED) instanceof ThaumcraftBoss;
+        Class<? extends Entity> base = type.getBaseClass();
+        return WitherBoss.class.isAssignableFrom(base)
+            || EnderDragon.class.isAssignableFrom(base)
+            || ThaumcraftBoss.class.isAssignableFrom(base);
     }
 }
 ```
