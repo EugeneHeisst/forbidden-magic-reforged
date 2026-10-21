@@ -3,11 +3,13 @@ Unofficial port of Forbidden Magic 0.574 to Thaumcraft 4: Reforged.
 
 Port code and original additions
 Copyright (c) 2026 Tanjiro (MxxFoxx2).
-Licensed under the WTFPL; see LICENSE.
+Licensed under the MIT License; see LICENSE.
+The MIT license applies to the port's original code; the original Forbidden Magic remains
+WTFPL and the host remains All Rights Reserved.
 
 Maintenance
 The author may occasionally return to this project and make fixes or updates.
-This is not a promise, a schedule, or a support obligation; the WTFPL grants rights, not guarantees.
+This is not a promise, a schedule, or a support obligation; a license grants rights, not guarantees.
 
 Forbidden Magic 0.574
 Copyright SpitefulFox. Licensed under the WTFPL.

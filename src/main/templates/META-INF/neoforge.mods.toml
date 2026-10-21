@@ -1,6 +1,6 @@
 modLoader="javafml"
 loaderVersion="[1,)"
-license="WTFPL"
+license="MIT"
 
 [[mods]]
 modId="${mod_id}"

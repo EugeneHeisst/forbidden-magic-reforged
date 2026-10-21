@@ -61,7 +61,7 @@ forbidden-magic-reforged/
     FmDrops.java                          shard drop rules
   tests/java/dev/visfox/forbiddenreforged/test/
     FmGameTests.java                      all game tests
-  LICENSE                                 WTFPL for the port's code
+  LICENSE                                 MIT for the port's code
   NOTICE                                  WTFPL original and host ARR provenance
   src/main/resources/assets/forbiddenmagic/  textures from FM
   src/generated/resources/                   generator output
@@ -327,7 +327,7 @@ tasks.register('verify', GradleBuild) { }
 ```toml
 modLoader="javafml"
 loaderVersion="[1,)"
-license="WTFPL"
+license="MIT"
 
 [[mods]]
 modId="${mod_id}"
