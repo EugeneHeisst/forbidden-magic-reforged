@@ -18,6 +18,10 @@ greed_shard = "Осколок жадности"
 gluttony_shard = "Осколок прожорливости"
 skull_axe = "Топор собирателя черепов"
 emerald_fragment = "Изумрудный фрагмент"
+morph_pickaxe = "Хамелеоновая кирка"
+morph_sword = "Хамелеоновый меч"
+morph_shovel = "Хамелеоновая лопата"
+morph_axe = "Хамелеоновый топор"
 
 [tc.research_name]
 NETHERSHARDS = "Осколки Нижнего мира"

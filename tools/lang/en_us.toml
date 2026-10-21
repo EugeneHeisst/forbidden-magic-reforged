@@ -18,6 +18,10 @@ greed_shard = "Greed Shard"
 gluttony_shard = "Gluttony Shard"
 skull_axe = "Axe of the Skulltaker"
 emerald_fragment = "Emerald Fragment"
+morph_pickaxe = "Chameleon Pickaxe"
+morph_sword = "Chameleon Sword"
+morph_shovel = "Chameleon Shovel"
+morph_axe = "Chameleon Axe"
 
 [tc.research_name]
 NETHERSHARDS = "Nether Shards"

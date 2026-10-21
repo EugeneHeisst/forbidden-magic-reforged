@@ -12,6 +12,9 @@ public final class FmEnchantments {
     public static final ResourceKey<Enchantment> CONSUMING = key("consuming");
     public static final ResourceKey<Enchantment> EDUCATIONAL = key("educational");
     public static final ResourceKey<Enchantment> CORRUPTING = key("corrupting");
+    public static final ResourceKey<Enchantment> CLUSTER = key("cluster");
+    public static final ResourceKey<Enchantment> IMPACT = key("impact");
+    public static final ResourceKey<Enchantment> VOIDTOUCHED = key("voidtouched");
 
     private FmEnchantments() {
     }

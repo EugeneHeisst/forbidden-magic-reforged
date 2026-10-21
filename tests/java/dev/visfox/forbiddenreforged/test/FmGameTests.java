@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketFlow;
@@ -27,6 +28,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.level.GameType;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -45,6 +47,7 @@ import dev.visfox.forbiddenreforged.FmEnchantments;
 import dev.visfox.forbiddenreforged.FmItems;
 import dev.visfox.forbiddenreforged.FmRecipes;
 import dev.visfox.forbiddenreforged.FmTinkerer;
+import dev.visfox.forbiddenreforged.MorphState;
 import thaumcraft.crafting.InfusionRecipe;
 import thaumcraft.crafting.InfusionEnchantmentRecipe;
 import thaumcraft.crafting.TcIngredient;
@@ -62,7 +65,7 @@ import thaumcraft.research.ResearchManager;
 public final class FmGameTests {
     public static final DeferredRegister<Consumer<GameTestHelper>> FUNCTIONS =
         DeferredRegister.create(Registries.TEST_FUNCTION, ForbiddenMagic.MODID);
-    private static final String[] TESTS = {"mod_loads_and_host_is_present", "aspect_registry_keeps_builtin_order_and_combines", "addon_aspect_survives_client_sync", "sin_aspects_registered_with_own_textures", "sin_aspect_tags_merge_with_existing", "entity_aspect_tags_merge_with_existing", "every_tag_target_resolved", "shards_are_registered_with_seven_ids", "no_lust_removes_luxuria_items", "mob_killed_by_player_drops_wrath_shard", "boss_drops_pride_shards", "unattended_death_drops_sloth_shard", "forbidden_category_and_shard_entries_resolve", "skull_axe_infusion_recipe_matches_original", "every_ported_recipe_resolves_its_inputs", "chain_from_netherrack_to_wrath_shard", "enchantments_resolve_with_expected_shape", "emerald_fragment_is_registered", "consuming_destroys_garbage", "corrupting_yields_sin_shards", "greedy_drops_match_kills", "educational_multiplies_experience", "wrath_adds_damage", "enchantment_research_present", "enchantment_recipes_cover_five", "tinkerer_integration_is_optional"};
+    private static final String[] TESTS = {"mod_loads_and_host_is_present", "aspect_registry_keeps_builtin_order_and_combines", "addon_aspect_survives_client_sync", "sin_aspects_registered_with_own_textures", "sin_aspect_tags_merge_with_existing", "entity_aspect_tags_merge_with_existing", "every_tag_target_resolved", "shards_are_registered_with_seven_ids", "no_lust_removes_luxuria_items", "mob_killed_by_player_drops_wrath_shard", "boss_drops_pride_shards", "unattended_death_drops_sloth_shard", "forbidden_category_and_shard_entries_resolve", "skull_axe_infusion_recipe_matches_original", "every_ported_recipe_resolves_its_inputs", "chain_from_netherrack_to_wrath_shard", "enchantments_resolve_with_expected_shape", "emerald_fragment_is_registered", "consuming_destroys_garbage", "corrupting_yields_sin_shards", "greedy_drops_match_kills", "educational_multiplies_experience", "wrath_adds_damage", "enchantment_research_present", "enchantment_recipes_cover_five", "tinkerer_integration_is_optional", "morph_tools_are_registered", "morph_phase_rotates_sets"};
 
     static {
         FUNCTIONS.register(TESTS[0], () -> FmGameTests::modLoadsAndHostIsPresent);
@@ -91,6 +94,8 @@ public final class FmGameTests {
         FUNCTIONS.register(TESTS[23], () -> FmGameTests::enchantmentResearchPresent);
         FUNCTIONS.register(TESTS[24], () -> FmGameTests::enchantmentRecipesCoverFive);
         FUNCTIONS.register(TESTS[25], () -> FmGameTests::tinkererIntegrationIsOptional);
+        FUNCTIONS.register(TESTS[26], () -> FmGameTests::morphToolsAreRegistered);
+        FUNCTIONS.register(TESTS[27], () -> FmGameTests::morphPhaseRotatesSets);
     }
 
     private FmGameTests() {
@@ -438,6 +443,28 @@ public final class FmGameTests {
         } else {
             helper.assertValueEqual(FmTinkerer.registeredCount(), 5, "TT receives five enchantment costs");
         }
+        helper.succeed();
+    }
+
+    private static void morphToolsAreRegistered(GameTestHelper helper) {
+        for (var item : java.util.List.of(FmItems.MORPH_PICKAXE, FmItems.MORPH_SWORD, FmItems.MORPH_SHOVEL, FmItems.MORPH_AXE)) {
+            ItemStack stack = new ItemStack(item.get());
+            helper.assertValueEqual(stack.getMaxDamage(), 1500, "morph tools use elemental durability");
+            helper.assertValueEqual(stack.getRarity(), net.minecraft.world.item.Rarity.EPIC, "morph tools are epic");
+            helper.assertTrue(stack.get(DataComponents.REPAIRABLE) != null, "morph tools declare a repair item");
+            helper.assertTrue(stack.get(DataComponents.REPAIRABLE).isValidRepairItem(new ItemStack(FmItems.DEADLY_SHARDS.get("envy").get())), "envy shards repair morph tools");
+        }
+        helper.succeed();
+    }
+
+    private static void morphPhaseRotatesSets(GameTestHelper helper) {
+        MorphState state = MorphState.EMPTY.store(ItemEnchantments.EMPTY, "Sharpness").advance();
+        helper.assertValueEqual(state.phase(), 1, "phase advances");
+        helper.assertValueEqual(state.names().get(0), "Sharpness", "the old name is kept in slot zero");
+        helper.assertValueEqual(state.currentName(), "", "the new slot starts empty");
+        MorphState wrapped = state.store(ItemEnchantments.EMPTY, "Smite").advance().advance();
+        helper.assertValueEqual(wrapped.phase(), 0, "three phases wrap back to zero");
+        helper.assertValueEqual(wrapped.currentName(), "Sharpness", "the first slot name returns");
         helper.succeed();
     }
 

@@ -20,6 +20,13 @@ ITEM_TEXTURES = {
     "emerald_fragment": "emerald_nugget",
 }
 
+MORPH_TEXTURES = {
+    "morph_pickaxe": ("chameleonpick", "eyepick"),
+    "morph_sword": ("chameleonsword", "eyesword"),
+    "morph_shovel": ("chameleonshovel", "eyeshovel"),
+    "morph_axe": ("chameleonaxe", "eyeaxe"),
+}
+
 
 def flatten(value: object, prefix: str = "") -> dict[str, str]:
     if isinstance(value, dict):
@@ -58,9 +65,25 @@ def generate_items() -> None:
     print(f"items: {len(ITEM_TEXTURES)} models and definitions")
 
 
+def generate_morph_items() -> None:
+    for name, (base, overlay) in sorted(MORPH_TEXTURES.items()):
+        write_json(ASSETS / "models" / "item" / f"{name}.json", {
+            "parent": "minecraft:item/generated",
+            "textures": {
+                "layer0": f"forbiddenmagic:item/{base}",
+                "layer1": f"forbiddenmagic:item/{overlay}",
+            },
+        })
+        write_json(ASSETS / "items" / f"{name}.json", {
+            "model": {"type": "minecraft:model", "model": f"forbiddenmagic:item/{name}"},
+        })
+    print(f"morph tools: {len(MORPH_TEXTURES)} two-layer models")
+
+
 def main() -> int:
     generate_lang()
     generate_items()
+    generate_morph_items()
     return 0
 
 

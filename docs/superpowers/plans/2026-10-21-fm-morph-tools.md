@@ -43,7 +43,7 @@
 
 **Interfaces:**
 - Consumes: `FmItems.ITEMS`, `FmEnchantments.level`.
-- Produces: `FmComponents.MORPH_STATE`, `MorphState` (`phase()`, `sets()`, `names()`, `store(ItemEnchantments, String)`, `advance()`, `currentSet()`, `currentName()`, `EMPTY`), `FmItems.MORPH_PICKAXE/SWORD/SHOVEL/AXE`, `MorphToolItem`.
+- Produces: `FmComponents.MORPH_STATE`, `MorphState` (`phase()`, `sets()`, `names()`, `store(ItemEnchantments, String)`, `advance()`, `currentSet()`, `currentName()`, `EMPTY`), `FmItems.MORPH_PICKAXE/SWORD/SHOVEL/AXE`, `MorphToolItem`, ключи `FmEnchantments.CLUSTER/IMPACT/VOIDTOUCHED` (JSON появится в Task 3).
 
 - [ ] **Step 1: Падающие тесты**
 
@@ -534,15 +534,9 @@ private static void morphEnchantmentsAndExclusivity(GameTestHelper helper) {
 Run: `cmd //c gradlew.bat runGameTestServer`
 Expected: компиляция падает на `FmEnchantments.CLUSTER`.
 
-- [ ] **Step 3: Ключи и JSON**
+- [ ] **Step 3: JSON**
 
-В `FmEnchantments`:
-
-```java
-    public static final ResourceKey<Enchantment> CLUSTER = key("cluster");
-    public static final ResourceKey<Enchantment> IMPACT = key("impact");
-    public static final ResourceKey<Enchantment> VOIDTOUCHED = key("voidtouched");
-```
+Ключи `CLUSTER`, `IMPACT`, `VOIDTOUCHED` уже созданы в Task 1; здесь добавляются только JSON-файлы.
 
 `cluster.json`:
 

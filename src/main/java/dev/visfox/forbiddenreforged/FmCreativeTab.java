@@ -27,5 +27,9 @@ public final class FmCreativeTab {
         event.accept(FmItems.GLUTTONY_SHARD.get());
         event.accept(FmItems.SKULL_AXE.get());
         event.accept(FmItems.EMERALD_FRAGMENT.get());
+        event.accept(FmItems.MORPH_PICKAXE.get());
+        event.accept(FmItems.MORPH_SWORD.get());
+        event.accept(FmItems.MORPH_SHOVEL.get());
+        event.accept(FmItems.MORPH_AXE.get());
     }
 }
