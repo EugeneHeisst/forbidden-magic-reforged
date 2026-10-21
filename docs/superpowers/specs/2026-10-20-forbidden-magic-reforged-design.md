@@ -229,8 +229,8 @@ netherrack, запись исследования про осколки откр
   vanilla crafting/smelting (TaintPlank, TaintBrick, taint coal) через `CraftingRecipeRef`/датапак;
 - warp: `addWarpToResearch` — SKULLAXE 1, MORPHTOOLS 4, ROD_infernal 2, WRATH 3, VOIDTOUCHED 3,
   WRATHCAGE 3, TAINTTREE 1, ROD_tainted 2; `addWarpToItem` — WRATHCAGE 5, taint sapling 1;
-- зачарования: Cluster, Consuming, Corrupting, Educational, Greedy, Impact, Void, Wrath; плюс
-  необязательная интеграция с TT Reforged через `EnchantmentManager.data()` (см. §5.2);
+- зачарования: Cluster, Consuming, Corrupting, Educational, Greedy, Impact, Void, Wrath; при
+  установленном TT Reforged их стоимость регистрируется через `EnchantmentManager.data()` (см. §5.2);
 - block entity Клетки Гнева, её логика спавнера и рендерер, с расчётом геометрии в собственном
   аналоге `client/geom`; ПКМ клеткой с кристаллом моба в руке назначает моба
   (`BlockWrathCage.java:54` → `setMobID`), поэтому кристалл и клетка переносятся парой;
@@ -240,40 +240,12 @@ netherrack, запись исследования про осколки откр
   При включении аспект `luxuria` не регистрируется, как в `DarkAspects.java:28`; остальные core-рубильники:
   `gluttony` 0/1/2, `enchanting`, `wrathCage`/`wrathCost`/`wrathEff`/`wrathCrazy`, `hereticID`, `tagResearch`.
 
-### 5.2 Вырезано, с причиной в `docs/dropped.md`
+### 5.2 Поддержка: что есть и чего нет
 
-- `compat/` целиком: Blood Magic, Botania, Ars Magica 2, CoFH — ничего этого нет под NeoForge 26.3
-  (для 1.21.1 список пересматривается). Thaumic Tinkerer **не** вырезан: его Reforged-порт существует,
-  интеграция опциональна (ниже);
-- `ItemBloodRapier`, `DarkPotions` и оба эффекта зелий — API Blood Magic;
-- `ItemBloodwell` и `ItemBoundwell` с их рецептами и исследованиями — Blood Magic (`blood bucket`,
-  `BindingRegistry`); core-склянки `ItemCrystalwell` и `ItemPrimewell` остаются в порту;
-- `ItemDivineOrb` (Божественная сфера) — Blood Magic: реализует `IBloodOrb`, `IBindable`, зовёт
-  `SoulNetworkHandler` и `AltarRecipeRegistry`; без BM класс не загружается;
-- четыре Botania `SubTile` (bloodthorn, euclidaisy, tainthistle, whisperweed);
-- `ItemSubCollar` — Botania, а не Thaumic Tinkerer: `items/baubles/ItemSubCollar.java:25,31` тянет
-  `vazkii.botania.api.item.ICosmeticAttachable` под `@Optional.Interface(modid = "Botania")`, поэтому
-  покрывается пунктом про `compat/` выше и отдельной строки не заслуживает;
-- `ItemMobCrystal` из вырезанного убран: он ядровой, а не зависимость. `items/ItemMobCrystal.java`
-  лежит в `fox.spiteful.forbidden.items`, в импортах нет ни одного стороннего мода — только
-  `fox.spiteful.forbidden.*`, `net.minecraft.*`, `thaumcraft.api.aspects.Aspect`, `cpw.mods.fml`.
-  Связь с Thaumic Tinkerer во всём моде держат четыре файла интеграции — `DarkEnchantments`,
-  `compat/Compat`, `Forbidden`, `Config`: флаг `Config.tt` и строка `after:ThaumicTinkerer`, — но не
-  предметы. Кристалл задействован в семи файлах ядра: регистрация, исследование, рецепт,
-  инициализация, обработчик событий и `BlockWrathCage`, который без него не назначает моба, так что
-  вырезание ломало бы Клетку Гнева молча;
-- обновления стержней жезлов blood и mana, читающие ресурсы Blood Magic или Botania;
-- сторонние meta-варианты внутри `ItemResource`, `ItemWandCaps`, `ItemWandCores`. Классы остаются,
-  варианты вырезаются. Точный список пишется в `docs/dropped.md` на инкременте 2, когда каждый вариант
-  будет привязан к предмету-поставщику: зарегистрировано 27 имён, а происхождение по модификатору в
-  исходнике 1.7.10 не подписано, так что заранее вставлять непроверенный список в проект нельзя;
-- `plans.txt` не реализуется никогда: это незавершённый список идей оригинального автора, включая
-  связывание демонов и грешных пчёл.
-
-**Thaumic Tinkerer Reforged — опциональная интеграция, не вырез.** `notlikethiss/thaumic-tinkerer-reforged`
-существует для обеих целей: ветка `main` (52c999e, MC 26.3) и `mc/1.21.1` (33c5d9e); лицензия ARR, код и
-ассеты TT не копируются. Оригинальный reflection-вызов `registerExponentialCostData` заменяется прямым
-добавлением в публичную mutable-карту:
+**Поддерживается: Thaumic Tinkerer Reforged.** `notlikethiss/thaumic-tinkerer-reforged` существует для
+обеих целей: ветка `main` (52c999e, MC 26.3) и `mc/1.21.1` (33c5d9e); лицензия ARR, код и ассеты TT не
+копируются. Оригинальный reflection-вызов `registerExponentialCostData` заменяется прямым добавлением
+в публичную mutable-карту:
 
 ```java
 EnchantmentManager.data().put(key, new EnchantmentManager.Data(key, texture, false, level1Aspects, research));
@@ -284,6 +256,31 @@ EnchantmentManager.data().put(key, new EnchantmentManager.Data(key, texture, fal
 патч TT не нужен, пока `data()` остаётся публичной. Гард — `ModList.get().isLoaded("thaumictinkerer")`
 плюс `try/catch NoClassDefFoundError`: без TT мод работает без этой интеграции. Если автор закроет
 `data()`, это отдельный upstream-запрос к TT.
+
+**Также поддерживается: `ItemMobCrystal`.** Это ядровой предмет FM, не зависимость TT: в импортах только
+`fox.spiteful.forbidden.*`, `net.minecraft.*`, `thaumcraft.api.aspects.Aspect`, `cpw.mods.fml`. Он нужен
+Клетке Гнева (без него клетка не назначает моба), поэтому входит в порт.
+
+**Не поддерживается** (полный список с причинами — в `docs/dropped.md`):
+
+- `compat/` целиком: Blood Magic, Botania, Ars Magica 2, CoFH — нет портов под NeoForge 26.3
+  (для 1.21.1 список пересматривается);
+- `ItemBloodRapier`, `DarkPotions` и оба эффекта зелий — API Blood Magic;
+- `ItemBloodwell` и `ItemBoundwell` с их рецептами и исследованиями — Blood Magic (`blood bucket`,
+  `BindingRegistry`); core-склянки `ItemCrystalwell` и `ItemPrimewell` остаются в порту;
+- `ItemDivineOrb` (Божественная сфера) — Blood Magic: реализует `IBloodOrb`, `IBindable`, зовёт
+  `SoulNetworkHandler` и `AltarRecipeRegistry`; без BM класс не загружается;
+- четыре Botania `SubTile` (bloodthorn, euclidaisy, tainthistle, whisperweed);
+- `ItemSubCollar` — Botania, а не Thaumic Tinkerer: `items/baubles/ItemSubCollar.java:25,31` тянет
+  `vazkii.botania.api.item.ICosmeticAttachable` под `@Optional.Interface(modid = "Botania")`, поэтому
+  покрывается пунктом про `compat/` в этом списке;
+- обновления стержней жезлов blood и mana, читающие ресурсы Blood Magic или Botania;
+- сторонние meta-варианты внутри `ItemResource`, `ItemWandCaps`, `ItemWandCores`. Классы остаются,
+  варианты вырезаются. Точный список пишется в `docs/dropped.md` на инкременте 2, когда каждый вариант
+  будет привязан к предмету-поставщику: зарегистрировано 27 имён, а происхождение по модификатору в
+  исходнике 1.7.10 не подписано, так что заранее вставлять непроверенный список в проект нельзя;
+- `plans.txt` не реализуется никогда: это незавершённый список идей оригинального автора, включая
+  связывание демонов и грешных пчёл.
 
 ### 5.3 Второй таргет: 1.21.1 (после M1)
 
