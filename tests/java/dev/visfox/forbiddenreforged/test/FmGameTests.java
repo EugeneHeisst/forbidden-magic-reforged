@@ -4,7 +4,10 @@ import io.netty.channel.embedded.EmbeddedChannel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketFlow;
@@ -20,13 +23,16 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.block.Block;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModList;
@@ -36,12 +42,19 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import dev.visfox.forbiddenreforged.ForbiddenMagic;
 import dev.visfox.forbiddenreforged.FmAspectTags;
 import dev.visfox.forbiddenreforged.FmAspects;
+import dev.visfox.forbiddenreforged.FmBlocks;
 import dev.visfox.forbiddenreforged.FmConfig;
 import dev.visfox.forbiddenreforged.FmCreativeTab;
 import dev.visfox.forbiddenreforged.FmDrops;
+import dev.visfox.forbiddenreforged.FmEnchantmentEffects;
+import dev.visfox.forbiddenreforged.FmEnchantments;
 import dev.visfox.forbiddenreforged.FmItems;
 import dev.visfox.forbiddenreforged.FmRecipes;
+import dev.visfox.forbiddenreforged.FmTinkerer;
+import dev.visfox.forbiddenreforged.MorphState;
+import dev.visfox.forbiddenreforged.MorphToolItem;
 import thaumcraft.crafting.InfusionRecipe;
+import thaumcraft.crafting.InfusionEnchantmentRecipe;
 import thaumcraft.crafting.TcIngredient;
 import thaumcraft.crafting.TcRecipe;
 import thaumcraft.crafting.TcRecipes;
@@ -57,7 +70,7 @@ import thaumcraft.research.ResearchManager;
 public final class FmGameTests {
     public static final DeferredRegister<Consumer<GameTestHelper>> FUNCTIONS =
         DeferredRegister.create(Registries.TEST_FUNCTION, ForbiddenMagic.MODID);
-    private static final String[] TESTS = {"mod_loads_and_host_is_present", "aspect_registry_keeps_builtin_order_and_combines", "addon_aspect_survives_client_sync", "sin_aspects_registered_with_own_textures", "sin_aspect_tags_merge_with_existing", "entity_aspect_tags_merge_with_existing", "every_tag_target_resolved", "shards_are_registered_with_seven_ids", "no_lust_removes_luxuria_items", "mob_killed_by_player_drops_wrath_shard", "boss_drops_pride_shards", "unattended_death_drops_sloth_shard", "forbidden_category_and_shard_entries_resolve", "skull_axe_infusion_recipe_matches_original", "every_ported_recipe_resolves_its_inputs", "chain_from_netherrack_to_wrath_shard"};
+    private static final String[] TESTS = {"mod_loads_and_host_is_present", "aspect_registry_keeps_builtin_order_and_combines", "addon_aspect_survives_client_sync", "sin_aspects_registered_with_own_textures", "sin_aspect_tags_merge_with_existing", "entity_aspect_tags_merge_with_existing", "every_tag_target_resolved", "shards_are_registered_with_seven_ids", "no_lust_removes_luxuria_items", "mob_killed_by_player_drops_wrath_shard", "boss_drops_pride_shards", "unattended_death_drops_sloth_shard", "forbidden_category_and_shard_entries_resolve", "skull_axe_infusion_recipe_matches_original", "every_ported_recipe_resolves_its_inputs", "chain_from_netherrack_to_wrath_shard", "enchantments_resolve_with_expected_shape", "emerald_fragment_is_registered", "consuming_destroys_garbage", "corrupting_yields_sin_shards", "greedy_drops_match_kills", "educational_multiplies_experience", "wrath_adds_damage", "enchantment_research_present", "enchantment_recipes_cover_five", "tinkerer_integration_is_optional", "morph_tools_are_registered", "morph_phase_rotates_sets", "impact_covers_a_three_by_three_plane", "voidtouched_repairs_and_warps", "morph_enchantments_and_exclusivity", "cluster_replaces_drops_with_clusters", "morph_research_entries_present", "morph_recipes_match_the_original", "taint_material_blocks_are_registered", "taint_blocks_carry_tool_tags", "materials_have_crafting_recipes"};
 
     static {
         FUNCTIONS.register(TESTS[0], () -> FmGameTests::modLoadsAndHostIsPresent);
@@ -76,6 +89,27 @@ public final class FmGameTests {
         FUNCTIONS.register(TESTS[13], () -> FmGameTests::skullAxeInfusionRecipeMatchesOriginal);
         FUNCTIONS.register(TESTS[14], () -> FmGameTests::everyPortedRecipeResolvesItsInputs);
         FUNCTIONS.register(TESTS[15], () -> FmGameTests::chainFromNetherrackToWrathShard);
+        FUNCTIONS.register(TESTS[16], () -> FmGameTests::enchantmentsResolveWithExpectedShape);
+        FUNCTIONS.register(TESTS[17], () -> FmGameTests::emeraldFragmentIsRegistered);
+        FUNCTIONS.register(TESTS[18], () -> FmGameTests::consumingDestroysGarbage);
+        FUNCTIONS.register(TESTS[19], () -> FmGameTests::corruptingYieldsSinShards);
+        FUNCTIONS.register(TESTS[20], () -> FmGameTests::greedyDropsMatchKills);
+        FUNCTIONS.register(TESTS[21], () -> FmGameTests::educationalMultipliesExperience);
+        FUNCTIONS.register(TESTS[22], () -> FmGameTests::wrathAddsDamage);
+        FUNCTIONS.register(TESTS[23], () -> FmGameTests::enchantmentResearchPresent);
+        FUNCTIONS.register(TESTS[24], () -> FmGameTests::enchantmentRecipesCoverFive);
+        FUNCTIONS.register(TESTS[25], () -> FmGameTests::tinkererIntegrationIsOptional);
+        FUNCTIONS.register(TESTS[26], () -> FmGameTests::morphToolsAreRegistered);
+        FUNCTIONS.register(TESTS[27], () -> FmGameTests::morphPhaseRotatesSets);
+        FUNCTIONS.register(TESTS[28], () -> FmGameTests::impactCoversAThreeByThreePlane);
+        FUNCTIONS.register(TESTS[29], () -> FmGameTests::voidtouchedRepairsAndWarps);
+        FUNCTIONS.register(TESTS[30], () -> FmGameTests::morphEnchantmentsAndExclusivity);
+        FUNCTIONS.register(TESTS[31], () -> FmGameTests::clusterReplacesDropsWithClusters);
+        FUNCTIONS.register(TESTS[32], () -> FmGameTests::morphResearchEntriesPresent);
+        FUNCTIONS.register(TESTS[33], () -> FmGameTests::morphRecipesMatchTheOriginal);
+        FUNCTIONS.register(TESTS[34], () -> FmGameTests::taintMaterialBlocksAreRegistered);
+        FUNCTIONS.register(TESTS[35], () -> FmGameTests::taintBlocksCarryToolTags);
+        FUNCTIONS.register(TESTS[36], () -> FmGameTests::materialsHaveCraftingRecipes);
     }
 
     private FmGameTests() {
@@ -307,6 +341,253 @@ public final class FmGameTests {
         InfusionRecipe skullAxe = (InfusionRecipe) TcRecipes.get("SKULLAXE");
         helper.assertTrue(skullAxe != null, "skull axe recipe registered");
         helper.assertValueEqual(skullAxe.aspects().getAmount(FmAspects.WRATH), 8, "skull axe costs eight ira");
+        helper.succeed();
+    }
+
+    private static void enchantmentsResolveWithExpectedShape(GameTestHelper helper) {
+        var registry = helper.getLevel().registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
+        helper.assertValueEqual(registry.getOrThrow(FmEnchantments.WRATH).value().getMaxLevel(), 5, "wrath max level");
+        helper.assertValueEqual(registry.getOrThrow(FmEnchantments.GREEDY).value().getMaxLevel(), 1, "greedy max level");
+        helper.assertValueEqual(registry.getOrThrow(FmEnchantments.EDUCATIONAL).value().getMaxLevel(), 5, "educational max level");
+        helper.assertValueEqual(registry.getOrThrow(FmEnchantments.CONSUMING).value().getMaxLevel(), 1, "consuming max level");
+        helper.assertValueEqual(registry.getOrThrow(FmEnchantments.CORRUPTING).value().getMaxLevel(), 1, "corrupting max level");
+        helper.assertTrue(registry.getOrThrow(FmEnchantments.WRATH).value().isSupportedItem(new ItemStack(Items.DIAMOND_SWORD)), "wrath applies to swords");
+        helper.assertTrue(registry.getOrThrow(FmEnchantments.WRATH).value().isSupportedItem(new ItemStack(Items.DIAMOND_AXE)), "wrath applies to axes");
+        helper.assertTrue(registry.getOrThrow(FmEnchantments.CONSUMING).value().isSupportedItem(new ItemStack(Items.IRON_SHOVEL)), "consuming applies to shovels");
+        helper.assertFalse(registry.getOrThrow(FmEnchantments.CORRUPTING).value().isSupportedItem(new ItemStack(Items.IRON_SHOVEL)), "corrupting is pickaxe only");
+        helper.succeed();
+    }
+
+    private static void emeraldFragmentIsRegistered(GameTestHelper helper) {
+        ItemStack stack = new ItemStack(FmItems.EMERALD_FRAGMENT.get());
+        helper.assertFalse(stack.isEmpty(), "emerald fragment must exist");
+        helper.assertValueEqual(BuiltInRegistries.ITEM.getKey(stack.getItem()), Identifier.parse("forbiddenmagic:emerald_fragment"), "emerald fragment id");
+        helper.succeed();
+    }
+
+    private static void consumingDestroysGarbage(GameTestHelper helper) {
+        helper.assertTrue(FmEnchantmentEffects.isGarbage(new ItemStack(Items.DIRT)), "dirt is garbage");
+        helper.assertTrue(FmEnchantmentEffects.isGarbage(new ItemStack(Items.COBBLESTONE)), "cobblestone is garbage");
+        helper.assertTrue(FmEnchantmentEffects.isGarbage(new ItemStack(Items.SAND)), "sand is garbage");
+        helper.assertTrue(FmEnchantmentEffects.isGarbage(new ItemStack(Items.GRAVEL)), "gravel is garbage");
+        helper.assertTrue(FmEnchantmentEffects.isGarbage(new ItemStack(Items.NETHERRACK)), "netherrack is garbage");
+        helper.assertFalse(FmEnchantmentEffects.isGarbage(new ItemStack(Items.DIAMOND)), "diamond is not garbage");
+        helper.succeed();
+    }
+
+    private static void corruptingYieldsSinShards(GameTestHelper helper) {
+        RandomSource random = RandomSource.create(1234L);
+        java.util.Set<Item> pool = java.util.Set.of(
+            FmItems.DEADLY_SHARDS.get("wrath").get(),
+            FmItems.DEADLY_SHARDS.get("envy").get(),
+            FmItems.DEADLY_SHARDS.get("pride").get(),
+            FmItems.DEADLY_SHARDS.get("lust").get(),
+            FmItems.DEADLY_SHARDS.get("sloth").get(),
+            FmItems.DEADLY_SHARDS.get("greed").get(),
+            FmItems.GLUTTONY_SHARD.get()
+        );
+        for (int roll = 0; roll < 200; roll++) {
+            ItemStack shard = FmEnchantmentEffects.sinShard(random);
+            helper.assertTrue(pool.contains(shard.getItem()), "sin shard must come from the pool");
+            if (FmConfig.lustDisabled()) {
+                helper.assertFalse(shard.getItem() == FmItems.DEADLY_SHARDS.get("lust").get(), "no_lust keeps lust out of the pool");
+            }
+        }
+        int hits = 0;
+        for (int roll = 0; roll < 300; roll++) {
+            if (FmEnchantmentEffects.corruptRoll(random)) {
+                hits++;
+            }
+        }
+        helper.assertTrue(hits > 50 && hits < 150, "corruption fires roughly one time in three");
+        helper.succeed();
+    }
+
+    private static void greedyDropsMatchKills(GameTestHelper helper) {
+        helper.assertValueEqual(FmEnchantmentEffects.greedyDrop(true, 99).getItem(), Items.EMERALD, "villager drops an emerald");
+        helper.assertValueEqual(FmEnchantmentEffects.greedyDrop(false, 2).getItem(), FmItems.EMERALD_FRAGMENT.get(), "hostile mob drops a fragment on a low roll");
+        helper.assertTrue(FmEnchantmentEffects.greedyDrop(false, 3).isEmpty(), "hostile mob drops nothing on a high roll");
+        helper.succeed();
+    }
+
+    private static void educationalMultipliesExperience(GameTestHelper helper) {
+        helper.assertValueEqual(FmEnchantmentEffects.educationalExperience(10, 1), 40, "level 1 adds three times the base xp");
+        helper.assertValueEqual(FmEnchantmentEffects.educationalExperience(10, 5), 160, "level 5 adds fifteen times the base xp");
+        helper.assertValueEqual(FmEnchantmentEffects.educationalExperience(0, 5), 0, "no base xp stays zero");
+        helper.succeed();
+    }
+
+    private static void wrathAddsDamage(GameTestHelper helper) {
+        helper.assertValueEqual(FmEnchantmentEffects.wrathDamage(1), 1.25F, "level 1 adds 1.25 damage");
+        helper.assertValueEqual(FmEnchantmentEffects.wrathDamage(5), 6.25F, "level 5 adds 6.25 damage");
+        helper.assertValueEqual(FmEnchantmentEffects.wrathDamage(0), 0.0F, "level 0 adds nothing");
+        helper.succeed();
+    }
+
+    private static void enchantmentResearchPresent(GameTestHelper helper) {
+        ResearchItem wrath = ResearchCategories.getResearch("WRATH");
+        helper.assertTrue(wrath != null, "wrath research must exist");
+        helper.assertValueEqual(wrath.warp(), 3, "wrath research carries warp 3");
+        helper.assertTrue(wrath.parents().contains("NETHERSHARDS"), "wrath descends from nether shards");
+        helper.assertTrue(wrath.parents().contains("INFUSIONENCHANTMENT"), "wrath needs infusion enchantment");
+        helper.assertValueEqual(wrath.pages().size(), 2, "wrath has text and recipe pages");
+        for (String key : new String[]{"GREEDY", "CONSUMING", "EDUCATIONAL", "CORRUPTING"}) {
+            helper.assertTrue(ResearchCategories.getResearch(key) != null, key + " research must exist");
+        }
+        helper.succeed();
+    }
+
+    private static void enchantmentRecipesCoverFive(GameTestHelper helper) {
+        for (String key : new String[]{"WRATH", "GREEDY", "CONSUMING", "EDUCATIONAL", "CORRUPTING"}) {
+            TcRecipe recipe = TcRecipes.get(key);
+            helper.assertTrue(recipe instanceof InfusionEnchantmentRecipe, key + " must be an infusion enchantment recipe");
+            InfusionEnchantmentRecipe infusion = (InfusionEnchantmentRecipe) recipe;
+            helper.assertValueEqual(infusion.enchantment(), Identifier.parse("forbiddenmagic:" + key.toLowerCase(java.util.Locale.ROOT)), key + " enchantment id");
+        }
+        InfusionEnchantmentRecipe wrath = (InfusionEnchantmentRecipe) TcRecipes.get("WRATH");
+        helper.assertValueEqual(wrath.instability(), 8, "wrath instability");
+        helper.assertValueEqual(wrath.aspects().getAmount(FmAspects.WRATH), 16, "wrath aspect cost");
+        helper.succeed();
+    }
+
+    private static void tinkererIntegrationIsOptional(GameTestHelper helper) {
+        boolean loaded = ModList.get().isLoaded("thaumictinkerer");
+        if (!loaded) {
+            helper.assertValueEqual(FmTinkerer.registeredCount(), 0, "no TT means no registered costs");
+        } else {
+            helper.assertValueEqual(FmTinkerer.registeredCount(), 8, "TT receives eight enchantment costs");
+        }
+        helper.succeed();
+    }
+
+    private static void morphToolsAreRegistered(GameTestHelper helper) {
+        for (var item : java.util.List.of(FmItems.MORPH_PICKAXE, FmItems.MORPH_SWORD, FmItems.MORPH_SHOVEL, FmItems.MORPH_AXE)) {
+            ItemStack stack = new ItemStack(item.get());
+            helper.assertValueEqual(stack.getMaxDamage(), 1500, "morph tools use elemental durability");
+            helper.assertValueEqual(stack.getRarity(), net.minecraft.world.item.Rarity.EPIC, "morph tools are epic");
+            helper.assertTrue(stack.get(DataComponents.REPAIRABLE) != null, "morph tools declare a repair item");
+            helper.assertTrue(stack.get(DataComponents.REPAIRABLE).isValidRepairItem(new ItemStack(FmItems.DEADLY_SHARDS.get("envy").get())), "envy shards repair morph tools");
+        }
+        helper.succeed();
+    }
+
+    private static void morphPhaseRotatesSets(GameTestHelper helper) {
+        MorphState state = MorphState.EMPTY.store(ItemEnchantments.EMPTY, "Sharpness").advance();
+        helper.assertValueEqual(state.phase(), 1, "phase advances");
+        helper.assertValueEqual(state.names().get(0), "Sharpness", "the old name is kept in slot zero");
+        helper.assertValueEqual(state.currentName(), "", "the new slot starts empty");
+        MorphState wrapped = state.store(ItemEnchantments.EMPTY, "Smite").advance().advance();
+        helper.assertValueEqual(wrapped.phase(), 0, "three phases wrap back to zero");
+        helper.assertValueEqual(wrapped.currentName(), "Sharpness", "the first slot name returns");
+        helper.succeed();
+    }
+
+    private static void impactCoversAThreeByThreePlane(GameTestHelper helper) {
+        java.util.List<BlockPos> area = MorphToolItem.impactArea(Direction.UP, BlockPos.ZERO);
+        helper.assertValueEqual(area.size(), 9, "impact covers nine blocks");
+        helper.assertTrue(area.contains(new BlockPos(-1, 0, 1)) && area.contains(new BlockPos(1, 0, -1)), "impact stays in the horizontal plane");
+        helper.assertTrue(MorphToolItem.impactArea(Direction.EAST, BlockPos.ZERO).contains(new BlockPos(0, 1, 1)), "east impact uses the vertical plane");
+        helper.assertValueEqual(MorphToolItem.dominantDirection(new net.minecraft.world.phys.Vec3(0.2, -3.0, 0.1)), Direction.DOWN, "look direction maps to a face");
+        helper.succeed();
+    }
+
+    private static void voidtouchedRepairsAndWarps(GameTestHelper helper) {
+        ItemStack stack = new ItemStack(FmItems.MORPH_PICKAXE.get());
+        ServerPlayer player = mockPlayer(helper);
+        MorphToolItem item = (MorphToolItem) stack.getItem();
+        helper.assertValueEqual(item.getWarp(stack, player), 0, "plain morph tool carries no warp");
+        stack.enchant(helper.getLevel().registryAccess().lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(FmEnchantments.VOIDTOUCHED), 1);
+        helper.assertValueEqual(item.getWarp(stack, player), 1, "voidtouched morph tool carries warp 1");
+        helper.succeed();
+    }
+
+    private static void morphEnchantmentsAndExclusivity(GameTestHelper helper) {
+        var registry = helper.getLevel().registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
+        helper.assertValueEqual(registry.getOrThrow(FmEnchantments.CLUSTER).value().getMaxLevel(), 4, "cluster max level");
+        helper.assertValueEqual(registry.getOrThrow(FmEnchantments.IMPACT).value().getMaxLevel(), 1, "impact max level");
+        helper.assertValueEqual(registry.getOrThrow(FmEnchantments.VOIDTOUCHED).value().getMaxLevel(), 1, "voidtouched max level");
+        helper.assertTrue(registry.getOrThrow(FmEnchantments.CLUSTER).value().isSupportedItem(new ItemStack(FmItems.MORPH_PICKAXE.get())), "cluster fits the chameleon pickaxe");
+        helper.assertFalse(registry.getOrThrow(FmEnchantments.IMPACT).value().isSupportedItem(new ItemStack(FmItems.MORPH_SWORD.get())), "impact does not fit the sword");
+        helper.assertFalse(net.minecraft.world.item.enchantment.Enchantment.areCompatible(
+            registry.getOrThrow(FmEnchantments.CLUSTER), registry.getOrThrow(net.minecraft.world.item.enchantment.Enchantments.FORTUNE)),
+            "cluster excludes fortune");
+        helper.assertFalse(net.minecraft.world.item.enchantment.Enchantment.areCompatible(
+            registry.getOrThrow(FmEnchantments.CONSUMING), registry.getOrThrow(net.minecraft.world.item.enchantment.Enchantments.SILK_TOUCH)),
+            "consuming excludes silk touch");
+        helper.assertFalse(net.minecraft.world.item.enchantment.Enchantment.areCompatible(
+            registry.getOrThrow(FmEnchantments.GREEDY), registry.getOrThrow(net.minecraft.world.item.enchantment.Enchantments.LOOTING)),
+            "greedy excludes looting");
+        helper.succeed();
+    }
+
+    private static void clusterReplacesDropsWithClusters(GameTestHelper helper) {
+        helper.assertValueEqual(FmEnchantmentEffects.clusterChance(1), 0.275F, "level 1 chance");
+        helper.assertValueEqual(FmEnchantmentEffects.clusterChance(4), 0.5F, "level 4 chance");
+        ItemStack replaced = thaumcraft.item.tool.SpecialMining.find(
+            net.minecraft.world.level.block.Blocks.IRON_ORE.defaultBlockState(),
+            new ItemStack(Items.RAW_IRON),
+            1.0F,
+            RandomSource.create(1L));
+        helper.assertValueEqual(BuiltInRegistries.ITEM.getKey(replaced.getItem()), Identifier.parse("thaumcraft:native_iron_cluster"), "iron ore yields a native cluster");
+        helper.succeed();
+    }
+
+    private static void morphResearchEntriesPresent(GameTestHelper helper) {
+        ResearchItem morph = ResearchCategories.getResearch("MORPHTOOLS");
+        helper.assertTrue(morph != null, "morph research must exist");
+        helper.assertValueEqual(morph.warp(), 4, "morph research carries warp 4");
+        helper.assertValueEqual(morph.pages().size(), 5, "morph research has text and four recipes");
+        helper.assertTrue(ResearchCategories.getResearch("CLUSTER") != null, "cluster research exists");
+        helper.assertTrue(ResearchCategories.getResearch("IMPACT") != null, "impact research exists");
+        ResearchItem voidtouched = ResearchCategories.getResearch("VOIDTOUCHED");
+        helper.assertTrue(voidtouched != null, "voidtouched research exists");
+        helper.assertValueEqual(voidtouched.warp(), 3, "voidtouched research carries warp 3");
+        helper.succeed();
+    }
+
+    private static void morphRecipesMatchTheOriginal(GameTestHelper helper) {
+        for (String key : new String[]{"MORPHPICK", "MORPHSWORD", "MORPHSHOVEL", "MORPHAXE"}) {
+            InfusionRecipe recipe = (InfusionRecipe) TcRecipes.get(key);
+            helper.assertTrue(recipe != null, key + " recipe must exist");
+            helper.assertValueEqual(recipe.instability(), 6, key + " instability");
+            helper.assertValueEqual(recipe.aspects().getAmount(FmAspects.ENVY), 16, key + " envy cost");
+        }
+        for (String key : new String[]{"CLUSTER", "IMPACT", "VOIDTOUCHED"}) {
+            helper.assertTrue(TcRecipes.get(key) instanceof InfusionEnchantmentRecipe, key + " must be an enchantment recipe");
+        }
+        InfusionEnchantmentRecipe voidtouched = (InfusionEnchantmentRecipe) TcRecipes.get("VOIDTOUCHED");
+        helper.assertValueEqual(voidtouched.aspects().getAmount(FmAspects.ENVY), 24, "voidtouched envy cost");
+        helper.succeed();
+    }
+
+    private static void taintMaterialBlocksAreRegistered(GameTestHelper helper) {
+        helper.assertValueEqual(BuiltInRegistries.BLOCK.getKey(FmBlocks.TAINT_LOG.get()), Identifier.parse("forbiddenmagic:taint_log"), "taint log id");
+        helper.assertValueEqual(BuiltInRegistries.BLOCK.getKey(FmBlocks.TAINT_PLANKS.get()), Identifier.parse("forbiddenmagic:taint_planks"), "taint planks id");
+        helper.assertValueEqual(BuiltInRegistries.BLOCK.getKey(FmBlocks.TAINT_STONE_SMOOTH.get()), Identifier.parse("forbiddenmagic:taint_stone_smooth"), "smooth stone id");
+        helper.assertValueEqual(BuiltInRegistries.BLOCK.getKey(FmBlocks.TAINT_STONE_BRICK.get()), Identifier.parse("forbiddenmagic:taint_stone_brick"), "brick id");
+        helper.assertValueEqual(BuiltInRegistries.BLOCK.getKey(FmBlocks.STAR_BLOCK.get()), Identifier.parse("forbiddenmagic:star_block"), "star block id");
+        helper.assertFalse(new ItemStack(FmBlocks.TAINT_LOG.get().asItem()).isEmpty(), "taint log has an item");
+        helper.assertFalse(new ItemStack(FmBlocks.STAR_BLOCK.get().asItem()).isEmpty(), "star block has an item");
+        helper.succeed();
+    }
+
+    private static void taintBlocksCarryToolTags(GameTestHelper helper) {
+        TagKey<Block> axe = TagKey.create(Registries.BLOCK, Identifier.parse("minecraft:mineable/axe"));
+        TagKey<Block> pickaxe = TagKey.create(Registries.BLOCK, Identifier.parse("minecraft:mineable/pickaxe"));
+        TagKey<Block> beacon = TagKey.create(Registries.BLOCK, Identifier.parse("minecraft:beacon_base_blocks"));
+        helper.assertTrue(BuiltInRegistries.BLOCK.wrapAsHolder(FmBlocks.TAINT_LOG.get()).is(axe), "taint log mines with an axe");
+        helper.assertTrue(BuiltInRegistries.BLOCK.wrapAsHolder(FmBlocks.TAINT_PLANKS.get()).is(axe), "taint planks mine with an axe");
+        helper.assertTrue(BuiltInRegistries.BLOCK.wrapAsHolder(FmBlocks.TAINT_STONE_SMOOTH.get()).is(pickaxe), "taint stone mines with a pickaxe");
+        helper.assertTrue(BuiltInRegistries.BLOCK.wrapAsHolder(FmBlocks.STAR_BLOCK.get()).is(beacon), "star block is a beacon base");
+        helper.succeed();
+    }
+
+    private static void materialsHaveCraftingRecipes(GameTestHelper helper) {
+        var manager = helper.getLevel().getServer().getRecipeManager();
+        for (String name : new String[]{"taint_planks", "taint_stone_brick", "star_block", "star_from_block"}) {
+            var key = net.minecraft.resources.ResourceKey.create(Registries.RECIPE, Identifier.parse("forbiddenmagic:" + name));
+            helper.assertTrue(manager.byKey(key).isPresent(), name + " recipe must load");
+        }
         helper.succeed();
     }
 

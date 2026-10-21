@@ -26,5 +26,15 @@ public final class FmCreativeTab {
         }
         event.accept(FmItems.GLUTTONY_SHARD.get());
         event.accept(FmItems.SKULL_AXE.get());
+        event.accept(FmItems.EMERALD_FRAGMENT.get());
+        event.accept(FmItems.MORPH_PICKAXE.get());
+        event.accept(FmItems.MORPH_SWORD.get());
+        event.accept(FmItems.MORPH_SHOVEL.get());
+        event.accept(FmItems.MORPH_AXE.get());
+        event.accept(FmBlocks.TAINT_LOG.get().asItem());
+        event.accept(FmBlocks.TAINT_PLANKS.get().asItem());
+        event.accept(FmBlocks.TAINT_STONE_SMOOTH.get().asItem());
+        event.accept(FmBlocks.TAINT_STONE_BRICK.get().asItem());
+        event.accept(FmBlocks.STAR_BLOCK.get().asItem());
     }
 }

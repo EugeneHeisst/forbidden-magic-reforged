@@ -16,3 +16,18 @@
 | Taint-осколок из tainted-блоков | `FMEventHandler` на блоке | отложен до полного §5.1 | M1 проверяет цепочку на wrath; источник taint добавится вместе с taint-деревом |
 | Иконка HELLFIRE | `new ItemStack(Blocks.fire)` | `minecraft:flint_and_steel` | у блока огня нет предметной формы |
 | Картинки в страницах исследований | `<IMG>forbidden:textures/misc/research.png...` | `<IMG>forbiddenmagic:textures/misc/research.png...` | namespace порта; файл скопирован в `assets/forbiddenmagic/textures/misc/` |
+| Corrupting: цель | `blockCustomOre` (infused stone) заменяет осколки стихий | тег `forbiddenmagic:infused_stones`, дроп `thaumcraft:*_shard` заменяется грешным осколком с шансом 1/3 | в 26.3 infused stone сам дропает осколки; выбор пула повторяет `getSinShard` (taint заменён на gluttony, lust выпадает при `no_lust`) |
+| Стоимость зачарований | min/max enchantability 1.7.10 | `min_cost`/`max_cost` в JSON зачарования | зачарования недоступны на столе ни в оригинале, ни в порту, поэтому числа влияют только на infusion-рецепт |
+| `enchanting = false` | зачарования не регистрируются | JSON остаётся в реестре, отключены эффекты, исследования, рецепты и TT-стоимость | датапак-записи нельзя снять конфигом; контент недостижим без рецепта |
+| TT-интеграция | прямое обращение к `EnchantmentManager` | reflection по публичному API | TT под ARR и не входит в compile classpath; сборка порта от него не зависит |
+| Cluster, Impact, Voidtouched | в этом слайсе | вместе с морф-инструментами | их эффекты в оригинале живут в классах инструментов, а исследования требуют `MORPHTOOLS` |
+| Цвет фазы морф-инструмента | оверлей `eye*` красится в цвет фазы (красный/синий/жёлтый) | оверлей статичный | в слайсе нет item tint source; фаза видна по имени и набору зачарований |
+| Переключение фаз | требует наличия NBT (первое зачарование) | работает всегда | компоненты существуют у любого стека |
+| Impact: выбор плоскости | сторона удара из рейкаста | доминирующая ось взгляда | у `mineBlock` нет стороны; приближение проверяется тестом |
+| Ремонт инструментов | энви-осколок через `getIsRepairable` | компонент `REPAIRABLE` с осколком зависти | современный механизм наковальни |
+| Рецепты инструментов | `itemResource` мета 3 и `blockMagicalLog` мета 1 | `thaumcraft:enchanted_fabric`, `thaumcraft:silverwood_log` | соответствие мет TC4 предметам хоста |
+| Рецепт Voidtouched | `itemResource` мета 16 | `thaumcraft:void_seed` | единственный предмет хоста, соответствующий мете |
+| Скверный камень | один блок с метой 0/1 | два блока `taint_stone_smooth` и `taint_stone_brick` | в 26.3 нет метапредметов |
+| Боковые текстуры скверного бревна | 75% чистых, 25% «gross» по позиции | всегда чистый `taint_log_side` | позиционный выбор текстуры не выражается blockstate |
+| Арканный рецепт скверного камня | `addArcaneCraftingRecipe` с research `TAINTSTONE` | отложен до слайса исследований скверны | нужен research-ключ и предмет `resourceTaint` |
+| Плавка скверного бревна | `taint_charcoal` | отложена | предмет ещё не портирован |
