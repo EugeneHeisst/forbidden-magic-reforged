@@ -53,13 +53,14 @@ Forbidden Magic регистрирует семь собственных асп�
 |---|---|---|
 | ссылок `Aspect.<КОНСТАНТА>` | 1827, из них 1379 в четырёх генерируемых файлах | генерированные таблицы не трогаем; обращение к `static final` сохраняет синтаксис |
 | вызовов `Aspect.values()` | 17 в писаном коде плюс 2 тестовых файла | `static Aspect[] values()` оставляет все места вызова валидными |
-| `switch` по аспекту | нет | переписывание исчерпывающих switch не нужно |
+| `switch` по аспекту | 2 в `wand/WandVis.java:32,44` (`get` и `with`) | переписываются на if-цепочки; `default` уже есть, поведение сохраняется |
 | `Aspect.valueOf`, `isEnum`, `<E extends Enum>` | нет | скрытых enum-зависимостей нет |
 | `aspect.ordinal()` | три места в `entity/AspectOrb.java`: `:41` (запись в синк-данные), `:54` (`builder.define(DATA_ASPECT, Aspect.AIR.ordinal())` — дефолт в провайдере), `:132` (запись при загрузке) | индекс реестра обязан быть стабильным и общим для всех трёх мест; закрывается GameTest |
 | enum-специфичное внутри самого `Aspect` | `CODEC` через `StringRepresentable.fromEnum(Aspect::values)` (`aspect/Aspect.java:68`), обходы `values()` в `combine`, `getPrimalAspects`, `getCompoundAspects` | локализовано в одном файле; `fromEnum` типизирован под `Enum`, поэтому в классе кодек строится из `getSerializedName()`, а не `fromEnum` |
 
-Итог: изменение — один файл плюс хук регистрации. В швы `platform/` оно не заходит, поэтому гейт
-хоста `tools/check_seams.py` не задевается.
+Итог: изменяются два файла (`aspect/Aspect.java`, `wand/WandVis.java`) плюс три строки в
+`entity/AspectOrb.java` и хук регистрации. В швы `platform/` изменение не заходит, поэтому гейт хоста
+`tools/check_seams.py` не задевается.
 
 ## 4. Архитектура
 

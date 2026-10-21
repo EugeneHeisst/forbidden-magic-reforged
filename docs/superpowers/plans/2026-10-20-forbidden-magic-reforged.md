@@ -623,6 +623,7 @@ Expected: `All tests successful` with `mod_loads_and_host_is_present` passing. I
 **Files:**
 - Modify: `host/src/main/java/thaumcraft/aspect/Aspect.java` (full replacement below)
 - Modify: `host/src/main/java/thaumcraft/entity/AspectOrb.java:41,54,60,132`
+- Modify: `host/src/main/java/thaumcraft/wand/WandVis.java:31-53` (two `switch (aspect)` statements)
 - Create: `patches/0001-aspect-registry.patch` via `git -C host format-patch`
 - Test: `src/main/java/fox/spiteful/forbidden/test/FmGameTests.java`
 
@@ -647,7 +648,7 @@ Expected: `All tests successful` with `mod_loads_and_host_is_present` passing. I
     }
 ```
 
-Run `cmd //c gradlew.bat runGameTestServer` and confirm it fails or does not compile (`Aspect.register` and the class form do not exist yet).
+Run `cmd //c gradlew.bat runGameTestServer` and confirm it **passes**. The test deliberately uses only the surface common to the enum and the class (`values`, `combine`, `getAspect`), so it compiles and passes against the upstream enum too — it is a regression check, not proof of the patch. The proof of patch 0001 is Step 4 (the host's own gates inside the copy) and Task 4, where the add-on is compiled against the patched artifact and starts using `Aspect.builtinCount()` and `Aspect.register`.
 
 - [ ] **Step 2: Replace `Aspect.java` in the host copy.** Full content, keeping every existing public member and adding the registry:
 
@@ -719,7 +720,7 @@ public final class Aspect implements StringRepresentable {
     public static final Aspect MECHANISM = compound("machina", 0x8080A0, MOTION, TOOL, 1);
     public static final Aspect TRAP = compound("vinculum", 0x9A8080, MOTION, ENTROPY, 1);
 
-    public static final Codec<Aspect> CODEC = Codec.STRING.map(Aspect::byTagOrThrow, Aspect::getTag);
+    public static final Codec<Aspect> CODEC = Codec.STRING.xmap(Aspect::byTagOrThrow, Aspect::getTag);
     public static final StreamCodec<ByteBuf, Aspect> STREAM_CODEC = ByteBufCodecs.STRING_UTF8.map(Aspect::byTagOrThrow, Aspect::getTag);
 
     private static final int BUILTIN_COUNT = BY_TAG.size();
@@ -906,10 +907,58 @@ public final class Aspect implements StringRepresentable {
     }
 ```
 
-- [ ] **Step 4: Run the host's own gates inside the copy**, to prove the refactor is not destructive:
+- [ ] **Step 3b: Rework the two `switch (aspect)` statements in `WandVis.java`.** A class cannot be a switch selector over unqualified enum labels, so both methods become identity chains with the same behaviour (`default` returned `0` and `this`):
+
+```java
+    public int get(Aspect aspect) {
+        if (aspect == Aspect.AIR) {
+            return air;
+        }
+        if (aspect == Aspect.EARTH) {
+            return earth;
+        }
+        if (aspect == Aspect.FIRE) {
+            return fire;
+        }
+        if (aspect == Aspect.WATER) {
+            return water;
+        }
+        if (aspect == Aspect.ORDER) {
+            return order;
+        }
+        if (aspect == Aspect.ENTROPY) {
+            return entropy;
+        }
+        return 0;
+    }
+
+    public WandVis with(Aspect aspect, int amount) {
+        if (aspect == Aspect.AIR) {
+            return new WandVis(amount, earth, fire, water, order, entropy);
+        }
+        if (aspect == Aspect.EARTH) {
+            return new WandVis(air, amount, fire, water, order, entropy);
+        }
+        if (aspect == Aspect.FIRE) {
+            return new WandVis(air, earth, amount, water, order, entropy);
+        }
+        if (aspect == Aspect.WATER) {
+            return new WandVis(air, earth, fire, amount, order, entropy);
+        }
+        if (aspect == Aspect.ORDER) {
+            return new WandVis(air, earth, fire, water, amount, entropy);
+        }
+        if (aspect == Aspect.ENTROPY) {
+            return new WandVis(air, earth, fire, water, order, amount);
+        }
+        return this;
+    }
+```
+
+- [ ] **Step 4: Run the host's own gates inside the copy**, to prove the refactor is not destructive. Do **not** call `prepare_host.py --rebuild` here: it resets `host/` to the pin and applies `patches/`, which at this point is empty, so it would silently discard the edits. Build the edited copy directly:
 
 ```bash
-python tools/prepare_host.py --rebuild
+cd host && cmd //c gradlew.bat build && cd ..
 cd host && cmd //c gradlew.bat runGameTestServer && cd ..
 python host/tools/check_seams.py --root host
 ```
@@ -997,7 +1046,7 @@ and call `FmAspects.init()` as the first statement of the mod constructor. The t
     private static void addonAspectSurvivesClientSync(GameTestHelper helper) {
         Aspect probe = FmAspects.PROBE;
         helper.assertTrue(probe != null && probe.ordinal() >= Aspect.builtinCount(), "probe aspect must be an add-on aspect");
-        helper.assertValueEqual(Aspect.getAspect("forbiddenmagic:probe"), probe, "by-tag lookup must find the add-on aspect");
+        helper.assertValueEqual(Aspect.getAspect("probe"), probe, "by-tag lookup must find the add-on aspect");
         AspectList list = new AspectList().add(probe, 3);
         io.netty.buffer.ByteBuf buffer = io.netty.buffer.Unpooled.buffer();
         AspectList.STREAM_CODEC.encode(buffer, list);
@@ -1125,7 +1174,7 @@ git commit -m "feat: expose an add-on aspect hook and publish the host locally"
 
 Why this task exists: on 2026-10-20 the host author said in chat that he intends to port Forbidden Magic himself when he gets back to it («если вайбик найдется после перерыва то forbidden magic портану»). As of that day the host repo has no add-on content in it (one commit on `main`, no second addon, no FM issue or branch), so nothing is in flight — but the plan should not spend nine more tasks assuming it is the only attempt.
 
-- [ ] **Step 1: Write the draft.** Three paragraphs, in this order: what we measured (`Aspect` is an `enum` of 48, so an add-on cannot register an aspect; the change is one file plus a registration point, and every one of the 1827 existing references survives), what we built (the patch series, with `build` and `runGameTestServer` output attached, plus the aspect registry game test), and the question: do you want the aspect API as a host feature, are you taking Forbidden Magic yourself, or should this stay a third-party add-on. Mention that the work is AI-assisted. Offer the seven sin aspects as the concrete use case, and note that a sibling TC4 port already ships data-driven add-on aspects with 32 add-ons on top.
+- [ ] **Step 1: Write the draft.** Three paragraphs, in this order: what we measured (`Aspect` is an `enum` of 48, so an add-on cannot register an aspect; the change is two files plus three lines in `AspectOrb` and one registration point, and every one of the 1827 existing references survives), what we built (the patch series, with `build` and `runGameTestServer` output attached, plus the aspect registry game test), and the question: do you want the aspect API as a host feature, are you taking Forbidden Magic yourself, or should this stay a third-party add-on. Mention that the work is AI-assisted. Offer the seven sin aspects as the concrete use case, and note that a sibling TC4 port already ships data-driven add-on aspects with 32 add-ons on top.
 
 - [ ] **Step 2: Hand it to the user.** This project does not send it. No fork, no issue, no comment, no PR from `MxxFoxx2` without an explicit instruction.
 
