@@ -21,6 +21,7 @@ import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.util.FakePlayer;
 import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
 import net.neoforged.neoforge.event.entity.living.LivingExperienceDropEvent;
+import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 import net.neoforged.neoforge.event.level.BlockDropsEvent;
 
 public final class FmEnchantmentEffects {
@@ -35,6 +36,7 @@ public final class FmEnchantmentEffects {
         NeoForge.EVENT_BUS.addListener(FmEnchantmentEffects::onBlockDrops);
         NeoForge.EVENT_BUS.addListener(FmEnchantmentEffects::onLivingDrops);
         NeoForge.EVENT_BUS.addListener(FmEnchantmentEffects::onExperienceDrop);
+        NeoForge.EVENT_BUS.addListener(FmEnchantmentEffects::onIncomingDamage);
     }
 
     public static boolean isGarbage(ItemStack stack) {
@@ -67,6 +69,10 @@ public final class FmEnchantmentEffects {
 
     public static int educationalExperience(int original, int level) {
         return original + 3 * original * level;
+    }
+
+    public static float wrathDamage(int level) {
+        return 1.25F * level;
     }
 
     private static void onBlockDrops(BlockDropsEvent event) {
@@ -135,8 +141,21 @@ public final class FmEnchantmentEffects {
         event.setDroppedExperience(educationalExperience(event.getOriginalExperience(), level));
     }
 
-    private static void addDrop(LivingDropsEvent event, ItemStack stack) {
-        LivingEntity entity = event.getEntity();
+    private static void onIncomingDamage(LivingIncomingDamageEvent event) {
+        if (!FmEnchantments.enabled()) {
+            return;
+        }
+        Entity direct = event.getSource().getDirectEntity();
+        if (!(direct instanceof ServerPlayer player) || direct instanceof FakePlayer) {
+            return;
+        }
+        int level = FmEnchantments.level(player.level().registryAccess(), player.getMainHandItem(), FmEnchantments.WRATH);
+        if (level > 0) {
+            event.setAmount(event.getAmount() + wrathDamage(level));
+        }
+    }
+
+    private static void addDrop(LivingDropsEvent event, ItemStack stack) {        LivingEntity entity = event.getEntity();
         ItemEntity drop = new ItemEntity(entity.level(), entity.getX(), entity.getY(), entity.getZ(), stack);
         drop.setPickUpDelay(10);
         event.getDrops().add(drop);
