@@ -5,4 +5,10 @@ maven/
 reference/
 run/
 .codegraph/
+forbidden-magic-reforged/
+.idea/
+*.iml
+.vscode/
+logs/
+*.hprof
 *.log

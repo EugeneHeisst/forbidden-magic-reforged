@@ -52,14 +52,17 @@ forbidden-magic-reforged/
   src/main/templates/META-INF/neoforge.mods.toml
   src/main/java/dev/visfox/forbiddenreforged/
     ForbiddenMagic.java                   @Mod entry point, registration order
-    FmConfig.java                         synced config, includes no_lust
+    FmConfig.java                         STARTUP config, includes no_lust
     FmItems.java                          DeferredRegister.Items
     FmAspects.java                        the seven aspects + availability check
     FmAspectTags.java                     AspectRegistrar subclass (DarkAspects port)
     FmResearch.java                       category and entries
     FmRecipes.java                        recipe registrations
     FmDrops.java                          shard drop rules
-    test/FmGameTests.java                 all game tests
+  tests/java/dev/visfox/forbiddenreforged/test/
+    FmGameTests.java                      all game tests
+  LICENSE                                 MIT for the port's code
+  NOTICE                                  WTFPL original and host ARR provenance
   src/main/resources/assets/forbiddenmagic/  textures from FM
   src/generated/resources/                   generator output
   docs/deviations.md, docs/roadmap.md, docs/dropped.md, docs/upstream.md
@@ -76,14 +79,14 @@ Mapping to spec increments: increment 0 = Tasks 1-4, increment 1 = Tasks 5-6, in
 - Create: `gradlew`, `gradlew.bat`, `gradle/wrapper/gradle-wrapper.jar`, `gradle/wrapper/gradle-wrapper.properties` (generic Gradle 9.2.1 wrapper, copied from the host clone; it contains no host code)
 - Create: `src/main/templates/META-INF/neoforge.mods.toml`
 - Create: `src/main/java/dev/visfox/forbiddenreforged/ForbiddenMagic.java`
-- Create: `src/main/java/dev/visfox/forbiddenreforged/test/FmGameTests.java`
+- Create: `tests/java/dev/visfox/forbiddenreforged/test/FmGameTests.java`
 - Create: `tools/check_host_clean.py`, `tools/check_provenance.py`
 
 **Interfaces:**
 - Consumes: nothing.
 - Produces: gradle tasks `build`, `runGameTestServer`; `ForbiddenMagic.MODID == "forbiddenmagic"`; `FmGameTests.register(IEventBus)` and a `FUNCTIONS` registry that later tasks add tests to.
 
-- [ ] **Step 1: Write the failing test.** `src/main/java/dev/visfox/forbiddenreforged/test/FmGameTests.java` — the pattern is copied from the host's `thaumcraft/test/GearGameTests.java:47-77`:
+- [ ] **Step 1: Write the failing test.** `tests/java/dev/visfox/forbiddenreforged/test/FmGameTests.java` — the pattern is copied from the host's `thaumcraft/test/GearGameTests.java:47-77`:
 
 ```java
 package dev.visfox.forbiddenreforged.test;
@@ -290,6 +293,7 @@ tasks.named('jar', Jar) {
 }
 
 sourceSets.main.resources { srcDir('src/generated/resources') }
+sourceSets.main.java { srcDir('tests/java') }
 
 def generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {
     var replaceProperties = [
@@ -323,7 +327,7 @@ tasks.register('verify', GradleBuild) { }
 ```toml
 modLoader="javafml"
 loaderVersion="[1,)"
-license="WTFPL"
+license="MIT"
 
 [[mods]]
 modId="${mod_id}"
@@ -473,7 +477,7 @@ Expected: the host jar appears on the runtime classpath — that is the evidence
 - [ ] **Step 5: Commit.**
 
 ```bash
-git add settings.gradle gradle.properties build.gradle .gitattributes gradlew gradlew.bat gradle/wrapper/gradle-wrapper.jar gradle/wrapper/gradle-wrapper.properties src/main/templates/META-INF/neoforge.mods.toml src/main/java/dev/visfox/forbiddenreforged/ForbiddenMagic.java src/main/java/dev/visfox/forbiddenreforged/test/FmGameTests.java tools/check_host_clean.py tools/check_provenance.py
+git add settings.gradle gradle.properties build.gradle .gitattributes gradlew gradlew.bat gradle/wrapper/gradle-wrapper.jar gradle/wrapper/gradle-wrapper.properties src/main/templates/META-INF/neoforge.mods.toml src/main/java/dev/visfox/forbiddenreforged/ForbiddenMagic.java tests/java/dev/visfox/forbiddenreforged/test/FmGameTests.java tools/check_host_clean.py tools/check_provenance.py
 git commit -m "feat: scaffold the Forbidden Magic add-on project"
 ```
 
@@ -624,7 +628,7 @@ Expected: `BUILD SUCCESSFUL` with no `required tests failed`. This run still use
 - Modify: `host/src/main/java/thaumcraft/entity/AspectOrb.java:41,54,60,132`
 - Modify: `host/src/main/java/thaumcraft/wand/WandVis.java:31-53` (two `switch (aspect)` statements)
 - Create: `patches/0001-aspect-registry.patch` via `git -C host format-patch`
-- Test: `src/main/java/dev/visfox/forbiddenreforged/test/FmGameTests.java`
+- Test: `tests/java/dev/visfox/forbiddenreforged/test/FmGameTests.java`
 
 **Interfaces:**
 - Produces for later tasks: `Aspect.register(String tag, int color, Aspect @Nullable [] components, int blend, @Nullable Identifier texture) → Aspect`, `Aspect.values() → Aspect[]`, an **instance** `aspect.ordinal() → int` (same call syntax as the enum), `Aspect.byOrdinal(int)`, `Aspect.builtinCount()`, `Aspect.AIR … Aspect.TRAP` unchanged in name and order, and the 48 built-ins always at indices 0-47.
@@ -985,7 +989,7 @@ Expected: `aspect_registry_keeps_builtin_order_and_combines` passes.
 - [ ] **Step 7: Commit.**
 
 ```bash
-git add patches/0001-aspect-registry.patch src/main/java/dev/visfox/forbiddenreforged/test/FmGameTests.java
+git add patches/0001-aspect-registry.patch tests/java/dev/visfox/forbiddenreforged/test/FmGameTests.java
 git commit -m "feat: make host aspects a registry"
 ```
 
@@ -1926,7 +1930,7 @@ Expected, in order: build success, a `GAME TESTS COMPLETE` line with no `require
 - [ ] **Step 5: Commit, then tag nothing and push nothing.**
 
 ```bash
-git add README.md NOTICE docs/roadmap.md docs/upstream.md src/main/java/dev/visfox/forbiddenreforged/test/FmGameTests.java
+git add README.md NOTICE docs/roadmap.md docs/upstream.md tests/java/dev/visfox/forbiddenreforged/test/FmGameTests.java
 git commit -m "docs: ship the slice with its release notes and upstream draft"
 ```
 

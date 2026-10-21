@@ -65,6 +65,7 @@ tasks.named('jar', Jar) {
 }
 
 sourceSets.main.resources { srcDir('src/generated/resources') }
+sourceSets.main.java { srcDir('tests/java') }
 
 def generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {
     var replaceProperties = [
