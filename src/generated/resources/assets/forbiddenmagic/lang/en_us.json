@@ -40,6 +40,8 @@
   "item.forbiddenmagic.gluttony_shard": "Gluttony Shard",
   "item.forbiddenmagic.greed_shard": "Greed Shard",
   "item.forbiddenmagic.lust_shard": "Lust Shard",
+  "item.forbiddenmagic.mob_crystal.empty": "Mob Crystal",
+  "item.forbiddenmagic.mob_crystal.filled": "Mob Crystal (%s)",
   "item.forbiddenmagic.morph_axe": "Chameleon Axe",
   "item.forbiddenmagic.morph_pickaxe": "Chameleon Pickaxe",
   "item.forbiddenmagic.morph_shovel": "Chameleon Shovel",

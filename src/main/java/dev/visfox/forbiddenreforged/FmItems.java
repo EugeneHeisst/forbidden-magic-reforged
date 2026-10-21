@@ -20,6 +20,7 @@ public final class FmItems {
     public static final DeferredItem<Item> MORPH_SWORD;
     public static final DeferredItem<Item> MORPH_SHOVEL;
     public static final DeferredItem<Item> MORPH_AXE;
+    public static final DeferredItem<Item> MOB_CRYSTAL;
 
     static {
         for (String vice : new String[]{"wrath", "envy", "taint", "pride", "lust", "sloth", "greed"}) {
@@ -36,6 +37,8 @@ public final class FmItems {
             properties -> repairable(Registration.shovel(properties.rarity(Rarity.EPIC), TcMaterials.ELEMENTAL_TOOL, 1.0F, -3.0F)));
         MORPH_AXE = ITEMS.registerItem("morph_axe", MorphToolItem::new,
             properties -> repairable(Registration.axe(properties.rarity(Rarity.EPIC), TcMaterials.ELEMENTAL_TOOL, 3.0F, -3.0F)));
+        MOB_CRYSTAL = ITEMS.registerItem("mob_crystal", MobCrystalItem::new,
+            properties -> properties.stacksTo(1).rarity(Rarity.UNCOMMON));
     }
 
     private FmItems() {

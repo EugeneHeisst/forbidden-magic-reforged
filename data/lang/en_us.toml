@@ -23,6 +23,10 @@ morph_sword = "Chameleon Sword"
 morph_shovel = "Chameleon Shovel"
 morph_axe = "Chameleon Axe"
 
+[item.forbiddenmagic.mob_crystal]
+empty = "Mob Crystal"
+filled = "Mob Crystal (%s)"
+
 [tc.research_name]
 NETHERSHARDS = "Nether Shards"
 HELLFIRE = "Lord of Hellfire"

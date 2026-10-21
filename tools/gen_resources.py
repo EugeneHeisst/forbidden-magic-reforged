@@ -80,6 +80,27 @@ def generate_morph_items() -> None:
     print(f"morph tools: {len(MORPH_TEXTURES)} two-layer models")
 
 
+def generate_mob_crystal() -> None:
+    write_json(ASSETS / "models" / "item" / "mob_crystal_empty.json", {
+        "parent": "minecraft:item/generated",
+        "textures": {"layer0": "forbiddenmagic:item/emptycrystal"},
+    })
+    write_json(ASSETS / "models" / "item" / "mob_crystal_filled.json", {
+        "parent": "minecraft:item/generated",
+        "textures": {"layer0": "forbiddenmagic:item/mobcrystal"},
+    })
+    write_json(ASSETS / "items" / "mob_crystal.json", {
+        "model": {
+            "type": "minecraft:condition",
+            "property": "minecraft:has_component",
+            "component": "forbiddenmagic:mob_id",
+            "on_true": {"type": "minecraft:model", "model": "forbiddenmagic:item/mob_crystal_filled"},
+            "on_false": {"type": "minecraft:model", "model": "forbiddenmagic:item/mob_crystal_empty"},
+        },
+    })
+    print("mob crystal: 2 models and one condition definition")
+
+
 
 BLOCK_TEXTURES = {
     "taint_planks": ("taint_planks",),
@@ -220,6 +241,7 @@ def main() -> int:
     generate_lang()
     generate_items()
     generate_morph_items()
+    generate_mob_crystal()
     generate_blocks()
     generate_plants()
     generate_umbral_plants()

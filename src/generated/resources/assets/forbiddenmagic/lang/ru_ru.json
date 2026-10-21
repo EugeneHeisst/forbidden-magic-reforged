@@ -40,6 +40,8 @@
   "item.forbiddenmagic.gluttony_shard": "Осколок прожорливости",
   "item.forbiddenmagic.greed_shard": "Осколок жадности",
   "item.forbiddenmagic.lust_shard": "Осколок страсти",
+  "item.forbiddenmagic.mob_crystal.empty": "Кристалл моба",
+  "item.forbiddenmagic.mob_crystal.filled": "Кристалл моба (%s)",
   "item.forbiddenmagic.morph_axe": "Хамелеоновый топор",
   "item.forbiddenmagic.morph_pickaxe": "Хамелеоновая кирка",
   "item.forbiddenmagic.morph_shovel": "Хамелеоновая лопата",

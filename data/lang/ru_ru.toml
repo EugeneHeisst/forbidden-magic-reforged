@@ -23,6 +23,10 @@ morph_sword = "Хамелеоновый меч"
 morph_shovel = "Хамелеоновая лопата"
 morph_axe = "Хамелеоновый топор"
 
+[item.forbiddenmagic.mob_crystal]
+empty = "Кристалл моба"
+filled = "Кристалл моба (%s)"
+
 [tc.research_name]
 NETHERSHARDS = "Осколки Нижнего мира"
 HELLFIRE = "Властелин адского огня"

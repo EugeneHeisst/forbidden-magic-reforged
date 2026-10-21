@@ -113,13 +113,26 @@ public final class FmEnchantmentEffects {
     }
 
     private static void onLivingDrops(LivingDropsEvent event) {
-        if (!FmEnchantments.enabled() || !event.isRecentlyHit()) {
-            return;
-        }
         Entity attacker = event.getSource().getDirectEntity();
-        if (!(attacker instanceof ServerPlayer player) || attacker instanceof FakePlayer) {
+        if (!(attacker instanceof ServerPlayer player) || attacker instanceof FakePlayer || !event.isRecentlyHit()) {
             return;
         }
+        if (FmEnchantments.enabled()) {
+            greedyDrops(event, player);
+        }
+        if (FmSpawnerMobs.canImprint(event.getEntity().getType())) {
+            String id = BuiltInRegistries.ENTITY_TYPE.getKey(event.getEntity().getType()).toString();
+            for (int slot = 0; slot < player.getInventory().getContainerSize(); slot++) {
+                ItemStack candidate = player.getInventory().getItem(slot);
+                if (candidate.is(FmItems.MOB_CRYSTAL.get()) && MobCrystalItem.mob(candidate) == null) {
+                    MobCrystalItem.setMob(candidate, id);
+                    break;
+                }
+            }
+        }
+    }
+
+    private static void greedyDrops(LivingDropsEvent event, ServerPlayer player) {
         ItemStack weapon = player.getMainHandItem();
         if (FmEnchantments.level(player.level().registryAccess(), weapon, FmEnchantments.GREEDY) <= 0) {
             return;
