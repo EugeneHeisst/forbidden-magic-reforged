@@ -163,3 +163,26 @@ Consuming, пул осколков и шанс Corrupting, дропы Greedy, м
 
 Не покрыто: визуальная проверка 12 моделей кусков, поедание кликом в реальной игре, hardcore-рецепт
 `gluttony = 2` (тесты идут с `gluttony = 0`).
+
+## Слайс M7a: кристалл моба
+
+Замерено 2026-10-21 на `4d2a76e` (dev), перед коммитом документации.
+
+| Гейт | Результат |
+|---|---|
+| build | `BUILD SUCCESSFUL in 952ms` (всё up-to-date), затем чистая сборка `cmd //c gradlew.bat clean build` — `BUILD SUCCESSFUL in 12s`, без предупреждений javac |
+| тесты, `no_lust = false` | `All 43 required tests passed :)`, `no_lust gate: disabled=false, luxuria=luxuria` |
+| тесты, `no_lust = true` | `All 43 required tests passed :)`, `no_lust gate: disabled=true, luxuria=null` |
+| генератор | два прогона подряд, `git status --porcelain src/generated` пуст |
+| provenance | `provenance ok: 1 jar(s)` |
+| хост | `host matches sha + 3 patch commit(s)` |
+| артефакт | `forbidden-magic-0.574-26.3-port.0.1.0.jar`, 403 855 байт |
+
+Новый тест один — `mob_crystal_and_spawn_table` (индекс 42): три записи таблицы (zombie/flesh,
+brainy_zombie/mind, pig/beast), размер таблицы не меньше 40, пустой и заполненный кристалл через
+компонент, импринт зомби разрешён, дракон как босс — нет. Сама таблица сверена с оригиналом
+(`Config.java:154-198`): 42 записи, 24 vanilla + 18 Thaumcraft. Тесты идут с дефолтами конфига
+(`wrath_cage = true`, `wrath_crazy = false`).
+
+Не покрыто: реальный импринт через `LivingDropsEvent` при убийстве, переключение модели
+`has_component` в клиенте, ветки `wrath_cage = false` и `wrath_crazy = true`, Клетка Гнева (M7b).
