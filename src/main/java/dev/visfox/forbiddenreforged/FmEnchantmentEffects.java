@@ -8,13 +8,19 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.monster.Enemy;
+import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.util.FakePlayer;
+import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
+import net.neoforged.neoforge.event.entity.living.LivingExperienceDropEvent;
 import net.neoforged.neoforge.event.level.BlockDropsEvent;
 
 public final class FmEnchantmentEffects {
@@ -27,6 +33,8 @@ public final class FmEnchantmentEffects {
 
     public static void register() {
         NeoForge.EVENT_BUS.addListener(FmEnchantmentEffects::onBlockDrops);
+        NeoForge.EVENT_BUS.addListener(FmEnchantmentEffects::onLivingDrops);
+        NeoForge.EVENT_BUS.addListener(FmEnchantmentEffects::onExperienceDrop);
     }
 
     public static boolean isGarbage(ItemStack stack) {
@@ -48,6 +56,17 @@ public final class FmEnchantmentEffects {
 
     public static boolean corruptRoll(RandomSource random) {
         return random.nextInt(3) == 1;
+    }
+
+    public static ItemStack greedyDrop(boolean villager, int roll) {
+        if (villager) {
+            return new ItemStack(Items.EMERALD);
+        }
+        return roll < 3 ? new ItemStack(FmItems.EMERALD_FRAGMENT.get()) : ItemStack.EMPTY;
+    }
+
+    public static int educationalExperience(int original, int level) {
+        return original + 3 * original * level;
     }
 
     private static void onBlockDrops(BlockDropsEvent event) {
@@ -73,5 +92,53 @@ public final class FmEnchantmentEffects {
                 }
             }
         }
+    }
+
+    private static void onLivingDrops(LivingDropsEvent event) {
+        if (!FmEnchantments.enabled() || !event.isRecentlyHit()) {
+            return;
+        }
+        Entity attacker = event.getSource().getDirectEntity();
+        if (!(attacker instanceof ServerPlayer player) || attacker instanceof FakePlayer) {
+            return;
+        }
+        ItemStack weapon = player.getMainHandItem();
+        if (FmEnchantments.level(player.level().registryAccess(), weapon, FmEnchantments.GREEDY) <= 0) {
+            return;
+        }
+        if (FmEnchantments.level(player.level().registryAccess(), weapon, Enchantments.LOOTING) > 0) {
+            return;
+        }
+        boolean villager = event.getEntity() instanceof Villager;
+        boolean hostile = event.getEntity() instanceof Enemy;
+        if (!villager && !hostile) {
+            return;
+        }
+        ItemStack drop = greedyDrop(villager, player.getRandom().nextInt(35));
+        if (!drop.isEmpty()) {
+            addDrop(event, drop);
+        }
+    }
+
+    private static void onExperienceDrop(LivingExperienceDropEvent event) {
+        if (!FmEnchantments.enabled() || !(event.getAttackingPlayer() instanceof ServerPlayer player)) {
+            return;
+        }
+        ItemStack weapon = player.getMainHandItem();
+        int level = FmEnchantments.level(player.level().registryAccess(), weapon, FmEnchantments.EDUCATIONAL);
+        if (level <= 0) {
+            return;
+        }
+        if (FmEnchantments.level(player.level().registryAccess(), weapon, Enchantments.LOOTING) > 0) {
+            return;
+        }
+        event.setDroppedExperience(educationalExperience(event.getOriginalExperience(), level));
+    }
+
+    private static void addDrop(LivingDropsEvent event, ItemStack stack) {
+        LivingEntity entity = event.getEntity();
+        ItemEntity drop = new ItemEntity(entity.level(), entity.getX(), entity.getY(), entity.getZ(), stack);
+        drop.setPickUpDelay(10);
+        event.getDrops().add(drop);
     }
 }
