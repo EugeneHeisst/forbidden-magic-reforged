@@ -116,6 +116,7 @@ forbidden-magic-reforged/
 | своя категория исследования, 30 записей, 40 уникальных текстовых страниц (в исходнике 82 объекта `ResearchPage`, включая recipe-страницы и ветки конфига) | `ResearchCategories.registerCategory`, билдер `ResearchItem`, sealed-записи `ResearchPage` |
 | рецепты arcane, crucible, infusion, infusion-enchantment | `TcRecipes.register(TcRecipe)`; рецепт — record `(key, research, result, AspectList, ingredients)` |
 | динамический рецепт жезла | `ArcaneCrafting.registerDynamic(DynamicArcaneRecipe)` |
+| ПКМ жезлом по обсидиану/незерраку (Hellfire из `WandOverlord`) | `WandTriggers.register` — тот же механизм, которым хост регистрирует котёл |
 | набалдашники и стержни с логикой обновления | `WandRegistry.registerCap`/`registerRod` с явными `item` и `texture` и `RodUpdate`; ключи `CAP_<tag>`/`ROD_<tag>`, lang добавляет аддон |
 | свой фокус (Blink) | подкласс открытого `thaumcraft.wand.focus.FocusItem` |
 | бижутерия (Кольцо питания) | `thaumcraft.platform.Bauble`; четыре слота есть, новых типов не требуется |
@@ -215,14 +216,16 @@ netherrack, запись исследования про осколки откр
 - предметы: Осколки грехов (Гнев, Зависть, Скверна, Гордыня, Похоть, Лень, Алчность), Осколок Чревоугодия,
   скруный уголь, скруный плод, морф-кирка/меч/лопата/топор, скруные кирка и лопата, топор Череподрать,
   дьявольская вилка и ложковилка, верховая плеть, предмет арканного торта, кристалл моба,
-  Божественная сфера,
   писчие склянки (crystalwell и primewell; bloodwell и boundwell — Blood Magic и вырезаны),
   Кольцо питания, ресурсы FM без сторонних вариантов, набалдашники и стержни жезлов без сторонних
-  вариантов, фокус Blink;
+  вариантов, фокус Blink и его апгрейды Hellfire/Pandemonium;
 - семь аспектов и полная таблица меток предметов и сущностей из `DarkAspects`;
 - исследования: одна своя категория, 30 записей, 40 уникальных текстовых страниц (в исходнике 82
   объекта `ResearchPage`, включая recipe-страницы и ветки конфига);
-- рецепты: наборы arcane, crucible, infusion и infusion-enchantment из `ForbiddenRecipes`;
+- рецепты: наборы arcane, crucible, infusion и infusion-enchantment из `ForbiddenRecipes`, плюс
+  vanilla crafting/smelting (TaintPlank, TaintBrick, taint coal) через `CraftingRecipeRef`/датапак;
+- warp: `addWarpToResearch` — SKULLAXE 1, MORPHTOOLS 4, ROD_infernal 2, WRATH 3, VOIDTOUCHED 3,
+  WRATHCAGE 3, TAINTTREE 1, ROD_tainted 2; `addWarpToItem` — WRATHCAGE 5, taint sapling 1;
 - зачарования: Cluster, Consuming, Corrupting, Educational, Greedy, Impact, Void, Wrath;
 - block entity Клетки Гнева, её логика спавнера и рендерер, с расчётом геометрии в собственном
   аналоге `client/geom`; ПКМ клеткой с кристаллом моба в руке назначает моба
@@ -230,7 +233,8 @@ netherrack, запись исследования про осколки откр
 - генерация скруного дерева в скруных биомах, житель-еретик и его трейды;
 - конфиг, включая оригинальный рубильник `no_lust`, сохранённый как **STARTUP**, а не SYNCED:
   значение читается до регистрации аспектов, поэтому клиент и сервер обязаны иметь одинаковое значение.
-  При включении аспект `luxuria` не регистрируется, как в `DarkAspects.java:28`.
+  При включении аспект `luxuria` не регистрируется, как в `DarkAspects.java:28`; остальные core-рубильники:
+  `gluttony` 0/1/2, `enchanting`, `wrathCage`/`wrathCost`/`wrathEff`/`wrathCrazy`, `hereticID`, `tagResearch`.
 
 ### 5.2 Вырезано, с причиной в `docs/dropped.md`
 
@@ -239,6 +243,8 @@ netherrack, запись исследования про осколки откр
 - `ItemBloodRapier`, `DarkPotions` и оба эффекта зелий — API Blood Magic;
 - `ItemBloodwell` и `ItemBoundwell` с их рецептами и исследованиями — Blood Magic (`blood bucket`,
   `BindingRegistry`); core-склянки `ItemCrystalwell` и `ItemPrimewell` остаются в порту;
+- `ItemDivineOrb` (Божественная сфера) — Blood Magic: реализует `IBloodOrb`, `IBindable`, зовёт
+  `SoulNetworkHandler` и `AltarRecipeRegistry`; без BM класс не загружается;
 - четыре Botania `SubTile` (bloodthorn, euclidaisy, tainthistle, whisperweed);
 - `ItemSubCollar` — Botania, а не Thaumic Tinkerer: `items/baubles/ItemSubCollar.java:25,31` тянет
   `vazkii.botania.api.item.ICosmeticAttachable` под `@Optional.Interface(modid = "Botania")`, поэтому
