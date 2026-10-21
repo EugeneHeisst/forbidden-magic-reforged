@@ -18,6 +18,9 @@ Every task below obeys these. Values are copied verbatim from the spec.
 - Host is pinned by sha in `host.sha`. Current pin: `69a47a1b238e3ac15fa5d4b10e61ccb6a4a80dbf` ("fix: restore thaumonomicon creation sparkles", 2026-10-20). The host moves daily — it gained two commits on 2026-10-20 alone after our first release pin — so before every increment run `git -C ../thaumcraft-4-reforged fetch && git -C ../thaumcraft-4-reforged log --oneline HEAD..origin/main` and re-pin only when the new commits touch our patch targets (`aspect/Aspect.java`, `aspect/AspectSync.java`, `entity/AspectOrb.java`, host `build.gradle`).
 - Patched host reports mod version exactly `1.2`. Not `1.1`, not `1.2-fm.1` (a pre-release qualifier sorts below `1.2` and fails our own range).
 - Add-on declares `modId="thaumcraft"` dependency `type="required"`, `versionRange="[1.2,)"`, `ordering="AFTER"`.
+  На Tasks 1-3 диапазон `[1.1,)`: в руках ещё непропатченный хост, который сообщает `1.1`, и с `[1.2,)`
+  аддон не загрузится и `mod_loads_and_host_is_present` не запустится. Task 4 переключает диапазон на
+  `[1.2,)` одновременно с переходом на maven-артефакт пропатченного хоста.
 - `modId` of the port: `forbiddenmagic`. `displayName`: `Forbidden Magic (Reforged Port)`. Version: `0.574-26.3-port.0.1.0`.
 - Package root: `fox.spiteful.forbidden` (attribution to the original author is preserved).
 - Java: 4 spaces, **no comments**. Python: 4 spaces, double quotes, `pathlib`, no comments.
@@ -70,6 +73,7 @@ Mapping to spec increments: increment 0 = Tasks 1-4, increment 1 = Tasks 5-6, in
 
 **Files:**
 - Create: `settings.gradle`, `gradle.properties`, `build.gradle`, `.gitattributes`
+- Create: `gradlew`, `gradlew.bat`, `gradle/wrapper/gradle-wrapper.jar`, `gradle/wrapper/gradle-wrapper.properties` (generic Gradle 9.2.1 wrapper, copied from the host clone; it contains no host code)
 - Create: `src/main/templates/META-INF/neoforge.mods.toml`
 - Create: `src/main/java/fox/spiteful/forbidden/ForbiddenMagic.java`
 - Create: `src/main/java/fox/spiteful/forbidden/test/FmGameTests.java`
@@ -95,14 +99,13 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.fml.common.EventBusSubscriber.Bus;
-import net.neoforged.fml.loading.FMLLoader;
 import net.neoforged.neoforge.event.RegisterGameTestsEvent;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import fox.spiteful.forbidden.ForbiddenMagic;
 
-@EventBusSubscriber(modid = ForbiddenMagic.MODID, bus = Bus.MOD)
+@EventBusSubscriber(modid = ForbiddenMagic.MODID)
 public final class FmGameTests {
     public static final DeferredRegister<Consumer<GameTestHelper>> FUNCTIONS =
         DeferredRegister.create(Registries.TEST_FUNCTION, ForbiddenMagic.MODID);
@@ -134,13 +137,13 @@ public final class FmGameTests {
     }
 
     private static void modLoadsAndHostIsPresent(GameTestHelper helper) {
-        helper.assertTrue(FMLLoader.isModLoaded("thaumcraft"), "thaumcraft must be loaded");
+        helper.assertTrue(ModList.get().isLoaded("thaumcraft"), "thaumcraft must be loaded");
         helper.succeed();
     }
 }
 ```
 
-The pattern is copied from the host's own `thaumcraft/test/GearGameTests.java:47-77`. The structure template is referenced **by identifier at runtime** (`thaumcraft:test/platform`): it ships inside the host jar, generated to `src/generated/resources/data/thaumcraft/structure/test/platform.nbt`, so the add-on needs no `--packs` argument and copies no host file. Verified 2026-10-21: `src/gametest/packs` in the host contains only the `outer_lands` datapack — no structures at all, which is why pointing `--packs` at `host/src/gametest/packs`, as an earlier draft of this plan did, would have loaded nothing.
+The pattern is copied from the host's own `thaumcraft/test/GearGameTests.java:47-77`. The structure template is referenced **by identifier at runtime** (`thaumcraft:test/platform`): it ships inside the host jar, generated to `src/generated/resources/data/thaumcraft/structure/test/platform.nbt`, so the add-on copies no host file and the template resolves without packs. `--packs` is still required, for a different reason: the host's own tests register into the same GameTest server even when `neoforge.enabledGameTestNamespaces` is `forbiddenmagic`, and nine of them need the Outer Lands dimension from the host's `src/gametest/packs`. Verified 2026-10-21: without the argument the run executed 257 tests and failed with 9 host-side errors (`Outer Lands level is unavailable`, `test preset must include Outer Lands`); the packs directory contains only `outer_lands/` and no structures. The path points into the host checkout, which the build already depends on for the jar; nothing from it is copied into this repo or the artifact.
 
 **Constructor wiring contract.** The mod constructor is the only place anything registers, and later tasks append exactly one call each, in this order (it matters: the config must load before the aspects, because `no_lust` gates the `luxuria` registration itself — the original reads `Config.configurate()` before `DarkAspects.initAspects()` in `Forbidden.prelude`; then aspects must exist before the tag table references them, items before recipes reference them, the availability check before anything touches the host API):
 
@@ -162,6 +165,14 @@ Task 1 lands the last line only; each task from 5 to 10 adds its own line and no
 - [ ] **Step 2: Run it and see it fail.** `cmd //c gradlew.bat build` → expected: failure, `settings.gradle` / sources missing (no project yet). This is the red state.
 
 - [ ] **Step 3: Write the scaffold.**
+
+The wrapper is copied verbatim from the host clone, because the port repo starts without one and `gradlew.bat` is the only supported entry point on this machine:
+
+```bash
+cp ../thaumcraft-4-reforged/gradlew ../thaumcraft-4-reforged/gradlew.bat .
+mkdir -p gradle/wrapper
+cp ../thaumcraft-4-reforged/gradle/wrapper/gradle-wrapper.jar ../thaumcraft-4-reforged/gradle/wrapper/gradle-wrapper.properties gradle/wrapper/
+```
 
 `settings.gradle`:
 
@@ -199,9 +210,13 @@ mod_group_id=fox.spiteful.forbidden
 mod_authors=SpitefulFox (original); port author (port)
 mod_credits=Forbidden Magic by SpitefulFox; Thaumcraft 4: Reforged by its author; Thaumcraft by Azanor
 mod_description=Unofficial port of Forbidden Magic 0.574 to Thaumcraft 4: Reforged. Developed with AI assistance.
-thaumcraft_version=1.2
+thaumcraft_version=1.1
 terrablender_version=26.3-26.3.0.0.9
 ```
+
+`thaumcraft_version=1.1` — временно: непропатченный хост в `../thaumcraft-4-reforged/build/libs/` сообщает
+именно `1.1`, и с `[1.2,)` аддон был бы отвергнут до запуска теста. Task 4 поднимает это значение до
+`1.2` одновременно с переходом на опубликованный пропатченный хост.
 
 `build.gradle` (dependency on the host comes from the local maven repo created in Task 4; until then the same jar is referenced by path, which is why `localRuntime` exists):
 
@@ -232,6 +247,8 @@ neoForge {
         }
         gameTestServer {
             type = "gameTestServer"
+            programArgument '--packs'
+            programArgument file('../thaumcraft-4-reforged/src/gametest/packs').absolutePath
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
         }
         configureEach {
@@ -249,6 +266,13 @@ neoForge {
 
 repositories {
     maven { url = uri("maven") }
+    maven {
+        name = "Minecraft Forge"
+        url = "https://maven.minecraftforge.net/"
+        content {
+            includeGroup "com.github.glitchfiend"
+        }
+    }
 }
 
 configurations {
@@ -338,6 +362,7 @@ ${mod_description}
 ```java
 package fox.spiteful.forbidden;
 
+import fox.spiteful.forbidden.test.FmGameTests;
 import net.minecraft.resources.Identifier;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -449,7 +474,7 @@ Expected: the host jar appears on the runtime classpath — that is the evidence
 - [ ] **Step 5: Commit.**
 
 ```bash
-git add settings.gradle gradle.properties build.gradle .gitattributes src/main/templates/META-INF/neoforge.mods.toml src/main/java/fox/spiteful/forbidden/ForbiddenMagic.java src/main/java/fox/spiteful/forbidden/test/FmGameTests.java tools/check_host_clean.py tools/check_provenance.py
+git add settings.gradle gradle.properties build.gradle .gitattributes gradlew gradlew.bat gradle/wrapper/gradle-wrapper.jar gradle/wrapper/gradle-wrapper.properties src/main/templates/META-INF/neoforge.mods.toml src/main/java/fox/spiteful/forbidden/ForbiddenMagic.java src/main/java/fox/spiteful/forbidden/test/FmGameTests.java tools/check_host_clean.py tools/check_provenance.py
 git commit -m "feat: scaffold the Forbidden Magic add-on project"
 ```
 
@@ -1037,7 +1062,7 @@ publishing {
 }
 ```
 
-- [ ] **Step 4: Export both patches the same way as Task 3 Step 5, publish, and switch the add-on onto the artifact.** Replace the two `files(upstreamHostJar)` lines in `build.gradle` and drop the now-unused `upstreamHostJar` definition:
+- [ ] **Step 4: Export both patches the same way as Task 3 Step 5, publish, and switch the add-on onto the artifact.** Set `thaumcraft_version=1.2` in `gradle.properties` (the patched host now reports `1.2`; leaving `1.1` would let the add-on load on a stock host and silently reach `NoSuchMethodError`). Replace the two `files(upstreamHostJar)` lines in `build.gradle` and drop the now-unused `upstreamHostJar` definition:
 
 ```groovy
 dependencies {
