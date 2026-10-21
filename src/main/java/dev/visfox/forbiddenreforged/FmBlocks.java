@@ -21,6 +21,7 @@ public final class FmBlocks {
     public static final DeferredBlock<TaintSaplingBlock> TAINT_SAPLING;
     public static final DeferredBlock<UmbralRoseBlock> UMBRAL_ROSE;
     public static final DeferredBlock<UmbralRoseBushBlock> UMBRAL_ROSE_BUSH;
+    public static final DeferredBlock<ArcaneCakeBlock> ARCANE_CAKE;
 
     static {
         TAINT_LOG = BLOCKS.registerBlock("taint_log", RotatedPillarBlock::new,
@@ -43,6 +44,9 @@ public final class FmBlocks {
             properties -> properties.mapColor(MapColor.COLOR_BLACK).instabreak().sound(SoundType.GRASS).randomTicks().noCollision());
         UMBRAL_ROSE_BUSH = BLOCKS.registerBlock("umbral_rose_bush", UmbralRoseBushBlock::new,
             properties -> properties.mapColor(MapColor.COLOR_BLACK).instabreak().sound(SoundType.GRASS).noCollision());
+        ARCANE_CAKE = BLOCKS.registerBlock("arcane_cake", ArcaneCakeBlock::new,
+            properties -> properties.mapColor(MapColor.COLOR_BROWN).strength(0.5F).sound(SoundType.WOOL)
+                .randomTicks().noOcclusion().noLootTable());
         FmItems.ITEMS.registerSimpleBlockItem(TAINT_LOG);
         FmItems.ITEMS.registerSimpleBlockItem(TAINT_PLANKS);
         FmItems.ITEMS.registerSimpleBlockItem(TAINT_STONE_SMOOTH);
@@ -52,6 +56,7 @@ public final class FmBlocks {
         FmItems.ITEMS.registerSimpleBlockItem(TAINT_SAPLING);
         FmItems.ITEMS.registerSimpleBlockItem(UMBRAL_ROSE);
         FmItems.ITEMS.registerSimpleBlockItem(UMBRAL_ROSE_BUSH);
+        FmItems.ITEMS.registerSimpleBlockItem(ARCANE_CAKE);
     }
 
     private FmBlocks() {

@@ -40,5 +40,6 @@ public final class FmCreativeTab {
         event.accept(FmBlocks.TAINT_SAPLING.get().asItem());
         event.accept(FmBlocks.UMBRAL_ROSE.get().asItem());
         event.accept(FmBlocks.UMBRAL_ROSE_BUSH.get().asItem());
+        event.accept(FmBlocks.ARCANE_CAKE.get().asItem());
     }
 }

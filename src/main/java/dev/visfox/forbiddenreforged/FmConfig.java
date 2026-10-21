@@ -29,6 +29,10 @@ public final class FmConfig {
         return SPEC.isLoaded() ? noLust.get() : noLust.getDefault();
     }
 
+    public static int gluttonyMode() {
+        return SPEC.isLoaded() ? gluttony.get() : gluttony.getDefault();
+    }
+
     public static boolean enchantmentsEnabled() {
         return SPEC.isLoaded() ? enchanting.get() : enchanting.getDefault();
     }

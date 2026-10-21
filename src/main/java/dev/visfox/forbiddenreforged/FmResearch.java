@@ -91,6 +91,12 @@ public final class FmResearch {
                 .setWarp(3)
                 .registerResearchItem();
         }
+        new ResearchItem("ARCANECAKE", "FORBIDDEN", new AspectList().add(FmAspects.GLUTTONY, 6).add(Aspect.HUNGER, 3).add(Aspect.CRAFT, 2), -12, -6, 2, TcStack.of("forbiddenmagic:arcane_cake", 1))
+            .setPages(ResearchPage.text("forbiddenmagic.research_page.ARCANECAKE.1"), ResearchPage.infusion("ARCANECAKE"))
+            .setParents("NETHERSHARDS", "INFUSION")
+            .setAspectTriggers(FmAspects.GLUTTONY)
+            .setConcealed()
+            .registerResearchItem();
         new ResearchItem("TAINTTREE", "FORBIDDEN", new AspectList().add(Aspect.TREE, 4).add(Aspect.TAINT, 6).add(Aspect.POISON, 2).add(Aspect.PLANT, 3), -11, 3, 3, TcStack.of("forbiddenmagic:taint_sapling", 1))
             .setPages(ResearchPage.text("forbiddenmagic.research_page.TAINTTREE.1"), ResearchPage.crucible("TAINTTREE"))
             .setParents("THAUMIUM", "INFUSION", "ETHEREALBLOOM")
