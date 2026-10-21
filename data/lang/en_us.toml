@@ -24,8 +24,8 @@ morph_shovel = "Chameleon Shovel"
 morph_axe = "Chameleon Axe"
 
 [item.forbiddenmagic.mob_crystal]
-empty = "Mob Crystal"
-filled = "Mob Crystal (%s)"
+empty = "Blank Imprinting Crystal"
+filled = "%s Imprinted Crystal"
 
 [tc.research_name]
 NETHERSHARDS = "Nether Shards"

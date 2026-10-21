@@ -2,14 +2,11 @@ package dev.visfox.forbiddenreforged;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
-import net.minecraft.world.entity.boss.wither.WitherBoss;
 import org.jspecify.annotations.Nullable;
 import thaumcraft.aspect.Aspect;
-import thaumcraft.entity.boss.ThaumcraftBoss;
 
 public final class FmSpawnerMobs {
     private static final Map<String, Aspect> MOBS = Map.ofEntries(
@@ -57,6 +54,14 @@ public final class FmSpawnerMobs {
         Map.entry("thaumcraft:eldritch_guardian", Aspect.ELDRITCH)
     );
 
+    private static final Set<String> BOSSES = Set.of(
+        "minecraft:ender_dragon",
+        "minecraft:wither",
+        "thaumcraft:cultist_leader",
+        "thaumcraft:eldritch_golem",
+        "thaumcraft:eldritch_warden"
+    );
+
     private FmSpawnerMobs() {
     }
 
@@ -76,10 +81,7 @@ public final class FmSpawnerMobs {
         return MOBS.containsKey(id) || (FmConfig.wrathCrazy() && !isBoss(type));
     }
 
-    private static boolean isBoss(EntityType<?> type) {
-        Class<? extends Entity> base = type.getBaseClass();
-        return WitherBoss.class.isAssignableFrom(base)
-            || EnderDragon.class.isAssignableFrom(base)
-            || ThaumcraftBoss.class.isAssignableFrom(base);
+    public static boolean isBoss(EntityType<?> type) {
+        return BOSSES.contains(BuiltInRegistries.ENTITY_TYPE.getKey(type).toString());
     }
 }

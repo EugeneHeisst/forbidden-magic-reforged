@@ -677,7 +677,12 @@ public final class FmGameTests {
         helper.assertTrue(FmSpawnerMobs.aspect("minecraft:zombie") == Aspect.FLESH, "zombie carries flesh");
         helper.assertTrue(FmSpawnerMobs.aspect("thaumcraft:brainy_zombie") == Aspect.MIND, "brainy zombie carries mind");
         helper.assertTrue(FmSpawnerMobs.aspect("minecraft:pig") == Aspect.BEAST, "pig carries beast");
-        helper.assertTrue(FmSpawnerMobs.ids().size() >= 40, "the table keeps the original mobs");
+        helper.assertValueEqual(FmSpawnerMobs.ids().size(), 42, "the table keeps exactly the original 42 mobs");
+        for (String id : FmSpawnerMobs.ids()) {
+            helper.assertTrue(FmSpawnerMobs.aspect(id) != null, id + " must map to an aspect");
+        }
+        helper.assertTrue(FmSpawnerMobs.isBoss(EntityTypes.ENDER_DRAGON), "the ender dragon is a boss");
+        helper.assertFalse(FmSpawnerMobs.isBoss(EntityTypes.ZOMBIE), "a zombie is not a boss");
         ItemStack stack = new ItemStack(FmItems.MOB_CRYSTAL.get());
         helper.assertTrue(MobCrystalItem.mob(stack) == null, "a fresh crystal is empty");
         MobCrystalItem.setMob(stack, "minecraft:zombie");
