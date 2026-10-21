@@ -1024,7 +1024,8 @@ public final class FmAspects {
     }
 
     public static void init() {
-        AddonAspects.addRegistrar(api -> PROBE = api.register("probe", 0x808080, null, 1, null));
+        AddonAspects.addRegistrar(api -> PROBE = api.register("probe", 0x808080, new Aspect[]{Aspect.AIR, Aspect.VOID}, 1, null));
+        AddonAspects.init();
     }
 
     private static final class AddonAspectsAvailable {
@@ -1040,7 +1041,9 @@ public final class FmAspects {
 }
 ```
 
-and call `FmAspects.init()` as the first statement of the mod constructor. The test:
+The probe is compound on purpose: an add-on aspect with `null` components is primal, joins `Aspect.getPrimalAspects()`, and the host uses that list as the wand's six vis slots. Verified 2026-10-21: a primal probe made 14 host infusion/wand tests fail (`wand click was not handled`, vis deltas wrong); a compound probe leaves them green. All seven sin aspects are compound, so this is also the shape the real content uses.
+
+and call `FmAspects.init()` as the first statement of the mod constructor. The Task 3 test asserted `values().length == 48`; with the probe registered that count becomes 49, so in the same edit change it to assert `Aspect.builtinCount() == 48` and keep the index checks on 0 and 47. The test:
 
 ```java
     private static void addonAspectSurvivesClientSync(GameTestHelper helper) {
@@ -1073,6 +1076,7 @@ import org.jspecify.annotations.Nullable;
 
 public final class AddonAspects {
     private static final List<Consumer<Addon>> REGISTRARS = new CopyOnWriteArrayList<>();
+    private static final Addon API = (tag, color, components, blend, texture) -> Aspect.register(tag, color, components, blend, texture);
     private static boolean initialised;
 
     private AddonAspects() {
@@ -1084,6 +1088,9 @@ public final class AddonAspects {
 
     public static void addRegistrar(Consumer<Addon> registrar) {
         REGISTRARS.add(registrar);
+        if (initialised) {
+            registrar.accept(API);
+        }
     }
 
     public static void init() {
@@ -1091,13 +1098,14 @@ public final class AddonAspects {
             return;
         }
         initialised = true;
-        Addon api = (tag, color, components, blend, texture) -> Aspect.register(tag, color, components, blend, texture);
-        REGISTRARS.forEach(registrar -> registrar.accept(api));
+        REGISTRARS.forEach(registrar -> registrar.accept(API));
     }
 }
 ```
 
 and in `AspectSync.rebuild`, before `ModernAspects modern = new ModernAspects(registry);` insert `AddonAspects.init();`.
+
+`FmAspects.init()` calls `AddonAspects.init()` itself, and that call is load-bearing for clients: `AspectSync.rebuild` runs on the server only, so in multiplayer a client would otherwise never create the add-on aspects and would fail to decode them from packets. The constructor call registers them on both sides at mod construction, before any packet can arrive. The call in `AspectSync.rebuild` stays as the server-side ordering guarantee; `initialised` makes it idempotent, and `addRegistrar` invokes a registrar immediately if it arrives after initialization, so a second add-on loaded later is not silently dropped.
 
 - [ ] **Step 3: Write patch 0003**: add to the host copy `build.gradle` a `maven-publish` block and set `mod_version=1.2` in its `gradle.properties`:
 
@@ -1294,6 +1302,7 @@ public final class FmAspects {
                 SLOTH = api.register("desidia", 0x6E6E6E, new Aspect[]{Aspect.TRAP, Aspect.SOUL}, 771, texture("desidia"));
                 WRATH = api.register("ira", 0x870404, new Aspect[]{Aspect.WEAPON, Aspect.FIRE}, 771, texture("ira"));
             });
+            AddonAspects.init();
         } catch (NoSuchMethodError | NoClassDefFoundError absent) {
             throw new IllegalStateException("Forbidden Magic requires Thaumcraft 4: Reforged 1.2 or newer with the add-on aspect API", absent);
         }
