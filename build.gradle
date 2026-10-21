@@ -6,8 +6,6 @@ plugins {
 version = mod_version
 group = mod_group_id
 
-def upstreamHostJar = rootDir.toPath().resolveSibling("thaumcraft-4-reforged").resolve("build/libs/thaumcraft-4-reforged-1.1-26.3.jar").toFile()
-
 base {
     archivesName = "forbidden-magic"
 }
@@ -58,8 +56,8 @@ configurations {
 
 dependencies {
     implementation "com.github.glitchfiend:TerraBlender-neoforge:${terrablender_version}"
-    compileOnly files(upstreamHostJar)
-    localRuntime files(upstreamHostJar)
+    compileOnly "thaumcraft:thaumcraft:${thaumcraft_version}"
+    localRuntime "thaumcraft:thaumcraft:${thaumcraft_version}"
 }
 
 tasks.named('jar', Jar) {
