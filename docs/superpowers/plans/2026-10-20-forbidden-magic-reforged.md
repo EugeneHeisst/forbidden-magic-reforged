@@ -1208,7 +1208,8 @@ author reply: <quote or "no reply">
 - Create: `src/main/java/dev/visfox/forbiddenreforged/FmAspects.java`
 - Create: `src/main/java/dev/visfox/forbiddenreforged/FmSetup.java` (runs the aspect registration after config load)
 - Create: `src/main/resources/assets/forbiddenmagic/textures/aspects/{luxuria,infernus,superbia,gula,invidia,desidia,ira}.png` — copied from `../ForbiddenMagic/src/main/resources/assets/forbidden/textures/aspects/`
-- Create: `tools/lang/en_us.toml`, `tools/lang/ru_ru.toml` (aspect names from `../ForbiddenMagic/src/main/resources/assets/forbidden/lang/en_US.lang`, keys `forbiddenmagic.aspect.<tag>`)
+- Create: `tools/lang/en_us.toml`, `tools/lang/ru_ru.toml` (aspect names from `../ForbiddenMagic/src/main/resources/assets/forbidden/lang/en_US.lang`, host keys `tc.aspect.<tag>` — `Aspect.getDescription()` builds exactly that key)
+- Create: `tools/gen_resources.py` (lang subset now; Task 7 extends it to models and item definitions)
 - Modify: `ForbiddenMagic.java` (register `FmAspects` through `AddonAspects.addRegistrar`)
 - Test: `FmGameTests` — `sin_aspects_registered_with_own_textures`
 
