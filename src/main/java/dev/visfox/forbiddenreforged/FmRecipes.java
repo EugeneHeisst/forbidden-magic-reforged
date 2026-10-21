@@ -11,7 +11,8 @@ import thaumcraft.crafting.TcRecipes;
 import thaumcraft.crafting.TcStack;
 
 public final class FmRecipes {
-    public static final Set<String> OWN_KEYS = Set.of("SKULLAXE", "WRATH", "GREEDY", "CONSUMING", "EDUCATIONAL", "CORRUPTING");
+    public static final Set<String> OWN_KEYS = Set.of("SKULLAXE", "WRATH", "GREEDY", "CONSUMING", "EDUCATIONAL", "CORRUPTING",
+        "MORPHPICK", "MORPHSWORD", "MORPHSHOVEL", "MORPHAXE", "CLUSTER", "IMPACT", "VOIDTOUCHED");
 
     private FmRecipes() {
     }
@@ -70,6 +71,55 @@ public final class FmRecipes {
                     TcIngredient.item("minecraft:nether_wart"),
                     TcIngredient.item("minecraft:soul_sand"),
                     TcIngredient.item("thaumcraft:salis_mundus")
+                )));
+            TcRecipes.register(new InfusionEnchantmentRecipe("CLUSTER", "CLUSTER", ForbiddenMagic.id("cluster"), 3,
+                new AspectList().add(Aspect.FIRE, 4).add(Aspect.METAL, 4).add(Aspect.GREED, 4),
+                List.of(
+                    TcIngredient.item("thaumcraft:elemental_pickaxe"),
+                    TcIngredient.item("thaumcraft:salis_mundus")
+                )));
+            TcRecipes.register(new InfusionEnchantmentRecipe("IMPACT", "IMPACT", ForbiddenMagic.id("impact"), 4,
+                new AspectList().add(Aspect.ENTROPY, 16).add(Aspect.MINE, 16),
+                List.of(
+                    TcIngredient.item("thaumcraft:salis_mundus"),
+                    TcIngredient.item(FmItems.id("envy").toString()),
+                    TcIngredient.item(FmItems.id("envy").toString()),
+                    TcIngredient.item("thaumcraft:elemental_shovel")
+                )));
+            TcRecipes.register(new InfusionEnchantmentRecipe("VOIDTOUCHED", "VOIDTOUCHED", ForbiddenMagic.id("voidtouched"), 8,
+                new AspectList().add(Aspect.VOID, 16).add(Aspect.DARKNESS, 16).add(FmAspects.ENVY, 24).add(Aspect.ELDRITCH, 16),
+                List.of(
+                    TcIngredient.item("thaumcraft:salis_mundus"),
+                    TcIngredient.item("thaumcraft:void_seed"),
+                    TcIngredient.item("thaumcraft:void_seed"),
+                    TcIngredient.item("thaumcraft:void_seed"),
+                    TcIngredient.item(FmItems.id("envy").toString()),
+                    TcIngredient.item(FmItems.id("envy").toString()),
+                    TcIngredient.item(FmItems.id("envy").toString())
+                )));
+        }
+        registerMorphTools();
+    }
+
+    private static void registerMorphTools() {
+        for (String[] tool : new String[][]{
+            {"MORPHPICK", "morph_pickaxe", "thaumcraft:thaumium_pickaxe", "TOOL"},
+            {"MORPHSWORD", "morph_sword", "thaumcraft:thaumium_sword", "WEAPON"},
+            {"MORPHSHOVEL", "morph_shovel", "thaumcraft:thaumium_shovel", "TOOL"},
+            {"MORPHAXE", "morph_axe", "thaumcraft:thaumium_axe", "TOOL"},
+        }) {
+            AspectList aspects = "WEAPON".equals(tool[3])
+                ? new AspectList().add(Aspect.EXCHANGE, 32).add(FmAspects.ENVY, 16).add(Aspect.WEAPON, 16)
+                : new AspectList().add(Aspect.EXCHANGE, 32).add(FmAspects.ENVY, 16).add(Aspect.TOOL, 16);
+            TcRecipes.register(new InfusionRecipe(tool[0], "MORPHTOOLS",
+                TcStack.of("forbiddenmagic:" + tool[1], 1), 6, aspects,
+                TcIngredient.item(tool[2]),
+                List.of(
+                    TcIngredient.item(FmItems.id("envy").toString()),
+                    TcIngredient.item(FmItems.id("envy").toString()),
+                    TcIngredient.item("minecraft:diamond"),
+                    TcIngredient.item("thaumcraft:enchanted_fabric"),
+                    TcIngredient.item("thaumcraft:silverwood_log")
                 )));
         }
     }
