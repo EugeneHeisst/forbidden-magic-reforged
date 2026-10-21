@@ -148,7 +148,7 @@ public final class FmGameTests {
 
 The pattern is copied from the host's own `thaumcraft/test/GearGameTests.java:47-77`. The structure template is referenced **by identifier at runtime** (`thaumcraft:test/platform`): it ships inside the host jar, generated to `src/generated/resources/data/thaumcraft/structure/test/platform.nbt`, so the add-on copies no host file and the template resolves without packs. `--tests "${mod_id}:*"` restricts the run to our own three tests: the host's tests register into the same server through `RegisterGameTestsEvent` regardless of `neoforge.enabledGameTestNamespaces`, and one of them (`altar_guardian_population`) is sensitive to the RNG/order of the extended suite. Host tests are therefore a **separate gate**: the host's own `runGameTestServer` in `host/` runs 256/256, and the add-on's run checks only its own namespace. Verified 2026-10-21: the unfiltered run executed 259 tests and failed on the host's altar test; the filtered run executes 3 and the host-only run executes 256, both green.
 
-**Constructor wiring contract.** The mod constructor is the only place anything registers, and later tasks append exactly one call each, in this order (it matters: the config must load before the aspects, because `no_lust` gates the `luxuria` registration itself — the original reads `Config.configurate()` before `DarkAspects.initAspects()` in `Forbidden.prelude`; then aspects must exist before the tag table references them, items before recipes reference them, the availability check before anything touches the host API):
+**Constructor wiring contract.** The constructor registers the config, the aspect/tag registrars, `DeferredRegister`s, the drop listener and GameTests. The actual aspect objects are created later in `FMLCommonSetupEvent`, so anything whose `AspectList` mentions `FmAspects.*` must register **after** that event:
 
 ```java
     public ForbiddenMagic(IEventBus modEventBus, ModContainer modContainer) {
@@ -157,13 +157,13 @@ The pattern is copied from the host's own `thaumcraft/test/GearGameTests.java:47
         FmAspectTags.register();
         FmItems.ITEMS.register(modEventBus);
         FmDrops.register();
-        FmResearch.register();
-        FmRecipes.register();
         FmGameTests.register(modEventBus);
     }
 ```
 
-Task 1 lands the last line only; each task from 5 to 10 adds its own line and nothing else. `FmConfig` arrives in Task 5 carrying the `no_lust` switch alone, because the aspect guard reads it; Task 7 extends that same class with the remaining switches and must not move the registration line or redefine `no_lust`.
+`FmSetup.commonSetup` runs `AddonAspects.init()`, then `FmRecipes.register()`, then `FmResearch.register()`. Recipes go before research so their `ResearchPage.infusion("SKULLAXE")` resolves; both must be after aspects and after the item registry is populated. The config must load before the aspects, because `no_lust` gates the `luxuria` registration itself — the original reads `Config.configurate()` before `DarkAspects.initAspects()` in `Forbidden.prelude`.
+
+Task 1 lands the GameTests line only. `FmConfig` arrives in Task 5 carrying the `no_lust` switch alone; Task 7 extends that same class with the remaining switches and must not move the registration line or redefine `no_lust`. `FmResearch.register()` and `FmRecipes.register()` are **not** constructor calls, despite the earlier draft of this contract.
 
 - [ ] **Step 2: Run it and see it fail.** `cmd //c gradlew.bat build` → expected: failure, `settings.gradle` / sources missing (no project yet). This is the red state.
 

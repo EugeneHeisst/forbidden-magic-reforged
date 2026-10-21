@@ -14,3 +14,5 @@
 | Бонус wrath | урон инструмента/меча + sharpness/power/fire aspect/flame/smite/bane | `ATTACK_DAMAGE - 1` + те же зачарования + focus potency | современный attribute API не даёт исходный modifier один-в-один; числа проверяются в GameTest границей |
 | Боссы для pride | `IBossDisplayData` | `WitherBoss`, `EnderDragon`, `ThaumcraftBoss` | явные типы вместо удалённого интерфейса |
 | Taint-осколок из tainted-блоков | `FMEventHandler` на блоке | отложен до полного §5.1 | M1 проверяет цепочку на wrath; источник taint добавится вместе с taint-деревом |
+| Иконка HELLFIRE | `new ItemStack(Blocks.fire)` | `minecraft:flint_and_steel` | у блока огня нет предметной формы |
+| Картинки в страницах исследований | `<IMG>forbidden:textures/misc/research.png...` | `<IMG>forbiddenmagic:textures/misc/research.png...` | namespace порта; файл скопирован в `assets/forbiddenmagic/textures/misc/` |
