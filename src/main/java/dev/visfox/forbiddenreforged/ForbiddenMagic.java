@@ -16,6 +16,7 @@ public final class ForbiddenMagic {
     public ForbiddenMagic(IEventBus modEventBus, ModContainer modContainer) {
         FmConfig.register(modContainer);
         FmAspects.init();
+        FmAspectTags.register();
         FmGameTests.register(modEventBus);
     }
 
