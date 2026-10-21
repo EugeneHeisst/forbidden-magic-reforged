@@ -1,4 +1,4 @@
-package fox.spiteful.forbidden;
+package dev.visfox.forbiddenreforged;
 
 import org.jspecify.annotations.Nullable;
 import thaumcraft.aspect.AddonAspects;

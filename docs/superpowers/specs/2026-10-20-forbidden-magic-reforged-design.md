@@ -71,9 +71,9 @@ forbidden-magic-reforged/
   host/                     чистый клон хоста на пинном sha, пропатченный        (gitignore)
   patches/                  серия .patch, в гите, временный костыль и payload PR
   maven/                    локальный maven-репозиторий пропатченного хоста      (gitignore)
-  src/main/java/fox/spiteful/forbidden/     порт
+  src/main/java/dev/visfox/forbiddenreforged/     порт
   src/main/resources/                       ассеты FM
-  src/main/java/fox/spiteful/forbidden/test/ game test-ы
+  src/main/java/dev/visfox/forbiddenreforged/test/ game test-ы
   src/generated/resources/                  пишут tools/, руками не правится
   tools/                    prepare_host.py, gen_resources.py, id_map.json, проверки
   reference/ForbiddenMagic/ исходник 1.7.10, источник истины по поведению        (gitignore)
@@ -404,8 +404,8 @@ Thaumcraft 4: Reforged, и это надо держать в голове при
 | modId | `forbiddenmagic` | оригинал 1.7.10 шёл как `ForbiddenMagic`; отдельный id делает коллизию невозможной и сразу читается как другой артефакт |
 | displayName | `Forbidden Magic (Reforged Port)` | слово «Port» в самом названии, а не только в описании |
 | version | `0.574-26.3-port.0.1.0` | базовая версия оригинала + MC + суффикс порта; та же схема, что у соседнего порта FM |
-| authors | `SpitefulFox (original); <аккаунт порта> (port)` | оригинальный автор первым |
-| credits | Thaumcraft 4: Reforged и его автор; Azanor как автор TC4 | цепочка источников видна в модалисте, а не в сноске |
+| authors | `SpitefulFox (original); MxxFoxx2 (port)` | оригинальный автор первым |
+| credits | notlikethiss (Thaumcraft 4: Reforged); Azanor (Thaumcraft 4.2.3.5) | цепочка источников видна в модалисте, а не в сноске |
 | description | «неофициальный порт/форк Forbidden Magic 0.574 для Thaumcraft 4: Reforged», плюс строка об участии ИИ в разработке | модерация площадок и честность перед игроком |
 | `LICENSE` / `NOTICE` | текст WTFPL дословно, в `NOTICE` — происхождение кода и ассетов | лицензия не должна быть переписана |
 
@@ -413,7 +413,7 @@ Thaumcraft 4: Reforged, и это надо держать в голове при
 аспектные кладутся в собственное пространство имён (`forbiddenmagic:textures/aspects/*.png`), а не в
 `thaumcraft:`. Ресурсы и классы хоста в наш jar не попадают ни при какой форме сборки, и это
 проверяется машиной, а не внимательностью: `tools/check_provenance.py` падает, если в артефакте
-порту найдён путь `assets/thaumcraft/**` или класс вне `fox.spiteful.**`, `docs/**` и `tools/**`.
+порту найдён путь `assets/thaumcraft/**` или класс вне `dev.visfox.forbiddenreforged.**`, `docs/**` и `tools/**`.
 Эта проверка стоит в гейте каждого инкремента наравне с `build` и `runGameTestServer`.
 
 Обратная сторона «форка», о которой надо знать заранее. Позиционирование снимает вопросы площадок, но
@@ -462,3 +462,12 @@ Blood Magic, Botania, AM2 и Thaumic Tinkerer должен быть перечи
 Modrinth. Площадка навязывает социальный контракт — комментарии, «когда под 26.4», ожидания
 совместимости, — который противоречит пункту 3 и стоит дороже, чем вся остальная документация проекта.
 Появление на площадках — отдельное решение с отдельной ценой, а не продолжение по умолчанию.
+
+## Кредиты
+
+- **Forbidden Magic 0.574** — SpitefulFox; оригинальный код, ассеты и тексты, WTFPL.
+- **Thaumcraft 4: Reforged** — notlikethiss; хост и его аддон-API.
+- **Thaumcraft 4.2.3.5** — Azanor; оригинальный дизайн аспектов, исследований и рецептов.
+- **Порт** — MxxFoxx2; разработка велась с участием ИИ.
+- **Thaumcraft 4 Reconstructed / `thaumcraft-port/thaumcraft-addons`** — источник сведений о
+  современной форме аддон-аспектов; изучено поведение, код не заимствован.

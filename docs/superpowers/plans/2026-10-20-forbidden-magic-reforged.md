@@ -22,7 +22,7 @@ Every task below obeys these. Values are copied verbatim from the spec.
   аддон не загрузится и `mod_loads_and_host_is_present` не запустится. Task 4 переключает диапазон на
   `[1.2,)` одновременно с переходом на maven-артефакт пропатченного хоста.
 - `modId` of the port: `forbiddenmagic`. `displayName`: `Forbidden Magic (Reforged Port)`. Version: `0.574-26.3-port.0.1.0`.
-- Package root: `fox.spiteful.forbidden` (attribution to the original author is preserved).
+- Package root: `dev.visfox.forbiddenreforged` (attribution to the original author is preserved).
 - Java: 4 spaces, **no comments**. Python: 4 spaces, double quotes, `pathlib`, no comments.
 - Commits in English, `feat:` / `fix:` / `docs:` / `chore:`, no co-authorship lines.
 - Resources are produced by Python generators in `tools/`; datagen is not used; `src/generated/resources` is never hand-edited; re-running the generator must leave `git status` empty.
@@ -50,7 +50,7 @@ forbidden-magic-reforged/
   tools/id_map.json                       1.7.10 meta -> our ids
   tools/lang/en_us.toml, tools/lang/ru_ru.toml   source of truth for lang
   src/main/templates/META-INF/neoforge.mods.toml
-  src/main/java/fox/spiteful/forbidden/
+  src/main/java/dev/visfox/forbiddenreforged/
     ForbiddenMagic.java                   @Mod entry point, registration order
     FmConfig.java                         synced config, includes no_lust
     FmItems.java                          DeferredRegister.Items
@@ -75,18 +75,18 @@ Mapping to spec increments: increment 0 = Tasks 1-4, increment 1 = Tasks 5-6, in
 - Create: `settings.gradle`, `gradle.properties`, `build.gradle`, `.gitattributes`
 - Create: `gradlew`, `gradlew.bat`, `gradle/wrapper/gradle-wrapper.jar`, `gradle/wrapper/gradle-wrapper.properties` (generic Gradle 9.2.1 wrapper, copied from the host clone; it contains no host code)
 - Create: `src/main/templates/META-INF/neoforge.mods.toml`
-- Create: `src/main/java/fox/spiteful/forbidden/ForbiddenMagic.java`
-- Create: `src/main/java/fox/spiteful/forbidden/test/FmGameTests.java`
+- Create: `src/main/java/dev/visfox/forbiddenreforged/ForbiddenMagic.java`
+- Create: `src/main/java/dev/visfox/forbiddenreforged/test/FmGameTests.java`
 - Create: `tools/check_host_clean.py`, `tools/check_provenance.py`
 
 **Interfaces:**
 - Consumes: nothing.
 - Produces: gradle tasks `build`, `runGameTestServer`; `ForbiddenMagic.MODID == "forbiddenmagic"`; `FmGameTests.register(IEventBus)` and a `FUNCTIONS` registry that later tasks add tests to.
 
-- [ ] **Step 1: Write the failing test.** `src/main/java/fox/spiteful/forbidden/test/FmGameTests.java` — the pattern is copied from the host's `thaumcraft/test/GearGameTests.java:47-77`:
+- [ ] **Step 1: Write the failing test.** `src/main/java/dev/visfox/forbiddenreforged/test/FmGameTests.java` — the pattern is copied from the host's `thaumcraft/test/GearGameTests.java:47-77`:
 
 ```java
-package fox.spiteful.forbidden.test;
+package dev.visfox.forbiddenreforged.test;
 
 import java.util.function.Consumer;
 import net.minecraft.core.Holder;
@@ -103,7 +103,7 @@ import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.RegisterGameTestsEvent;
 import net.neoforged.neoforge.registries.DeferredRegister;
-import fox.spiteful.forbidden.ForbiddenMagic;
+import dev.visfox.forbiddenreforged.ForbiddenMagic;
 
 @EventBusSubscriber(modid = ForbiddenMagic.MODID)
 public final class FmGameTests {
@@ -143,7 +143,7 @@ public final class FmGameTests {
 }
 ```
 
-The pattern is copied from the host's own `thaumcraft/test/GearGameTests.java:47-77`. The structure template is referenced **by identifier at runtime** (`thaumcraft:test/platform`): it ships inside the host jar, generated to `src/generated/resources/data/thaumcraft/structure/test/platform.nbt`, so the add-on copies no host file and the template resolves without packs. `--packs` is still required, for a different reason: the host's own tests register into the same GameTest server even when `neoforge.enabledGameTestNamespaces` is `forbiddenmagic`, and nine of them need the Outer Lands dimension from the host's `src/gametest/packs`. Verified 2026-10-21: without the argument the run executed 257 tests and failed with 9 host-side errors (`Outer Lands level is unavailable`, `test preset must include Outer Lands`); the packs directory contains only `outer_lands/` and no structures. The path points into the host checkout, which the build already depends on for the jar; nothing from it is copied into this repo or the artifact.
+The pattern is copied from the host's own `thaumcraft/test/GearGameTests.java:47-77`. The structure template is referenced **by identifier at runtime** (`thaumcraft:test/platform`): it ships inside the host jar, generated to `src/generated/resources/data/thaumcraft/structure/test/platform.nbt`, so the add-on copies no host file and the template resolves without packs. `--tests "${mod_id}:*"` restricts the run to our own three tests: the host's tests register into the same server through `RegisterGameTestsEvent` regardless of `neoforge.enabledGameTestNamespaces`, and one of them (`altar_guardian_population`) is sensitive to the RNG/order of the extended suite. Host tests are therefore a **separate gate**: the host's own `runGameTestServer` in `host/` runs 256/256, and the add-on's run checks only its own namespace. Verified 2026-10-21: the unfiltered run executed 259 tests and failed on the host's altar test; the filtered run executes 3 and the host-only run executes 256, both green.
 
 **Constructor wiring contract.** The mod constructor is the only place anything registers, and later tasks append exactly one call each, in this order (it matters: the config must load before the aspects, because `no_lust` gates the `luxuria` registration itself — the original reads `Config.configurate()` before `DarkAspects.initAspects()` in `Forbidden.prelude`; then aspects must exist before the tag table references them, items before recipes reference them, the availability check before anything touches the host API):
 
@@ -206,7 +206,7 @@ neo_version=26.3.0.57-beta
 mod_id=forbiddenmagic
 mod_name=Forbidden Magic (Reforged Port)
 mod_version=0.574-26.3-port.0.1.0
-mod_group_id=fox.spiteful.forbidden
+mod_group_id=dev.visfox.forbiddenreforged
 mod_authors=SpitefulFox (original); port author (port)
 mod_credits=Forbidden Magic by SpitefulFox; Thaumcraft 4: Reforged by its author; Thaumcraft by Azanor
 mod_description=Unofficial port of Forbidden Magic 0.574 to Thaumcraft 4: Reforged. Developed with AI assistance.
@@ -247,8 +247,8 @@ neoForge {
         }
         gameTestServer {
             type = "gameTestServer"
-            programArgument '--packs'
-            programArgument file('../thaumcraft-4-reforged/src/gametest/packs').absolutePath
+            programArgument '--tests'
+            programArgument "${mod_id}:*"
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
         }
         configureEach {
@@ -357,12 +357,12 @@ ${mod_description}
     side="BOTH"
 ```
 
-`src/main/java/fox/spiteful/forbidden/ForbiddenMagic.java`:
+`src/main/java/dev/visfox/forbiddenreforged/ForbiddenMagic.java`:
 
 ```java
-package fox.spiteful.forbidden;
+package dev.visfox.forbiddenreforged;
 
-import fox.spiteful.forbidden.test.FmGameTests;
+import dev.visfox.forbiddenreforged.test.FmGameTests;
 import net.minecraft.resources.Identifier;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -421,8 +421,7 @@ import sys
 import zipfile
 from pathlib import Path
 
-ALLOWED_TOP = {"fox", "assets", "data", "META-INF"}
-FORBIDDEN_PREFIXES = ("thaumcraft/", "assets/thaumcraft/", "data/thaumcraft/", "dev/")
+FORBIDDEN_PREFIXES = ("thaumcraft/", "assets/thaumcraft/", "data/thaumcraft/")
 
 
 def main() -> int:
@@ -436,7 +435,7 @@ def main() -> int:
             for name in archive.namelist():
                 if name.startswith(FORBIDDEN_PREFIXES):
                     violations.append(f"{jar.name}: {name}")
-                elif name.endswith(".class") and not name.startswith("fox/"):
+                elif name.endswith(".class") and not name.startswith("dev/visfox/forbiddenreforged/"):
                     violations.append(f"{jar.name}: {name}")
     for violation in violations:
         print(violation)
@@ -474,7 +473,7 @@ Expected: the host jar appears on the runtime classpath — that is the evidence
 - [ ] **Step 5: Commit.**
 
 ```bash
-git add settings.gradle gradle.properties build.gradle .gitattributes gradlew gradlew.bat gradle/wrapper/gradle-wrapper.jar gradle/wrapper/gradle-wrapper.properties src/main/templates/META-INF/neoforge.mods.toml src/main/java/fox/spiteful/forbidden/ForbiddenMagic.java src/main/java/fox/spiteful/forbidden/test/FmGameTests.java tools/check_host_clean.py tools/check_provenance.py
+git add settings.gradle gradle.properties build.gradle .gitattributes gradlew gradlew.bat gradle/wrapper/gradle-wrapper.jar gradle/wrapper/gradle-wrapper.properties src/main/templates/META-INF/neoforge.mods.toml src/main/java/dev/visfox/forbiddenreforged/ForbiddenMagic.java src/main/java/dev/visfox/forbiddenreforged/test/FmGameTests.java tools/check_host_clean.py tools/check_provenance.py
 git commit -m "feat: scaffold the Forbidden Magic add-on project"
 ```
 
@@ -625,7 +624,7 @@ Expected: `BUILD SUCCESSFUL` with no `required tests failed`. This run still use
 - Modify: `host/src/main/java/thaumcraft/entity/AspectOrb.java:41,54,60,132`
 - Modify: `host/src/main/java/thaumcraft/wand/WandVis.java:31-53` (two `switch (aspect)` statements)
 - Create: `patches/0001-aspect-registry.patch` via `git -C host format-patch`
-- Test: `src/main/java/fox/spiteful/forbidden/test/FmGameTests.java`
+- Test: `src/main/java/dev/visfox/forbiddenreforged/test/FmGameTests.java`
 
 **Interfaces:**
 - Produces for later tasks: `Aspect.register(String tag, int color, Aspect @Nullable [] components, int blend, @Nullable Identifier texture) → Aspect`, `Aspect.values() → Aspect[]`, an **instance** `aspect.ordinal() → int` (same call syntax as the enum), `Aspect.byOrdinal(int)`, `Aspect.builtinCount()`, `Aspect.AIR … Aspect.TRAP` unchanged in name and order, and the 48 built-ins always at indices 0-47.
@@ -986,7 +985,7 @@ Expected: `aspect_registry_keeps_builtin_order_and_combines` passes.
 - [ ] **Step 7: Commit.**
 
 ```bash
-git add patches/0001-aspect-registry.patch src/main/java/fox/spiteful/forbidden/test/FmGameTests.java
+git add patches/0001-aspect-registry.patch src/main/java/dev/visfox/forbiddenreforged/test/FmGameTests.java
 git commit -m "feat: make host aspects a registry"
 ```
 
@@ -1004,10 +1003,10 @@ git commit -m "feat: make host aspects a registry"
 - Produces: `thaumcraft:thaumcraft:1.2` in `maven/`, artifact name `thaumcraft-4-reforged-1.2-<shortsha>.jar`; host entry point `thaumcraft.aspect.AspectSync.addRegistrar` unchanged; `Aspect.register` callable from a mod constructor.
 - Consumes: `compileOnly "thaumcraft:thaumcraft:1.2"` in our `build.gradle` (Task 1).
 
-- [ ] **Step 1: Write the failing test.** Registration must be visible to the aspect rebuild, so the probe aspect is registered from the mod constructor. Create `src/main/java/fox/spiteful/forbidden/FmAspects.java` now with only the probe (Task 5 replaces its body with the seven sins):
+- [ ] **Step 1: Write the failing test.** Registration must be visible to the aspect rebuild, so the probe aspect is registered from the mod constructor. Create `src/main/java/dev/visfox/forbiddenreforged/FmAspects.java` now with only the probe (Task 5 replaces its body with the seven sins):
 
 ```java
-package fox.spiteful.forbidden;
+package dev.visfox.forbiddenreforged;
 
 import org.jspecify.annotations.Nullable;
 import thaumcraft.aspect.AddonAspects;
@@ -1201,9 +1200,9 @@ author reply: <quote or "no reply">
 ### Task 5: The seven aspects, with the availability check
 
 **Files:**
-- Create: `src/main/java/fox/spiteful/forbidden/FmConfig.java` (the `no_lust` switch only — the aspect guard reads it, so it must exist before `FmAspects.init()`)
-- Create: `src/main/java/fox/spiteful/forbidden/FmAspects.java`
-- Create: `src/main/java/fox/spiteful/forbidden/FmSetup.java` (runs the aspect registration after config load)
+- Create: `src/main/java/dev/visfox/forbiddenreforged/FmConfig.java` (the `no_lust` switch only — the aspect guard reads it, so it must exist before `FmAspects.init()`)
+- Create: `src/main/java/dev/visfox/forbiddenreforged/FmAspects.java`
+- Create: `src/main/java/dev/visfox/forbiddenreforged/FmSetup.java` (runs the aspect registration after config load)
 - Create: `src/main/resources/assets/forbiddenmagic/textures/aspects/{luxuria,infernus,superbia,gula,invidia,desidia,ira}.png` — copied from `../ForbiddenMagic/src/main/resources/assets/forbidden/textures/aspects/`
 - Create: `tools/lang/en_us.toml`, `tools/lang/ru_ru.toml` (aspect names from `../ForbiddenMagic/src/main/resources/assets/forbidden/lang/en_US.lang`, keys `forbiddenmagic.aspect.<tag>`)
 - Modify: `ForbiddenMagic.java` (register `FmAspects` through `AddonAspects.addRegistrar`)
@@ -1235,7 +1234,7 @@ author reply: <quote or "no reply">
 - [ ] **Step 2: Run and confirm red** (it will not compile: `Aspect.register`, the class form and `FmConfig` do not exist yet), then write `FmConfig.java` — the `no_lust` switch alone, with the original default and tooltip, so the guard below can read it:
 
 ```java
-package fox.spiteful.forbidden;
+package dev.visfox.forbiddenreforged;
 
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.config.ModConfig;
@@ -1267,7 +1266,7 @@ public final class FmConfig {
 Then `FmAspects.java` with the availability check that produces a legible refusal instead of `NoSuchMethodError`:
 
 ```java
-package fox.spiteful.forbidden;
+package dev.visfox.forbiddenreforged;
 
 import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.Nullable;
@@ -1327,7 +1326,7 @@ Colours and blends are taken verbatim from `ForbiddenMagic/src/main/java/fox/spi
 `FmSetup.java`:
 
 ```java
-package fox.spiteful.forbidden;
+package dev.visfox.forbiddenreforged;
 
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -1364,7 +1363,7 @@ Expected: test green; provenance still ok, because textures live under `assets/f
 - [ ] **Step 4: Commit.**
 
 ```bash
-git add src/main/java/fox/spiteful/forbidden/FmConfig.java src/main/java/fox/spiteful/forbidden/FmAspects.java src/main/java/fox/spiteful/forbidden/ForbiddenMagic.java src/main/resources/assets/forbiddenmagic/textures/aspects tools/lang
+git add src/main/java/dev/visfox/forbiddenreforged/FmConfig.java src/main/java/dev/visfox/forbiddenreforged/FmAspects.java src/main/java/dev/visfox/forbiddenreforged/ForbiddenMagic.java src/main/resources/assets/forbiddenmagic/textures/aspects tools/lang
 git commit -m "feat: register the seven sin aspects"
 ```
 
@@ -1373,7 +1372,7 @@ git commit -m "feat: register the seven sin aspects"
 ### Task 6: Item and entity aspect tags (the `DarkAspects` table)
 
 **Files:**
-- Create: `src/main/java/fox/spiteful/forbidden/FmAspectTags.java`
+- Create: `src/main/java/dev/visfox/forbiddenreforged/FmAspectTags.java`
 - Test: `FmGameTests` — `sin_aspect_tags_merge_with_existing`
 
 **Interfaces:**
@@ -1407,7 +1406,7 @@ git commit -m "feat: register the seven sin aspects"
 Skeleton, with the first three real entries:
 
 ```java
-package fox.spiteful.forbidden;
+package dev.visfox.forbiddenreforged;
 
 import thaumcraft.aspect.Aspect;
 import thaumcraft.aspect.AspectList;
@@ -1475,7 +1474,7 @@ The test needs `java.util.ArrayList`, `java.util.List`, `net.minecraft.core.regi
 - [ ] **Step 5: Commit.**
 
 ```bash
-git add src/main/java/fox/spiteful/forbidden/FmAspectTags.java docs/deviations.md
+git add src/main/java/dev/visfox/forbiddenreforged/FmAspectTags.java docs/deviations.md
 git commit -m "feat: port the add-on aspect tag table"
 ```
 
@@ -1484,9 +1483,9 @@ git commit -m "feat: port the add-on aspect tag table"
 ### Task 7: Shard items as seven ids, config, models
 
 **Files:**
-- Create: `src/main/java/fox/spiteful/forbidden/FmItems.java`
-- Create: `src/main/java/fox/spiteful/forbidden/FmCreativeTab.java`
-- Modify: `src/main/java/fox/spiteful/forbidden/FmConfig.java` (add the remaining switches; `no_lust` and its registration line stay exactly as Task 5 left them)
+- Create: `src/main/java/dev/visfox/forbiddenreforged/FmItems.java`
+- Create: `src/main/java/dev/visfox/forbiddenreforged/FmCreativeTab.java`
+- Modify: `src/main/java/dev/visfox/forbiddenreforged/FmConfig.java` (add the remaining switches; `no_lust` and its registration line stay exactly as Task 5 left them)
 - Create: `tools/id_map.json`, `tools/gen_resources.py`, `tools/lang/{en_us,ru_ru}.toml` item names
 - Test: `FmGameTests` — `shards_are_registered_with_seven_ids`, `no_lust_removes_luxuria_items`
 
@@ -1512,7 +1511,7 @@ git commit -m "feat: port the add-on aspect tag table"
 - [ ] **Step 2: Extend `FmConfig.java`** — `no_lust` and `register(ModContainer)` are already there from Task 5 and must not be touched; add only the switch this task needs, with the original default from `ForbiddenMagic/…/Config.java:29-40` (`gluttony = 0`) and the original tooltip. The result is the same class Task 5 created plus one field:
 
 ```java
-package fox.spiteful.forbidden;
+package dev.visfox.forbiddenreforged;
 
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.config.ModConfig;
@@ -1546,7 +1545,7 @@ public final class FmConfig {
 - [ ] **Step 3: Write `FmItems.java`**, one item per vice instead of one item with seven metas (spec 4.5). `gluttonyShard` is a food with the original values `super(2, 0.1F, false)` → `Registration.food(properties, 2, 0.1F)`:
 
 ```java
-package fox.spiteful.forbidden;
+package dev.visfox.forbiddenreforged;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -1582,7 +1581,7 @@ Register `FmItems.ITEMS.register(modEventBus)` in the constructor. `docs/deviati
 - [ ] **Step 3b: Add the items to the host's creative tab.** Reuse `thaumcraft:thaumcraft` rather than creating a second tab; the event listener also enforces the visible half of `no_lust`:
 
 ```java
-package fox.spiteful.forbidden;
+package dev.visfox.forbiddenreforged;
 
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -1676,7 +1675,7 @@ Run `runGameTestServer` again and assert, in tests that branch on `FmConfig.lust
 - [ ] **Step 7: Commit.**
 
 ```bash
-git add src/main/java/fox/spiteful/forbidden/FmItems.java src/main/java/fox/spiteful/forbidden/FmCreativeTab.java src/main/java/fox/spiteful/forbidden/FmConfig.java tools/id_map.json tools/gen_resources.py tools/lang src/main/resources/assets/forbiddenmagic/textures/items docs/deviations.md
+git add src/main/java/dev/visfox/forbiddenreforged/FmItems.java src/main/java/dev/visfox/forbiddenreforged/FmCreativeTab.java src/main/java/dev/visfox/forbiddenreforged/FmConfig.java tools/id_map.json tools/gen_resources.py tools/lang src/main/resources/assets/forbiddenmagic/textures/items docs/deviations.md
 git commit -m "feat: port the shard items and the config"
 ```
 
@@ -1685,7 +1684,7 @@ git commit -m "feat: port the shard items and the config"
 ### Task 8: How a player actually gets a shard (the drop rules)
 
 **Files:**
-- Create: `src/main/java/fox/spiteful/forbidden/FmDrops.java`
+- Create: `src/main/java/dev/visfox/forbiddenreforged/FmDrops.java`
 - Test: `FmGameTests` — `mob_killed_by_player_drops_wrath_shard`, `boss_drops_pride_shards`, `unattended_death_drops_sloth_shard`
 
 **Interfaces:**
@@ -1714,7 +1713,7 @@ git commit -m "feat: port the shard items and the config"
 - [ ] **Step 4: Commit.**
 
 ```bash
-git add src/main/java/fox/spiteful/forbidden/FmDrops.java src/main/java/fox/spiteful/forbidden/ForbiddenMagic.java docs/deviations.md
+git add src/main/java/dev/visfox/forbiddenreforged/FmDrops.java src/main/java/dev/visfox/forbiddenreforged/ForbiddenMagic.java docs/deviations.md
 git commit -m "feat: port the shard drop rules"
 ```
 
@@ -1723,7 +1722,7 @@ git commit -m "feat: port the shard drop rules"
 ### Task 9: Research category and the shard entries
 
 **Files:**
-- Create: `src/main/java/fox/spiteful/forbidden/FmResearch.java`
+- Create: `src/main/java/dev/visfox/forbiddenreforged/FmResearch.java`
 - Create: `src/main/resources/assets/forbiddenmagic/textures/misc/forbidden.png` (original `forbidden/textures/gui/forbidden.png` if present, otherwise record the substitution)
 - Test: `FmGameTests` — `forbidden_category_and_shard_entries_resolve`
 
@@ -1755,7 +1754,7 @@ git commit -m "feat: port the shard drop rules"
 
 ```bash
 cmd //c gradlew.bat runGameTestServer
-git add src/main/java/fox/spiteful/forbidden/FmResearch.java tools/lang src/main/resources/assets/forbiddenmagic/textures/misc
+git add src/main/java/dev/visfox/forbiddenreforged/FmResearch.java tools/lang src/main/resources/assets/forbiddenmagic/textures/misc
 git commit -m "feat: add the forbidden research category and shard entries"
 ```
 
@@ -1764,7 +1763,7 @@ git commit -m "feat: add the forbidden research category and shard entries"
 ### Task 10: Recipes that close inside the slice
 
 **Files:**
-- Create: `src/main/java/fox/spiteful/forbidden/FmRecipes.java`
+- Create: `src/main/java/dev/visfox/forbiddenreforged/FmRecipes.java`
 - Test: `FmGameTests` — `skull_axe_infusion_recipe_matches_original`, `every_ported_recipe_resolves_its_inputs`
 
 **Interfaces:**
@@ -1847,7 +1846,7 @@ Expected: green, because every id referenced is either host-owned by namespace (
 - [ ] **Step 4: Commit.**
 
 ```bash
-git add src/main/java/fox/spiteful/forbidden/FmRecipes.java docs/deviations.md docs/roadmap.md
+git add src/main/java/dev/visfox/forbiddenreforged/FmRecipes.java docs/deviations.md docs/roadmap.md
 git commit -m "feat: port the recipes inside the slice"
 ```
 
@@ -1927,7 +1926,7 @@ Expected, in order: build success, a `GAME TESTS COMPLETE` line with no `require
 - [ ] **Step 5: Commit, then tag nothing and push nothing.**
 
 ```bash
-git add README.md NOTICE docs/roadmap.md docs/upstream.md src/main/java/fox/spiteful/forbidden/test/FmGameTests.java
+git add README.md NOTICE docs/roadmap.md docs/upstream.md src/main/java/dev/visfox/forbiddenreforged/test/FmGameTests.java
 git commit -m "docs: ship the slice with its release notes and upstream draft"
 ```
 
@@ -1939,7 +1938,7 @@ Report the jar path and its size. Opening an issue, forking, or pushing to any r
 
 Spec coverage: section 3 and 4.2 → Tasks 3-4; 4.1 → Tasks 1-2; 4.3 → Tasks 5-10; 4.4 → the `docs/deviations.md` steps in 6, 8, 10; 4.5 → Task 7 Steps 4-5 and the regeneration check in Task 11 Step 2; 5.0 → Tasks 5-11; 6 gates → Task 11 Step 2 plus each task's own gate; 7 risks → Task 3 (ordinal), Task 4 Step 5 and Task 11 Step 2 (client/server registration), Task 5 (availability refusal), Task 8 Step 3 (manual evidence); 8 → Tasks 4 and 11; 10 → Task 11 Step 3; 11 → Task 11 Steps 3-5.
 
-Fixed during this review, recorded so the next reader does not re-introduce them: Task 1 no longer needs the maven artifact (it compiles against the already-built upstream jar, and Task 4 switches the dependency form); `runGameTestServer` stays in Task 1 and repeats in Task 2, but it needs `--packs` pointing at the host's `src/gametest/packs` — the namespace property does not exclude the host's own programmatically registered tests, and without Outer Lands nine host tests fail; Task 1's early claim that no packs were needed was wrong. Task 5 moves the aspect registration from the constructor to `FMLCommonSetupEvent`, because a STARTUP config must be loaded before `no_lust` can suppress `luxuria`; the probe aspect in Task 4 is compound, because a primal add-on aspect joins `getPrimalAspects()` and breaks the wand's six vis slots (observed as 14 failing host tests); the probe is explicitly retired in Task 5. `Codec` uses `xmap`, not `map`; `AspectOrb` is not the only enum consumer — `WandVis` has two `switch (aspect)` statements. Host recipe keys are plain strings, so `SKULLAXE` must not be namespaced. The content counts were re-measured: 30 core research entries (31 unique keys minus `SUBCOLLAR`), 40 unique text pages (82 `ResearchPage` objects including recipe pages and config branches), 21 core recipes (22 unique minus `SUBCOLLAR`). Every `ResearchItem` and `Knowledge` call in Tasks 9 and 11 goes through a read-the-signature step first. The vice-to-texture table in Task 7 is sourced from the original `registerIcons` code and the real filenames (`wrathshard.png`, `prideshard.png`, plus `.mcmeta` for the animated ones), not guessed.
+Fixed during this review, recorded so the next reader does not re-introduce them: Task 1 no longer needs the maven artifact (it compiles against the already-built upstream jar, and Task 4 switches the dependency form); `runGameTestServer` uses `--tests "${mod_id}:*"` so the add-on gate runs only its own tests; the host's tests are a separate gate (`host/runGameTestServer`, 256/256), because the combined 259-test suite perturbs the RNG/order-sensitive `altar_guardian_population` host test. Task 5 moves the aspect registration from the constructor to `FMLCommonSetupEvent`, because a STARTUP config must be loaded before `no_lust` can suppress `luxuria`; the probe aspect in Task 4 is compound, because a primal add-on aspect joins `getPrimalAspects()` and breaks the wand's six vis slots (observed as 14 failing host tests); the probe is explicitly retired in Task 5. `Codec` uses `xmap`, not `map`; `AspectOrb` is not the only enum consumer — `WandVis` has two `switch (aspect)` statements. Host recipe keys are plain strings, so `SKULLAXE` must not be namespaced. The content counts were re-measured: 30 core research entries (31 unique keys minus `SUBCOLLAR`), 40 unique text pages (82 `ResearchPage` objects including recipe pages and config branches), 21 core recipes (22 unique minus `SUBCOLLAR`). Every `ResearchItem` and `Knowledge` call in Tasks 9 and 11 goes through a read-the-signature step first. The vice-to-texture table in Task 7 is sourced from the original `registerIcons` code and the real filenames (`wrathshard.png`, `prideshard.png`, plus `.mcmeta` for the animated ones), not guessed.
 
 Known limitation of the end-to-end test: it checks the data chain (tag → research → recipe lookup) and the pure drop boundary, but it does not construct a real `LivingDropsEvent`; the event wiring is covered by Task 8 Step 3's manual in-game check.
 

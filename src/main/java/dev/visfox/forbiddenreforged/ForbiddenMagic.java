@@ -1,6 +1,6 @@
-package fox.spiteful.forbidden;
+package dev.visfox.forbiddenreforged;
 
-import fox.spiteful.forbidden.test.FmGameTests;
+import dev.visfox.forbiddenreforged.test.FmGameTests;
 import net.minecraft.resources.Identifier;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;

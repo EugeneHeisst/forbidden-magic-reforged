@@ -2,7 +2,7 @@ import sys
 import zipfile
 from pathlib import Path
 
-FORBIDDEN_PREFIXES = ("thaumcraft/", "assets/thaumcraft/", "data/thaumcraft/", "dev/")
+FORBIDDEN_PREFIXES = ("thaumcraft/", "assets/thaumcraft/", "data/thaumcraft/")
 
 
 def main() -> int:
@@ -16,7 +16,7 @@ def main() -> int:
             for name in archive.namelist():
                 if name.startswith(FORBIDDEN_PREFIXES):
                     violations.append(f"{jar.name}: {name}")
-                elif name.endswith(".class") and not name.startswith("fox/"):
+                elif name.endswith(".class") and not name.startswith("dev/visfox/forbiddenreforged/"):
                     violations.append(f"{jar.name}: {name}")
     for violation in violations:
         print(violation)

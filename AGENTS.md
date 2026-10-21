@@ -41,5 +41,5 @@
 
 ## Метаданные порта
 
-- modId `forbiddenmagic`, пакет `fox.spiteful.forbidden` (атрибуция автору оригинала сохраняется), версия `0.574-26.3-port.0.1.0`.
+- modId `forbiddenmagic`, пакет `dev.visfox.forbiddenreforged` (атрибуция автору оригинала сохраняется), версия `0.574-26.3-port.0.1.0`.
 - Зависимость от хоста: `modId="thaumcraft"`, `type="required"`, `versionRange="[1.2,)"`, `ordering="AFTER"`.

@@ -1,4 +1,4 @@
-package fox.spiteful.forbidden.test;
+package dev.visfox.forbiddenreforged.test;
 
 import java.util.function.Consumer;
 import net.minecraft.core.Holder;
@@ -15,8 +15,8 @@ import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.RegisterGameTestsEvent;
 import net.neoforged.neoforge.registries.DeferredRegister;
-import fox.spiteful.forbidden.ForbiddenMagic;
-import fox.spiteful.forbidden.FmAspects;
+import dev.visfox.forbiddenreforged.ForbiddenMagic;
+import dev.visfox.forbiddenreforged.FmAspects;
 import thaumcraft.aspect.Aspect;
 import thaumcraft.aspect.AspectList;
 

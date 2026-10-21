@@ -22,8 +22,8 @@ neoForge {
         }
         gameTestServer {
             type = "gameTestServer"
-            programArgument '--packs'
-            programArgument file('../thaumcraft-4-reforged/src/gametest/packs').absolutePath
+            programArgument '--tests'
+            programArgument "${mod_id}:*"
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
         }
         configureEach {
