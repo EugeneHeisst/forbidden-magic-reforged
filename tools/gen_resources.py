@@ -17,6 +17,7 @@ ITEM_TEXTURES = {
     "greed_shard": "greedshard",
     "gluttony_shard": "gluttonyshard",
     "skull_axe": "skullaxe",
+    "emerald_fragment": "emerald_nugget",
 }
 
 

@@ -26,5 +26,6 @@ public final class FmCreativeTab {
         }
         event.accept(FmItems.GLUTTONY_SHARD.get());
         event.accept(FmItems.SKULL_AXE.get());
+        event.accept(FmItems.EMERALD_FRAGMENT.get());
     }
 }

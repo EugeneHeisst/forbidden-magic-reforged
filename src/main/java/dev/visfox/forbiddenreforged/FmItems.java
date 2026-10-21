@@ -14,6 +14,7 @@ public final class FmItems {
     public static final Map<String, DeferredItem<Item>> DEADLY_SHARDS = new LinkedHashMap<>();
     public static final DeferredItem<Item> GLUTTONY_SHARD;
     public static final DeferredItem<Item> SKULL_AXE;
+    public static final DeferredItem<Item> EMERALD_FRAGMENT;
 
     static {
         for (String vice : new String[]{"wrath", "envy", "taint", "pride", "lust", "sloth", "greed"}) {
@@ -21,6 +22,7 @@ public final class FmItems {
         }
         GLUTTONY_SHARD = ITEMS.registerSimpleItem("gluttony_shard", properties -> Registration.food(properties, 2, 0.1F));
         SKULL_AXE = ITEMS.registerSimpleItem("skull_axe", properties -> properties.stacksTo(1).rarity(Rarity.UNCOMMON));
+        EMERALD_FRAGMENT = ITEMS.registerSimpleItem("emerald_fragment");
     }
 
     private FmItems() {

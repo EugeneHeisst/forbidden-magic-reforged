@@ -17,6 +17,7 @@ sloth_shard = "Sloth Shard"
 greed_shard = "Greed Shard"
 gluttony_shard = "Gluttony Shard"
 skull_axe = "Axe of the Skulltaker"
+emerald_fragment = "Emerald Fragment"
 
 [tc.research_name]
 NETHERSHARDS = "Nether Shards"

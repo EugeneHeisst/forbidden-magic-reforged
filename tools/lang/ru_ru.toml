@@ -17,6 +17,7 @@ sloth_shard = "Осколок лени"
 greed_shard = "Осколок жадности"
 gluttony_shard = "Осколок прожорливости"
 skull_axe = "Топор собирателя черепов"
+emerald_fragment = "Изумрудный фрагмент"
 
 [tc.research_name]
 NETHERSHARDS = "Осколки Нижнего мира"
