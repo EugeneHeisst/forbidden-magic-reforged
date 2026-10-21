@@ -80,10 +80,52 @@ def generate_morph_items() -> None:
     print(f"morph tools: {len(MORPH_TEXTURES)} two-layer models")
 
 
+
+BLOCK_TEXTURES = {
+    "taint_planks": ("taint_planks",),
+    "taint_stone_smooth": ("taint_stone_smooth",),
+    "taint_stone_brick": ("taint_stone_brick",),
+    "star_block": ("starblock",),
+}
+
+
+def generate_blocks() -> None:
+    for name, (texture,) in sorted(BLOCK_TEXTURES.items()):
+        write_json(ASSETS / "blockstates" / f"{name}.json", {"variants": {"": {"model": f"forbiddenmagic:block/{name}"}}})
+        write_json(ASSETS / "models" / "block" / f"{name}.json", {
+            "parent": "minecraft:block/cube_all",
+            "textures": {"all": f"forbiddenmagic:block/{texture}"},
+        })
+        write_json(ASSETS / "models" / "item" / f"{name}.json", {"parent": f"forbiddenmagic:block/{name}"})
+        write_json(ASSETS / "items" / f"{name}.json", {
+            "model": {"type": "minecraft:model", "model": f"forbiddenmagic:block/{name}"},
+        })
+    write_json(ASSETS / "blockstates" / "taint_log.json", {
+        "variants": {
+            "axis=x": {"model": "forbiddenmagic:block/taint_log_horizontal", "x": 90, "y": 90},
+            "axis=y": {"model": "forbiddenmagic:block/taint_log"},
+            "axis=z": {"model": "forbiddenmagic:block/taint_log_horizontal", "x": 90},
+        }
+    })
+    write_json(ASSETS / "models" / "block" / "taint_log.json", {
+        "parent": "minecraft:block/cube_column",
+        "textures": {"end": "forbiddenmagic:block/taint_log_bottom", "side": "forbiddenmagic:block/taint_log_side"},
+    })
+    write_json(ASSETS / "models" / "block" / "taint_log_horizontal.json", {
+        "parent": "minecraft:block/cube_column_horizontal",
+        "textures": {"end": "forbiddenmagic:block/taint_log_bottom", "side": "forbiddenmagic:block/taint_log_side"},
+    })
+    write_json(ASSETS / "models" / "item" / "taint_log.json", {"parent": "forbiddenmagic:block/taint_log"})
+    write_json(ASSETS / "items" / "taint_log.json", {
+        "model": {"type": "minecraft:model", "model": "forbiddenmagic:block/taint_log"},
+    })
+    print(f"blocks: {len(BLOCK_TEXTURES) + 1} models and blockstates")
+
 def main() -> int:
     generate_lang()
     generate_items()
     generate_morph_items()
+    generate_blocks()
     return 0
 
 

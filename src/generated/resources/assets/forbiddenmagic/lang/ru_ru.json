@@ -1,4 +1,9 @@
 {
+  "block.forbiddenmagic.star_block": "Блок звезды Нижнего мира",
+  "block.forbiddenmagic.taint_log": "Скверное бревно",
+  "block.forbiddenmagic.taint_planks": "Скверные доски",
+  "block.forbiddenmagic.taint_stone_brick": "Скверные каменные кирпичи",
+  "block.forbiddenmagic.taint_stone_smooth": "Скверный камень",
   "enchantment.forbiddenmagic.cluster": "Огненное ядро",
   "enchantment.forbiddenmagic.consuming": "Потребление",
   "enchantment.forbiddenmagic.corrupting": "Искажение",

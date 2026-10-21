@@ -89,3 +89,10 @@ voidtouched = "Voidtouched"
 
 [forbiddenmagic.research_page.VOIDTOUCHED]
 1 = "Voidmetal's ability to flow back into place after being damaged is fascinating. You sure wish your Chameleon Tools had the same properties...<BR><BR>The Voidtouched enchant gives a Chameleon Tool the same regenerating quality as Void Tools.<BR><BR>Chameleon Tools affected by the enchantment appear to be made of living scaled flesh which morphs back into shape when hurt. Just looking at it is disturbing for your sanity."
+
+[block.forbiddenmagic]
+taint_log = "Tainted Log"
+taint_planks = "Tainted Planks"
+taint_stone_smooth = "Tainted Stone"
+taint_stone_brick = "Tainted Stone Bricks"
+star_block = "Nether Star Block"
