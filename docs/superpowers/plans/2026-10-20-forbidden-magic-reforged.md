@@ -140,7 +140,7 @@ public final class FmGameTests {
 }
 ```
 
-The pattern is copied from the host's own `thaumcraft/test/GearGameTests.java:47-77`, including the `thaumcraft:test/platform` structure template. That template is loaded from `host/src/gametest/packs`, which only exists after Task 2 — so Task 1 verifies compilation and the two tree checks, and the game-test run itself becomes part of the gate from Task 2 onward.
+The pattern is copied from the host's own `thaumcraft/test/GearGameTests.java:47-77`. The structure template is referenced **by identifier at runtime** (`thaumcraft:test/platform`): it ships inside the host jar, generated to `src/generated/resources/data/thaumcraft/structure/test/platform.nbt`, so the add-on needs no `--packs` argument and copies no host file. Verified 2026-10-21: `src/gametest/packs` in the host contains only the `outer_lands` datapack — no structures at all, which is why pointing `--packs` at `host/src/gametest/packs`, as an earlier draft of this plan did, would have loaded nothing.
 
 **Constructor wiring contract.** The mod constructor is the only place anything registers, and later tasks append exactly one call each, in this order (it matters: the config must load before the aspects, because `no_lust` gates the `luxuria` registration itself — the original reads `Config.configurate()` before `DarkAspects.initAspects()` in `Forbidden.prelude`; then aspects must exist before the tag table references them, items before recipes reference them, the availability check before anything touches the host API):
 
@@ -232,7 +232,6 @@ neoForge {
         }
         gameTestServer {
             type = "gameTestServer"
-            programArguments '--packs', file('host/src/gametest/packs').absolutePath
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
         }
         configureEach {
@@ -390,7 +389,7 @@ if __name__ == "__main__":
     sys.exit(main())
 ```
 
-`tools/check_provenance.py` — our jar must carry no host code or assets, and no class outside our own namespaces:
+`tools/check_provenance.py` — our jar must carry no host code or assets, and no class outside our own namespaces. `data/thaumcraft/` is forbidden deliberately: the sibling Reconstructed port registers its caps through `data/thaumcraft/data_maps/item/wand_caps.json`, but this host has no data-map loader, so writing into the host's namespace here would be copying their mechanism without their machinery. If a future host version adds one, lift the prefix in this file and say why in the commit.
 
 ```python
 import sys
@@ -398,7 +397,7 @@ import zipfile
 from pathlib import Path
 
 ALLOWED_TOP = {"fox", "assets", "data", "META-INF"}
-FORBIDDEN_PREFIXES = ("thaumcraft/", "assets/thaumcraft/", "data/thaumcraft/data_maps", "dev/")
+FORBIDDEN_PREFIXES = ("thaumcraft/", "assets/thaumcraft/", "data/thaumcraft/", "dev/")
 
 
 def main() -> int:
@@ -426,29 +425,26 @@ if __name__ == "__main__":
     sys.exit(main())
 ```
 
-- [ ] **Step 4: Make the upstream host jar exist, then run the compile gate.** `compileOnly files(upstreamHostJar)` needs `../thaumcraft-4-reforged/build/libs/thaumcraft-4-reforged-1.1-26.3.jar`; if it is missing (a fresh machine), build it once — this writes only into the gitignored `build/` and does not touch tracked files:
+- [ ] **Step 4: Make sure the upstream host jar matches the pin, then run the gate.** `compileOnly files(upstreamHostJar)` reads `../thaumcraft-4-reforged/build/libs/thaumcraft-4-reforged-1.1-26.3.jar`, which this session built from the release commit while the clone has since moved. Rebuilding is incremental and cheap when nothing changed, so always rebuild; it writes only into the gitignored `build/` and touches no tracked file:
 
 ```bash
+git -C ../thaumcraft-4-reforged log -1 --format="%h %s"
 cd ../thaumcraft-4-reforged && cmd //c gradlew.bat build && cd ../forbidden-magic-reforged
 cmd //c gradlew.bat build
+cmd //c gradlew.bat runGameTestServer
 python tools/check_host_clean.py
 python tools/check_provenance.py
 ```
 
-Expected: `BUILD SUCCESSFUL`, `host clean`, `provenance ok: 1 jar(s)`. `runGameTestServer` is not run in this task: the structure template it needs comes from `host/`, which Task 2 creates. Do not work around the missing host jar by dropping the dependency — the dependency is the point.
+Expected: the first line prints `69a47a1 fix: restore thaumonomicon creation sparkles`, matching `host.sha`; `BUILD SUCCESSFUL`; `All tests successful` with `mod_loads_and_host_is_present` passing; `host clean`; `provenance ok: 1 jar(s)`. Do not work around a missing or stale host jar by dropping the dependency — the dependency is the point.
 
-- [ ] **Step 4b: Two probes whose answers this plan does not assume.** Record both outputs in `docs/deviations.md` as you find them, because Tasks 2 and 4 are built on them:
+- [ ] **Step 4b: One probe this plan does not assume.** Record the output in `docs/deviations.md`, because Task 4 is built on it:
 
 ```bash
 cmd //c gradlew.bat dependencies --configuration localRuntime | grep -i thaumcraft
-python - <<'PY'
-from pathlib import Path
-for name in sorted(Path("../thaumcraft-4-reforged/src/gametest/packs").rglob("*.nbt")):
-    print(name)
-PY
 ```
 
-Expected: the first prints the host jar on the runtime classpath — that is the evidence that ModDevGradle treats a plain jar dependency as a loadable mod, which is what the host itself relies on for JEI (`compileOnly` + `localRuntime` in its `build.gradle`). If it does not appear, the add-on will compile but not load, and the fix is `neoForge { runs { client { ... } } }` mod-declaration rather than the dependency form — settle it here, not in Task 4. The second prints at least one structure named under `test/platform`; if the path differs, adjust the template identifier used in `FmGameTests`.
+Expected: the host jar appears on the runtime classpath — that is the evidence that ModDevGradle treats a plain jar dependency as a loadable mod, which is what the host itself relies on for JEI (`compileOnly` + `localRuntime` in its `build.gradle`). If it does not appear, the add-on compiles but never loads, and the fix is a declared mod dependency rather than the dependency form — settle it here, not in Task 4. The second half of the earlier probe (where the structure template lives) is already answered: `src/gametest/packs` holds only the `outer_lands` datapack, and `test/platform.nbt` is generated into the host's own `data/thaumcraft/structure/test/`, so the template resolves from the jar.
 
 - [ ] **Step 5: Commit.**
 
@@ -572,7 +568,7 @@ Expected: clone succeeds, `host matches sha + patch series` (no patches yet, so 
 
 - [ ] **Step 4: Prove the patch pipeline fails loudly.** Introduce `patches/probe.patch` by hand (one dummy context line changed in a host file), run `python tools/prepare_host.py` and confirm exit non-zero with `patch does not apply cleanly: probe.patch`. Delete the probe patch afterwards. A pipeline that cannot fail is not a gate.
 
-- [ ] **Step 5: Now that `host/` exists, close Task 1's deferred gate and commit.**
+- [ ] **Step 5: Re-run the gate against the copy and commit.** Task 1's game test passed against the *upstream* jar; run it again now that `host/` exists, because from here on the copy is what every later task patches and builds:
 
 ```bash
 cmd //c gradlew.bat runGameTestServer
@@ -580,7 +576,7 @@ git add host.sha tools/prepare_host.py .gitignore
 git commit -m "feat: pin the host copy and add the patch pipeline"
 ```
 
-Expected: `All tests successful` with `mod_loads_and_host_is_present` listed as passed — the first time this actually runs, because the structure template now resolves.
+Expected: `All tests successful` with `mod_loads_and_host_is_present` passing. If it passes against upstream and fails against the copy, the copy is not pristine — that is exactly what `--verify` is for.
 
 ---
 
@@ -863,13 +859,7 @@ public final class Aspect implements StringRepresentable {
 
 `BUILTIN_COUNT` is assigned after the 48 static fields are initialised, because Java runs static initialisers strictly top to bottom; anything registered later lands at index 48 and above. **This ordering is load-bearing and is the first thing to break under "cleanup":** `BY_TAG` must be declared *before* the constants, because `primal()` and `compound()` write into it while the constants are being initialised — move the map down and the class throws `NullPointerException` in `<clinit>` the moment anything touches an aspect, which is at mod construction, not at first use.
 
-- [ ] **Step 3: Rework the three `ordinal()` sites in `AspectOrb.java`** so index stability is guaranteed and unknown indices degrade to AIR instead of throwing:
-
-```java
-        orb.entityData.set(DATA_ASPECT, aspect.ordinal());
-```
-
-stays as is (the method now exists on the class), and line 60 becomes:
+- [ ] **Step 3: Rework the four index-dependent lines in `AspectOrb.java`** so index stability is guaranteed and an out-of-range or unknown index degrades to AIR instead of throwing: `:41` and `:132` write `aspect.ordinal()` (the method now exists on the class, so they stay as written), `:54` defines the synched-data default `Aspect.AIR.ordinal()`, and `:60` is the read path, which must stop indexing `values()` by hand:
 
 ```java
     public Aspect getAspect() {
@@ -1328,7 +1318,29 @@ public final class FmAspectTags {
 
 Call `FmAspectTags.register()` from the mod constructor after `FmAspects.init()`.
 
-- [ ] **Step 3: Run the aspect rebuild and see the numbers.** `AspectSync.rebuild` logs the count; run `cmd //c gradlew.bat runGameTestServer` with the game test above and confirm green. If `getObjectTags` returns `null`, the registrar ran too late — that is an ordering bug, fix it in the constructor order, not in the test.
+- [ ] **Step 3: Run the aspect rebuild and see the numbers.** `AspectSync.rebuild` logs `Aspect tags: N items, M entities (T ms)`; run `cmd //c gradlew.bat runGameTestServer` with the game test above and confirm green. If `getObjectTags` returns `null`, the registrar ran too late — an ordering bug in the constructor, not something to fix in the test.
+
+- [ ] **Step 3b: Assert that nothing was silently skipped.** `AspectRegistrar.resolve()` does not throw on an unknown target: it logs `Aspect target {} is not registered` at **debug** and returns nothing, and `entity()` does the same. A 1.7.10 id that no longer exists — `ItemApi.getItem("itemResource", 14)`, `ConfigItems.itemBaubleBlanks`, `OreDictionary` names like `oreQuartz` or `itemBacon` — would therefore vanish from the port without failing a single gate. Add a test that counts the rules we declared against the rules that landed:
+
+```java
+    private static void everyTagTargetResolved(GameTestHelper helper) {
+        var registry = thaumcraft.aspect.AspectRegistry.active();
+        List<String> unresolved = new ArrayList<>();
+        for (String target : FmAspectTags.declaredTargets()) {
+            if (target.startsWith("entity:")) {
+                continue;
+            }
+            Item item = BuiltInRegistries.ITEM.get(Identifier.parse(target.startsWith("#") ? "" : target));
+            if (target.startsWith("#") ? BuiltInRegistries.ITEM.getTagOrEmpty(net.minecraft.tags.TagKey.create(Registries.ITEM, Identifier.parse(target.substring(1)))).stream().findAny().isEmpty() : item == Items.AIR) {
+                unresolved.add(target);
+            }
+        }
+        helper.assertTrue(unresolved.isEmpty(), "unresolved aspect tag targets: " + unresolved);
+        helper.succeed();
+    }
+```
+
+`FmAspectTags.declaredTargets()` returns the literal list of target strings the table writes, so the two are kept in the same file and cannot drift apart. Entity targets get the same treatment through a second list once Task 6 ports the mob table: an id that is not in `BuiltInRegistries.ENTITY_TYPE` is a bug in our port, not an optional-mod condition, and the difference has to be visible in a test rather than in a debug line nobody reads.
 
 - [ ] **Step 4: Record every substitution in `docs/deviations.md`** as one row per line changed from the original, with the original expression and the new target. A deviation table with fewer rows than `git diff --stat` on the converted file means rows are missing.
 
@@ -1552,13 +1564,7 @@ git commit -m "feat: port the shard drop rules"
 - Produces: `FmResearch.register()`, entry key `NETHERSHARDS` in category `FORBIDDEN`, plus `HELLFIRE`, `SKULLAXE` (hidden/concealed flags preserved from the original).
 - Consumes: `ResearchCategories.registerCategory(String, Identifier, Identifier)`, `new ResearchItem(String key, String category, AspectList tags, int column, int row, int complexity, TcStack icon)`, `setStub/setRound/setAutoUnlock/setHidden/setConcealed/setWarp/setParents/setAspectTriggers/setPages`, `ResearchPage.text/aspects/arcane/crucible/infusion/infusionEnchantment`.
 
-- [ ] **Step 1: Write the failing test.** Positions and complexity are taken from `ForbiddenResearch.java:54-70` verbatim. `ResearchItem` exposes `key()`, `category()`, `column()`, `row()` and `isVirtual()` (used by the host's own `ResearchCategory.add` and `ResearchCategories`), but the flag and warp getters are **not verified** — before writing those assertions run:
-
-```bash
-grep -n "public " host/src/main/java/thaumcraft/research/ResearchItem.java
-```
-
-and assert only through what it prints, adding `patches/0005-research-getters.patch` for a missing getter instead of dropping the assertion:
+- [ ] **Step 1: Write the failing test.** Positions and complexity are taken from `ForbiddenResearch.java:54-70` verbatim. Every getter below is confirmed present in the host: `key()`, `category()`, `column()`, `row()`, `complexity()`, `warp()`, `tags()`, `parents()`, `pages()`, and the flags `isSpecial/isSecondary/isRound/isStub/isVirtual/isConcealed/isHidden/isLost/isAutoUnlock` (`research/ResearchItem.java:177-259`) — no host patch is needed to observe them:
 
 ```java
     private static void forbiddenCategoryAndShardEntriesResolve(GameTestHelper helper) {
@@ -1567,7 +1573,11 @@ and assert only through what it prints, adding `patches/0005-research-getters.pa
         helper.assertValueEqual(shards.category(), "FORBIDDEN", "category");
         helper.assertValueEqual(shards.column(), -8, "column");
         helper.assertValueEqual(shards.row(), -5, "row");
-        helper.assertTrue(ResearchCategories.getResearch("SKULLAXE") != null, "SKULLAXE must be registered");
+        helper.assertTrue(shards.isStub() && shards.isRound() && shards.isAutoUnlock(), "stub, round and auto-unlock as in the original");
+        ResearchItem axe = ResearchCategories.getResearch("SKULLAXE");
+        helper.assertTrue(axe.isConcealed(), "SKULLAXE must stay concealed");
+        helper.assertValueEqual(axe.warp(), 1, "SKULLAXE carries one warp point as in the original");
+        helper.assertValueEqual(axe.parents(), List.of("NETHERSHARDS", "THAUMIUM", "INFUSION"), "SKULLAXE parents, in order");
         helper.succeed();
     }
 ```
@@ -1673,15 +1683,7 @@ git commit -m "feat: port the recipes inside the slice"
 - Produces: `build/libs/forbidden-magic-0.574-26.3-port.0.1.0.jar`; a README whose first three lines are the supported-range, what-is-missing, and tempo statements from spec section 11.
 - Consumes: everything.
 
-- [ ] **Step 0: Read the four signatures this test depends on before writing it.** `ResearchManager.completeResearch`, `Knowledge.knows`, and the flag getters on `ResearchItem` are *not* verified in this plan — the earlier context showed `PlayerKnowledge.addResearch` granting a key, `Knowledge.get(player)`, and `ResearchItem` setters, so the exact names must come from the source:
-
-```bash
-grep -n "public " host/src/main/java/thaumcraft/research/ResearchManager.java | grep -iE "complete|grant|purchase|unlock"
-grep -n "public " host/src/main/java/thaumcraft/research/Knowledge.java host/src/main/java/thaumcraft/research/PlayerKnowledge.java | grep -iE "knows|research|aspect"
-grep -n "public " host/src/main/java/thaumcraft/research/ResearchItem.java
-```
-
-Write the assertions with exactly the names those lines print. If a needed getter is missing (`isStub`, `isConcealed`, `warp`), add `patches/0005-research-getters.patch` that adds the getter — do not reach into private state, and do not weaken the assertion until it proves nothing.
+- [ ] **Step 0: Use the verified research surface, not guessed names.** Confirmed in `research/ResearchManager.java`: `complete(player, key)`, `complete(player, key, boolean)`, `isComplete(player, key)`, `grantAutoUnlock(player)`, `createClue(player, key)`, and `Knowledge.get(player)` — the last two appear in the host's own `WarpGameTests.java:120` and `ResearchManager.java:121-130`. Hidden research is keyed with an `@` prefix (`"@" + key`), so never assert on a bare key for a clue. If an assertion below needs a member outside this list, read the file first rather than inventing the name.
 
 - [ ] **Step 1: Write the failing end-to-end test** — this is the criterion in spec 5.0, in one scenario:
 
@@ -1691,14 +1693,18 @@ Write the assertions with exactly the names those lines print. If a needed gette
         AspectList tags = thaumcraft.aspect.AspectRegistry.active().getObjectTags(net.minecraft.world.item.Items.NETHERRACK);
         helper.assertTrue(tags.getAmount(FmAspects.NETHER) >= 1, "netherrack yields infernus");
         helper.assertTrue(ResearchCategories.getResearch("NETHERSHARDS") != null, "shard research exists");
-        thaumcraft.research.ResearchManager.completeResearch(player, "NETHERSHARDS");
-        helper.assertTrue(thaumcraft.research.Knowledge.get(player).knows("NETHERSHARDS"), "player knows the shard entry");
+        thaumcraft.research.ResearchManager.grantAutoUnlock(player);
+        helper.assertTrue(thaumcraft.research.ResearchManager.isComplete(player, "NETHERSHARDS"), "the auto-unlock entry is known after a join");
+        ItemStack wrathShard = new ItemStack(FmItems.DEADLY_SHARDS.get("wrath").get());
+        helper.assertTrue(thaumcraft.aspect.AspectRegistry.active().getObjectTags(wrathShard.getItem()).getAmount(FmAspects.WRATH) >= 2, "the wrath shard carries ira, the value DarkAspects gives it");
         InfusionRecipe skullAxe = (InfusionRecipe) thaumcraft.crafting.TcRecipes.get("forbiddenmagic:SKULLAXE");
         helper.assertTrue(skullAxe != null, "skull axe recipe registered");
         helper.assertTrue(skullAxe.aspects().getAmount(FmAspects.WRATH) == 8, "skull axe costs eight ira");
         helper.succeed();
     }
 ```
+
+Note the shape: no recipe crafts a shard, because in the original no recipe crafts a shard — the chain is tag → drop → research → a recipe that consumes it.
 
 with the player helper taken from the host's `GearGameTests.java:79-91` — the `markClientLoaded()` call is not decoration, a mock player without a loaded connection is invulnerable and behaves inconsistently in research and warp paths:
 
