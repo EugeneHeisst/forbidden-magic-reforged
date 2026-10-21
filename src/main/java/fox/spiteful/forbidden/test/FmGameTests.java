@@ -16,15 +16,17 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.RegisterGameTestsEvent;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import fox.spiteful.forbidden.ForbiddenMagic;
+import thaumcraft.aspect.Aspect;
 
 @EventBusSubscriber(modid = ForbiddenMagic.MODID)
 public final class FmGameTests {
     public static final DeferredRegister<Consumer<GameTestHelper>> FUNCTIONS =
         DeferredRegister.create(Registries.TEST_FUNCTION, ForbiddenMagic.MODID);
-    private static final String[] TESTS = {"mod_loads_and_host_is_present"};
+    private static final String[] TESTS = {"mod_loads_and_host_is_present", "aspect_registry_keeps_builtin_order_and_combines"};
 
     static {
         FUNCTIONS.register(TESTS[0], () -> FmGameTests::modLoadsAndHostIsPresent);
+        FUNCTIONS.register(TESTS[1], () -> FmGameTests::aspectRegistryKeepsBuiltinOrderAndCombines);
     }
 
     private FmGameTests() {
@@ -50,6 +52,17 @@ public final class FmGameTests {
 
     private static void modLoadsAndHostIsPresent(GameTestHelper helper) {
         helper.assertTrue(ModList.get().isLoaded("thaumcraft"), "thaumcraft must be loaded");
+        helper.succeed();
+    }
+
+    private static void aspectRegistryKeepsBuiltinOrderAndCombines(GameTestHelper helper) {
+        Aspect[] all = Aspect.values();
+        helper.assertValueEqual(all.length, 48, "no add-on aspect registered yet");
+        helper.assertValueEqual(all[0], Aspect.AIR, "first builtin must stay index 0");
+        helper.assertValueEqual(all[47], Aspect.TRAP, "last builtin must stay index 47");
+        Aspect fire = Aspect.combine(Aspect.AIR, Aspect.FIRE);
+        helper.assertTrue(fire == Aspect.LIGHT, "combine(AIR, FIRE) must be LIGHT");
+        helper.assertTrue(Aspect.getAspect("aer") == Aspect.AIR, "by-tag lookup must work");
         helper.succeed();
     }
 }
