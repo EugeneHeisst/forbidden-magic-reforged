@@ -1620,9 +1620,9 @@ public final class FmCreativeTab {
 }
 ```
 
-- [ ] **Step 4: Generate models and item definitions.** `tools/gen_resources.py` writes, for each registered item, `assets/forbiddenmagic/models/item/<name>.json` (`{"parent":"minecraft:item/generated","textures":{"layer0":"forbiddenmagic:items/<name>"}}`) and `assets/forbiddenmagic/items/<name>.json`.
+- [ ] **Step 4: Generate models and item definitions.** `tools/gen_resources.py` writes, for each registered item, `assets/forbiddenmagic/models/item/<name>.json` (`{"parent":"minecraft:item/generated","textures":{"layer0":"forbiddenmagic:item/<name>"}}`) and `assets/forbiddenmagic/items/<name>.json` (`{"model":{"type":"minecraft:model","model":"forbiddenmagic:item/<name>"}}`).
 
-The texture source filenames are read from the original, not guessed: `ItemDeadlyShard.registerIcons` (`items/ItemDeadlyShard.java:34-39`) registers `"forbidden:" + vices[x] + "shard"`, so `wrath_shard` comes from `wrathshard.png`, `envy_shard` from `envyshard.png`, `taint_shard` from `taintshard.png`, `pride_shard` from `prideshard.png`, `lust_shard` from `lustshard.png`, `sloth_shard` from `slothshard.png`, `greed_shard` from `greedshard.png`; `gluttony_shard` from `gluttonyshard.png` and `skull_axe` from `skullaxe.png` (`items/ItemGluttonyShard.java:20`, `items/tools/ItemSkullAxe.java`). Note two mismatches that must be recorded rather than patched over: when `Config.noLust` is set the original renames index 4 to `despair`, so `despairshard.png` exists but the modern port expresses that switch as a config-gated recipe (Step 6), and `prideshard.png`/`wrathshard.png` carry `.mcmeta` (animated frames) — copy the `.mcmeta` alongside, or the animation silently disappears.
+The texture source filenames are read from the original, not guessed: `ItemDeadlyShard.registerIcons` (`items/ItemDeadlyShard.java:34-39`) registers `"forbidden:" + vices[x] + "shard"`, so `wrath_shard` comes from `wrathshard.png`, `envy_shard` from `envyshard.png`, `taint_shard` from `taintshard.png`, `pride_shard` from `prideshard.png`, `lust_shard` from `lustshard.png`, `sloth_shard` from `slothshard.png`, `greed_shard` from `greedshard.png`; `gluttony_shard` from `gluttonyshard.png` and `skull_axe` from `skullaxe.png` (`items/ItemGluttonyShard.java:20`, `items/tools/ItemSkullAxe.java`). Note two mismatches that must be recorded rather than patched over: when `Config.noLust` is set the original renames index 4 to `despair`, so `despairshard.png` exists but the modern port expresses that switch as a config-gated recipe (Step 6), and `prideshard.png`, `wrathshard.png` и `taintshard.png` carry `.mcmeta` (animated frames) — copy the `.mcmeta` alongside, or the animation silently disappears. `despairshard.png` exists only for the original's `no_lust` renames; this port hides the lust shard without renaming, so it is not copied.
 
 The generator's item list is a literal table at the top of the file mapping our item name to the FM source filename, so the mapping is auditable instead of derived:
 
@@ -1640,7 +1640,7 @@ ITEM_TEXTURES = {
 }
 ```
 
-Copy every listed texture (and its `.mcmeta` when present) from `../ForbiddenMagic/src/main/resources/assets/forbidden/textures/items/` into `assets/forbiddenmagic/textures/items/` under the new name, and make the generator fail when a registered item has no entry in `ITEM_TEXTURES`:
+Copy every listed texture (and its `.mcmeta` when present) from `../ForbiddenMagic/src/main/resources/assets/forbidden/textures/items/` into `assets/forbiddenmagic/textures/item/` under the new name, and make the generator fail when a registered item has no entry in `ITEM_TEXTURES`:
 
 ```python
 missing = [name for name in registered_items if name not in ITEM_TEXTURES]
@@ -1686,7 +1686,7 @@ Run `runGameTestServer` again and assert, in tests that branch on `FmConfig.lust
 - [ ] **Step 7: Commit.**
 
 ```bash
-git add src/main/java/dev/visfox/forbiddenreforged/FmItems.java src/main/java/dev/visfox/forbiddenreforged/FmCreativeTab.java src/main/java/dev/visfox/forbiddenreforged/FmConfig.java tools/id_map.json tools/gen_resources.py tools/lang src/main/resources/assets/forbiddenmagic/textures/items docs/deviations.md
+git add src/main/java/dev/visfox/forbiddenreforged/FmItems.java src/main/java/dev/visfox/forbiddenreforged/FmCreativeTab.java src/main/java/dev/visfox/forbiddenreforged/FmConfig.java tools/id_map.json tools/gen_resources.py tools/lang src/main/resources/assets/forbiddenmagic/textures/item src/generated/resources/assets/forbiddenmagic/models src/generated/resources/assets/forbiddenmagic/items src/generated/resources/assets/forbiddenmagic/lang docs/deviations.md
 git commit -m "feat: port the shard items and the config"
 ```
 
