@@ -15,7 +15,7 @@
 Every task below obeys these. Values are copied verbatim from the spec.
 
 - Host working tree `D:\Vibing\Minecraft\thaumcraft-4-reforged` must stay clean: `git -C ../thaumcraft-4-reforged status --porcelain` shows nothing for tracked files. Never edit it; never commit to it.
-- Host is pinned by sha in `host.sha`. Current pin: `4ee4766` (release `26.3`, published 2026-10-19).
+- Host is pinned by sha in `host.sha`. Current pin: `69a47a1b238e3ac15fa5d4b10e61ccb6a4a80dbf` ("fix: restore thaumonomicon creation sparkles", 2026-10-20). The host moves daily — it gained two commits on 2026-10-20 alone after our first release pin — so before every increment run `git -C ../thaumcraft-4-reforged fetch && git -C ../thaumcraft-4-reforged log --oneline HEAD..origin/main` and re-pin only when the new commits touch our patch targets (`aspect/Aspect.java`, `aspect/AspectSync.java`, `entity/AspectOrb.java`, host `build.gradle`).
 - Patched host reports mod version exactly `1.2`. Not `1.1`, not `1.2-fm.1` (a pre-release qualifier sorts below `1.2` and fails our own range).
 - Add-on declares `modId="thaumcraft"` dependency `type="required"`, `versionRange="[1.2,)"`, `ordering="AFTER"`.
 - `modId` of the port: `forbiddenmagic`. `displayName`: `Forbidden Magic (Reforged Port)`. Version: `0.574-26.3-port.0.1.0`.
@@ -466,7 +466,7 @@ git commit -m "feat: scaffold the Forbidden Magic add-on project"
 - Modify: `.gitignore`
 
 **Interfaces:**
-- Consumes: the pristine host clone at `../thaumcraft-4-reforged` on sha `4ee4766`.
+- Consumes: the pristine host clone at `../thaumcraft-4-reforged` on sha `69a47a1`.
 - Produces: `host/` — a patched, buildable copy of the host; `tools/prepare_host.py --verify` exits non-zero when patches do not apply; `build/libs` jar of the host used by Task 4.
 
 - [ ] **Step 1: Write the failing check.** `python tools/prepare_host.py --verify` must exit non-zero now, because `host/` does not exist. Run it and confirm the failure.
@@ -560,7 +560,7 @@ if __name__ == "__main__":
     sys.exit(main())
 ```
 
-- [ ] **Step 3: Create `host.sha` with the single line `4ee4766cda61a97d81476bde084605b4584c2d53`, add `host/` and `maven/` to `.gitignore`, and run:**
+- [ ] **Step 3: Create `host.sha` with the single line `69a47a1b238e3ac15fa5d4b10e61ccb6a4a80dbf`, add `host/` and `maven/` to `.gitignore`, and run:**
 
 ```bash
 python tools/prepare_host.py
@@ -892,7 +892,7 @@ Expected: host build green, host game tests green, `seams ok: N files checked`. 
 
 ```bash
 git -C host add -A && git -C host commit -m "aspect registry" && git -C host format-patch -1 --stdout > patches/0001-aspect-registry.patch
-git -C host reset --hard 4ee4766cda61a97d81476bde084605b4584c2d53
+git -C host reset --hard 69a47a1b238e3ac15fa5d4b10e61ccb6a4a80dbf
 python tools/prepare_host.py && python tools/prepare_host.py --verify
 ```
 
@@ -1084,6 +1084,32 @@ Expected: game starts, mod list shows `Forbidden Magic (Reforged Port)` with Tha
 git add patches/0002-aspect-addon-init.patch patches/0003-host-publish.patch
 git commit -m "feat: expose an add-on aspect hook and publish the host locally"
 ```
+
+### Task 4b: Coordination checkpoint with the host author
+
+**Files:**
+- Create: `docs/upstream/issue-draft.md`
+- Modify: `docs/roadmap.md`
+
+**Interfaces:**
+- Consumes: `patches/0001`-`0003` and the green gates from Tasks 3-4.
+- Produces: a decision — continue Tasks 5-11 as an add-on, or hand the patch series over and stop. Nothing else in this plan depends on the answer, and no task after this one starts before the answer exists.
+
+Why this task exists: on 2026-10-20 the host author said in chat that he intends to port Forbidden Magic himself when he gets back to it («если вайбик найдется после перерыва то forbidden magic портану»). As of that day the host repo has no add-on content in it (one commit on `main`, no second addon, no FM issue or branch), so nothing is in flight — but the plan should not spend nine more tasks assuming it is the only attempt.
+
+- [ ] **Step 1: Write the draft.** Three paragraphs, in this order: what we measured (`Aspect` is an `enum` of 48, so an add-on cannot register an aspect; the change is one file plus a registration point, and every one of the 1827 existing references survives), what we built (the patch series, with `build` and `runGameTestServer` output attached, plus the aspect registry game test), and the question: do you want the aspect API as a host feature, are you taking Forbidden Magic yourself, or should this stay a third-party add-on. Mention that the work is AI-assisted. Offer the seven sin aspects as the concrete use case, and note that a sibling TC4 port already ships data-driven add-on aspects with 32 add-ons on top.
+
+- [ ] **Step 2: Hand it to the user.** This project does not send it. No fork, no issue, no comment, no PR from `MxxFoxx2` without an explicit instruction.
+
+- [ ] **Step 3: Record the answer and branch on it in `docs/roadmap.md`:**
+
+```
+decision: <continue | hand over | wait>
+date: <YYYY-MM-DD>
+author reply: <quote or "no reply">
+```
+
+`continue` — Tasks 5-11 run as written. `hand over` — stop after committing the patches; the aspect layer and the drop rules stay useful as the proof in the pull request, and the content work never starts. `wait` — keep going on Tasks 5-6 only, because the aspects and the tag table are what any add-on needs regardless of who writes the items.
 
 ---
 
