@@ -75,6 +75,10 @@ public final class FmEnchantmentEffects {
         return 1.25F * level;
     }
 
+    public static float clusterChance(int level) {
+        return 0.2F + 0.075F * level;
+    }
+
     private static void onBlockDrops(BlockDropsEvent event) {
         if (!FmEnchantments.enabled()) {
             return;
@@ -87,6 +91,14 @@ public final class FmEnchantmentEffects {
         int consuming = FmEnchantments.level(player.level().registryAccess(), tool, FmEnchantments.CONSUMING);
         if (consuming > 0) {
             event.getDrops().removeIf(drop -> isGarbage(drop.getItem()));
+        }
+        int cluster = FmEnchantments.level(player.level().registryAccess(), tool, FmEnchantments.CLUSTER);
+        if (cluster > 0 && FmEnchantments.level(player.level().registryAccess(), tool, Enchantments.FORTUNE) == 0) {
+            RandomSource random = event.getLevel().getRandom();
+            float chance = clusterChance(cluster);
+            for (ItemEntity drop : event.getDrops()) {
+                drop.setItem(thaumcraft.item.tool.SpecialMining.find(event.getState(), drop.getItem(), chance, random));
+            }
         }
         int corrupting = FmEnchantments.level(player.level().registryAccess(), tool, FmEnchantments.CORRUPTING);
         if (corrupting > 0 && event.getState().is(INFUSED_STONES)) {
