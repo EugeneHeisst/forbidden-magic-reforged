@@ -27,3 +27,7 @@
 | Ремонт инструментов | энви-осколок через `getIsRepairable` | компонент `REPAIRABLE` с осколком зависти | современный механизм наковальни |
 | Рецепты инструментов | `itemResource` мета 3 и `blockMagicalLog` мета 1 | `thaumcraft:enchanted_fabric`, `thaumcraft:silverwood_log` | соответствие мет TC4 предметам хоста |
 | Рецепт Voidtouched | `itemResource` мета 16 | `thaumcraft:void_seed` | единственный предмет хоста, соответствующий мете |
+| Скверный камень | один блок с метой 0/1 | два блока `taint_stone_smooth` и `taint_stone_brick` | в 26.3 нет метапредметов |
+| Боковые текстуры скверного бревна | 75% чистых, 25% «gross» по позиции | всегда чистый `taint_log_side` | позиционный выбор текстуры не выражается blockstate |
+| Арканный рецепт скверного камня | `addArcaneCraftingRecipe` с research `TAINTSTONE` | отложен до слайса исследований скверны | нужен research-ключ и предмет `resourceTaint` |
+| Плавка скверного бревна | `taint_charcoal` | отложена | предмет ещё не портирован |
