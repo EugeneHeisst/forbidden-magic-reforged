@@ -45,6 +45,7 @@ import dev.visfox.forbiddenreforged.FmEnchantments;
 import dev.visfox.forbiddenreforged.FmItems;
 import dev.visfox.forbiddenreforged.FmRecipes;
 import thaumcraft.crafting.InfusionRecipe;
+import thaumcraft.crafting.InfusionEnchantmentRecipe;
 import thaumcraft.crafting.TcIngredient;
 import thaumcraft.crafting.TcRecipe;
 import thaumcraft.crafting.TcRecipes;
@@ -60,7 +61,7 @@ import thaumcraft.research.ResearchManager;
 public final class FmGameTests {
     public static final DeferredRegister<Consumer<GameTestHelper>> FUNCTIONS =
         DeferredRegister.create(Registries.TEST_FUNCTION, ForbiddenMagic.MODID);
-    private static final String[] TESTS = {"mod_loads_and_host_is_present", "aspect_registry_keeps_builtin_order_and_combines", "addon_aspect_survives_client_sync", "sin_aspects_registered_with_own_textures", "sin_aspect_tags_merge_with_existing", "entity_aspect_tags_merge_with_existing", "every_tag_target_resolved", "shards_are_registered_with_seven_ids", "no_lust_removes_luxuria_items", "mob_killed_by_player_drops_wrath_shard", "boss_drops_pride_shards", "unattended_death_drops_sloth_shard", "forbidden_category_and_shard_entries_resolve", "skull_axe_infusion_recipe_matches_original", "every_ported_recipe_resolves_its_inputs", "chain_from_netherrack_to_wrath_shard", "enchantments_resolve_with_expected_shape", "emerald_fragment_is_registered", "consuming_destroys_garbage", "corrupting_yields_sin_shards", "greedy_drops_match_kills", "educational_multiplies_experience", "wrath_adds_damage", "enchantment_research_present"};
+    private static final String[] TESTS = {"mod_loads_and_host_is_present", "aspect_registry_keeps_builtin_order_and_combines", "addon_aspect_survives_client_sync", "sin_aspects_registered_with_own_textures", "sin_aspect_tags_merge_with_existing", "entity_aspect_tags_merge_with_existing", "every_tag_target_resolved", "shards_are_registered_with_seven_ids", "no_lust_removes_luxuria_items", "mob_killed_by_player_drops_wrath_shard", "boss_drops_pride_shards", "unattended_death_drops_sloth_shard", "forbidden_category_and_shard_entries_resolve", "skull_axe_infusion_recipe_matches_original", "every_ported_recipe_resolves_its_inputs", "chain_from_netherrack_to_wrath_shard", "enchantments_resolve_with_expected_shape", "emerald_fragment_is_registered", "consuming_destroys_garbage", "corrupting_yields_sin_shards", "greedy_drops_match_kills", "educational_multiplies_experience", "wrath_adds_damage", "enchantment_research_present", "enchantment_recipes_cover_five"};
 
     static {
         FUNCTIONS.register(TESTS[0], () -> FmGameTests::modLoadsAndHostIsPresent);
@@ -87,6 +88,7 @@ public final class FmGameTests {
         FUNCTIONS.register(TESTS[21], () -> FmGameTests::educationalMultipliesExperience);
         FUNCTIONS.register(TESTS[22], () -> FmGameTests::wrathAddsDamage);
         FUNCTIONS.register(TESTS[23], () -> FmGameTests::enchantmentResearchPresent);
+        FUNCTIONS.register(TESTS[24], () -> FmGameTests::enchantmentRecipesCoverFive);
     }
 
     private FmGameTests() {
@@ -411,6 +413,19 @@ public final class FmGameTests {
         for (String key : new String[]{"GREEDY", "CONSUMING", "EDUCATIONAL", "CORRUPTING"}) {
             helper.assertTrue(ResearchCategories.getResearch(key) != null, key + " research must exist");
         }
+        helper.succeed();
+    }
+
+    private static void enchantmentRecipesCoverFive(GameTestHelper helper) {
+        for (String key : new String[]{"WRATH", "GREEDY", "CONSUMING", "EDUCATIONAL", "CORRUPTING"}) {
+            TcRecipe recipe = TcRecipes.get(key);
+            helper.assertTrue(recipe instanceof InfusionEnchantmentRecipe, key + " must be an infusion enchantment recipe");
+            InfusionEnchantmentRecipe infusion = (InfusionEnchantmentRecipe) recipe;
+            helper.assertValueEqual(infusion.enchantment(), Identifier.parse("forbiddenmagic:" + key.toLowerCase(java.util.Locale.ROOT)), key + " enchantment id");
+        }
+        InfusionEnchantmentRecipe wrath = (InfusionEnchantmentRecipe) TcRecipes.get("WRATH");
+        helper.assertValueEqual(wrath.instability(), 8, "wrath instability");
+        helper.assertValueEqual(wrath.aspects().getAmount(FmAspects.WRATH), 16, "wrath aspect cost");
         helper.succeed();
     }
 
