@@ -189,6 +189,37 @@ brainy_zombie/mind, pig/beast), размер таблицы не меньше 40
 
 ## Слайс M7b: Клетка Гнева
 
+Замерено 2026-10-22 на `m7b-rc1`.
+
+| Гейт | Результат |
+|---|---|
+| build | `BUILD SUCCESSFUL in 3s` |
+| тесты, `no_lust = false` | `All 46 required tests passed :)`, `no_lust gate: disabled=false, luxuria=luxuria` |
+| генератор | два прогона подряд, `git status --porcelain src/generated` пуст |
+| provenance | `provenance ok: 1 jar(s)` |
+| хост | `host matches sha + 3 patch commit(s)` |
+| артефакт | `forbidden-magic-0.574-26.3-port.0.1.0.jar` |
+
+Новый тест один — `wrath_cage_research_and_recipes` (индекс 45): исследование `WRATHCAGE` существует,
+warp 3, 5 страниц, infusion-рецепт требует `WRATH 32`, crucible-рецепт `MOBCRYSTAL` требует `MIND 10`.
+
+### Исправление рендерера
+
+Исправлено 2026-10-22: `WrathCageRenderer` падал с `IllegalStateException: Tried to access entity ID
+before ID assignment` при попытке отрендерить моба внутри клетки. Причина: временная сущность
+создавалась через `type.create(level, EntitySpawnReason.TRIGGERED)`, но не добавлялась в мир,
+поэтому не получала ID. Рендер-пайплайн (`LivingEntityRenderer.extractRenderState` →
+`ItemModelResolver.updateForLiving`) обращается к `entity.getId()`, что вызывает падение.
+
+Решение: назначение фиктивного ID через reflection перед вызовом `dispatcher.extractEntity()`.
+Поле `Entity.id` устанавливается в 0, что позволяет рендер-пайплайну работать без доступа к миру.
+Клиент загружается без падений.
+
+Не покрыто: визуальная проверка рендеринга моба в реальной игре (требуется ручной запуск клиента
+и размещение Клетки Гнева с кристаллом).
+
+## Слайс M7b: Клетка Гнева
+
 Замерено 2026-10-22 на `dev`, перед коммитом документации.
 
 | Гейт | Результат |

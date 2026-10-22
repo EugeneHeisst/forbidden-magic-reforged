@@ -57,6 +57,14 @@ public class WrathCageRenderer implements BlockEntityRenderer<WrathCageBlockEnti
             return;
         }
         entity.setPos(0.0, 0.0, 0.0);
+        try {
+            java.lang.reflect.Field idField = Entity.class.getDeclaredField("id");
+            idField.setAccessible(true);
+            idField.setInt(entity, 0);
+        } catch (Exception e) {
+            ForbiddenMagic.LOGGER.warn("Failed to set dummy entity ID for wrath cage rendering", e);
+            return;
+        }
         state.mob = dispatcher.extractEntity(entity, partialTicks);
         state.spin = (cage.getLevel().getGameTime() % 360L) * 3.0F;
     }
