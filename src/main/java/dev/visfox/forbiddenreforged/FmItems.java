@@ -59,7 +59,7 @@ public final class FmItems {
             properties -> repairable(Registration.axe(properties.rarity(Rarity.EPIC), TcMaterials.ELEMENTAL_TOOL, 3.0F, -3.0F)));
         MOB_CRYSTAL = ITEMS.registerItem("mob_crystal", MobCrystalItem::new,
             properties -> properties.stacksTo(1).rarity(Rarity.UNCOMMON));
-        DIABOLIST_FORK = ITEMS.registerItem("diabolist_fork", Item::new,
+        DIABOLIST_FORK = ITEMS.registerItem("diabolist_fork", DiabolistForkItem::new,
             properties -> Registration.sword(properties.rarity(Rarity.UNCOMMON), TcMaterials.THAUMIUM_TOOL, 3.0F, -2.4F)
                 .repairable(net.minecraft.world.item.Items.QUARTZ));
         TAINT_COAL = ITEMS.registerSimpleItem("taint_coal", properties -> Registration.fuel(properties, 1200));

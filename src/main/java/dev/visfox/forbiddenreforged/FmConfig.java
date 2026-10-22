@@ -14,6 +14,7 @@ public final class FmConfig {
     public static ModConfigSpec.IntValue wrathCost;
     public static ModConfigSpec.IntValue wrathEff;
     public static ModConfigSpec.BooleanValue wrathCrazy;
+    public static ModConfigSpec.BooleanValue spork;
 
     static {
         noLust = BUILDER.comment("Enable to remove Luxuria aspect and related items.").define("general.no_lust", false);
@@ -23,6 +24,7 @@ public final class FmConfig {
         wrathCost = BUILDER.comment("Essentia cost per spawn round.").defineInRange("general.wrath_cost", 5, 0, 64);
         wrathEff = BUILDER.comment("Spawns granted per essentia cost.").defineInRange("general.wrath_eff", 4, 1, 64);
         wrathCrazy = BUILDER.comment("Let the cage imprint on any non-boss mob.").define("general.wrath_crazy", false);
+        spork = BUILDER.comment("Rename the Diabolist Fork to 'Diabolist Spork'.").define("general.spork", false);
         SPEC = BUILDER.build();
     }
 
@@ -59,5 +61,9 @@ public final class FmConfig {
 
     public static boolean wrathCrazy() {
         return SPEC.isLoaded() ? wrathCrazy.get() : wrathCrazy.getDefault();
+    }
+
+    public static boolean spork() {
+        return SPEC.isLoaded() ? spork.get() : spork.getDefault();
     }
 }

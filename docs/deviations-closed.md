@@ -42,3 +42,9 @@
 | tainted update: проверка биома | `biomeGenForCoords(...).biomeID == Config.biomeTaintID` | `TaintBiomes.isTainted(level, pos)` | в 26.3 нет числовых biomeID; хост даёт предикат скверны |
 | profane update: «контракт» | NBT `tag.contract` + `completeResearch(player, "ROD_profane")` | компонент `FmComponents.PROFANE_CONTRACT` (Integer); программный добор исследования убран | современный data-component API; `ROD_profane` уже гейтит крафт, поэтому форс не нужен |
 | profaned стержень | item `Blocks.bedrock`, cost 1000, конверсия через `setRod` | то же: `minecraft:bedrock` + `WandKeys.PARTS.set(...,"profaned",...)` | burnout-состояние только программное, не крафтится; отдельного предмета нет |
+| Чернила | umbral_rose → 2 чёрных красителя | крафт-рецепт `ink_from_rose.json`: umbral_rose → 2 `forbiddenmagic:black_dye` | готово M17; `black_dye` есть с M10 |
+| Скверный плод | листва редко роняет `taintFruit` | дроп из `taint_leaves` loot (шанс 0.02) | готово M17 |
+| `gluttony` 0/1/2 | конфиг глушит рецепты Arcane Cake / Ring Food | торт и кольцо оба под `gluttonyMode() != 1` | готово M17; кольцо раньше не гейтилось |
+| «Ложковилка» (spork) | `Config.spork` переименовывает вилку в `DiabolistSpork` | конфиг-флаг `spork` + `DiabolistForkItem.getName` → alt-имя | готово M17; икону не меняем (нет spork.png) |
+| Теги осколков | meta 0-6 одного предмета | отдельные id, теги не нужны | проверено M17: рецепты ссылаются на id напрямую, отдельного тега нет и в хосте |
+| Арканный рецепт скверного камня | `addArcaneCraftingRecipe` с research `TAINTSTONE` | обычный datapack-крафт `taint_stone_brick.json` | проверено M17: `TAINTSTONE`/`resourceTaint` в порту нет; блок крафтится через datapack, арканный вариант не воспроизводим без research-ключа |

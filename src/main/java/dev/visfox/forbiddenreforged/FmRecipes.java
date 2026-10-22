@@ -243,20 +243,22 @@ public final class FmRecipes {
                 TcIngredient.item("thaumcraft:primordial_pearl"),
                 TcIngredient.item("minecraft:glass_bottle")
             )));
-        TcRecipes.register(new InfusionRecipe(
-            "RINGFOOD",
-            "RINGFOOD",
-            TcStack.of(FmItems.RING_NUTRITION.getId().toString(), 1),
-            2,
-            new AspectList().add(FmAspects.GLUTTONY, 16).add(Aspect.HUNGER, 12).add(Aspect.LIFE, 8),
-            TcIngredient.item("minecraft:gold_ingot"),
-            List.of(
-                TcIngredient.item(FmItems.id("gluttony").toString()),
-                TcIngredient.item("minecraft:bread"),
-                TcIngredient.item(FmItems.id("gluttony").toString()),
-                TcIngredient.item("minecraft:cookie")
-            )
-        ));
+        if (FmConfig.gluttonyMode() != 1) {
+            TcRecipes.register(new InfusionRecipe(
+                "RINGFOOD",
+                "RINGFOOD",
+                TcStack.of(FmItems.RING_NUTRITION.getId().toString(), 1),
+                2,
+                new AspectList().add(FmAspects.GLUTTONY, 16).add(Aspect.HUNGER, 12).add(Aspect.LIFE, 8),
+                TcIngredient.item("minecraft:gold_ingot"),
+                List.of(
+                    TcIngredient.item(FmItems.id("gluttony").toString()),
+                    TcIngredient.item("minecraft:bread"),
+                    TcIngredient.item(FmItems.id("gluttony").toString()),
+                    TcIngredient.item("minecraft:cookie")
+                )
+            ));
+        }
         TcRecipes.register(new InfusionRecipe(
             "FOCUSBLINK",
             "FOCUSBLINK",
