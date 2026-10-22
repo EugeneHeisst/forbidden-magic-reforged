@@ -168,3 +168,37 @@ beacon base и рецептами. 37/37 тестов в обоих режима
 
 Все трейды используют single pool tag `#forbiddenmagic:heretic/pool`. Trade set файлы (level_1-5.json)
 ссылаются на единый pool.
+
+## Слайс M14: Кольцо питания
+
+Статус на 2026-10-22: **собран**, 50/50 тестов. `RingNutritionItem` получил недостающее:
+
+- Infusion-рецепт `RINGFOOD`: центр `minecraft:gold_ingot`, компоненты 2× gluttony shard + bread + cookie
+  (`GLUTTONY 16`/`HUNGER 12`/`LIFE 8`), нестабильность 2.
+- `onWornTick` (Bauble): каждые 40 тиков даёт носителю эффект Saturation.
+- `RINGFOOD` добавлен в `FmRecipes.OWN_KEYS`. Исследование `RINGFOOD` и предмет были зарегистрированы раньше (M10).
+
+## Слайс M15: Рабочие стержни жезлов + rod-update
+
+Статус на 2026-10-22: **собран**, 51/51 тестов. Стержни перестали быть инертными предметами и
+зарегистрированы в `WandRegistry.registerRod` хоста → из них крафтятся рабочие casting-жезлы, а
+`WandItem.inventoryTick` сам зовёт `RodUpdate` (серверная сторона).
+
+Ядерные стержни (без сторонних вариантов): tainted/infernal/profane, значения из оригинала:
+
+| Стержень | capacity | craftCost | update |
+|---|---|---|---|
+| tainted | 150 | 12 | рефилл прималов <1/10 в скверном биоме (`TaintBiomes.isTainted`) |
+| infernal | 150 | 12 | рефилл прималов в Незере + FIRE <1/5 всегда; тушит носителя, снимает wither |
+| profane | 50 | 12 | «контракт» 25000: наливает real-vis из пула со sticky-warp, по исчерпании → profaned |
+| profaned | 50 | 1000 | burnout-состояние (item `minecraft:bedrock`), конверсия программная |
+
+- `FmComponents.PROFANE_CONTRACT` (`DataComponentType<Integer>`) — аналог оригинального NBT `contract`.
+- Модель-текстуры `wand_rod_{tainted,infernal,profane,profaned}.png` скопированы в `textures/model/`.
+- `FmWands.register()` вызывается в `FmSetup.commonSetup` после `AddonAspects.init()`.
+- Исследования `ROD_tainted/ROD_infernal/ROD_profane` — уже были (M10); они гейтят крафт (`ArcaneWandRecipe`).
+- Lang `item.Wand.<tag>.rod` добавлен (en + ru).
+- GameTest `wand_rods_register_as_functional_cores`: реестр + capacity + наличие update + сборка жезла.
+
+Вырезано (стороннее): wand caps (все материалы — BM/AM2/Botania), witchwood/blood/mana rods и staff
+updates (AM2/BM/Botania). «Ложковилка» = `Config.spork` — alt-имя той же вилки, отдельного предмета нет.

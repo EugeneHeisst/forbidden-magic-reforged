@@ -14,6 +14,7 @@ public final class FmSetup {
     static void commonSetup(FMLCommonSetupEvent event) {
         event.enqueueWork(() -> {
             AddonAspects.init();
+            FmWands.register();
             FmRecipes.register();
             FmResearch.register();
             FmTinkerer.register();

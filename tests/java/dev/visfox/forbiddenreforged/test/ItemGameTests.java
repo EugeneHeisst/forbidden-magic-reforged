@@ -29,6 +29,9 @@ import thaumcraft.crafting.InfusionRecipe;
 import thaumcraft.crafting.TcRecipes;
 import thaumcraft.research.ResearchCategories;
 import thaumcraft.research.ResearchItem;
+import thaumcraft.wand.WandRegistry;
+import thaumcraft.wand.WandRod;
+import thaumcraft.wand.Wands;
 
 @EventBusSubscriber(modid = ForbiddenMagic.MODID)
 public final class ItemGameTests {
@@ -40,7 +43,8 @@ public final class ItemGameTests {
         "diabolist_fork_research_and_recipe",
         "taint_coal_is_registered_and_is_fuel",
         "emerald_fragment_is_registered",
-        "riding_crop_is_registered_as_sword"
+        "riding_crop_is_registered_as_sword",
+        "wand_rods_register_as_functional_cores"
     };
 
     static {
@@ -49,6 +53,7 @@ public final class ItemGameTests {
         FUNCTIONS.register(TESTS[2], () -> ItemGameTests::taintCoalIsRegisteredAndIsFuel);
         FUNCTIONS.register(TESTS[3], () -> ItemGameTests::emeraldFragmentIsRegistered);
         FUNCTIONS.register(TESTS[4], () -> ItemGameTests::ridingCropIsRegisteredAsSword);
+        FUNCTIONS.register(TESTS[5], () -> ItemGameTests::wandRodsRegisterAsFunctionalCores);
     }
 
     private ItemGameTests() {}
@@ -114,6 +119,29 @@ public final class ItemGameTests {
         Item crop = BuiltInRegistries.ITEM.getValue(Identifier.fromNamespaceAndPath(ForbiddenMagic.MODID, "riding_crop"));
         helper.assertTrue(crop != Items.AIR, "riding crop must be registered");
         helper.assertTrue(crop instanceof RidingCropItem, "riding crop must be RidingCropItem");
+        helper.succeed();
+    }
+
+    private static void wandRodsRegisterAsFunctionalCores(GameTestHelper helper) {
+        WandRod tainted = WandRegistry.findRod("tainted");
+        helper.assertTrue(tainted != null, "tainted rod must be registered in WandRegistry");
+        helper.assertValueEqual(tainted.capacity(), 150, "tainted capacity");
+        helper.assertValueEqual(tainted.craftCost(), 12, "tainted craft cost");
+        helper.assertTrue(tainted.onUpdate() != null, "tainted rod has an update behavior");
+
+        WandRod infernal = WandRegistry.findRod("infernal");
+        helper.assertTrue(infernal != null && infernal.capacity() == 150, "infernal rod registered with capacity 150");
+        helper.assertTrue(infernal.onUpdate() != null, "infernal rod has an update behavior");
+
+        WandRod profane = WandRegistry.findRod("profane");
+        helper.assertTrue(profane != null && profane.capacity() == 50, "profane rod registered with capacity 50");
+        helper.assertTrue(profane.onUpdate() != null, "profane rod has an update behavior");
+
+        helper.assertTrue(WandRegistry.findRod("profaned") != null, "profaned burnout rod registered");
+
+        ItemStack wand = Wands.create(WandRegistry.CAP_THAUMIUM, tainted, false);
+        helper.assertTrue(Wands.isWand(wand), "tainted wand is created");
+        helper.assertValueEqual(Wands.getRod(wand).tag(), "tainted", "created wand uses the tainted rod");
         helper.succeed();
     }
 }

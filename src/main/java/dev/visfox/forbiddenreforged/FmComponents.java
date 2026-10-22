@@ -19,6 +19,10 @@ public final class FmComponents {
         COMPONENTS.registerComponentType("mob_id", builder -> builder
             .persistent(Codec.STRING)
             .networkSynchronized(ByteBufCodecs.STRING_UTF8));
+    public static final Supplier<DataComponentType<Integer>> PROFANE_CONTRACT =
+        COMPONENTS.registerComponentType("profane_contract", builder -> builder
+            .persistent(Codec.INT)
+            .networkSynchronized(ByteBufCodecs.INT));
 
     private FmComponents() {
     }
