@@ -12,6 +12,7 @@ import net.minecraft.gametest.framework.TestData;
 import net.minecraft.gametest.framework.TestEnvironmentDefinition;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -44,7 +45,9 @@ public final class ItemGameTests {
         "taint_coal_is_registered_and_is_fuel",
         "emerald_fragment_is_registered",
         "riding_crop_is_registered_as_sword",
-        "wand_rods_register_as_functional_cores"
+        "wand_rods_register_as_functional_cores",
+        "creative_tab_is_registered_with_fork_icon",
+        "creative_tab_lists_every_registered_item"
     };
 
     static {
@@ -54,6 +57,8 @@ public final class ItemGameTests {
         FUNCTIONS.register(TESTS[3], () -> ItemGameTests::emeraldFragmentIsRegistered);
         FUNCTIONS.register(TESTS[4], () -> ItemGameTests::ridingCropIsRegisteredAsSword);
         FUNCTIONS.register(TESTS[5], () -> ItemGameTests::wandRodsRegisterAsFunctionalCores);
+        FUNCTIONS.register(TESTS[6], () -> ItemGameTests::creativeTabIsRegisteredWithForkIcon);
+        FUNCTIONS.register(TESTS[7], () -> ItemGameTests::creativeTabListsEveryRegisteredItem);
     }
 
     private ItemGameTests() {}
@@ -142,6 +147,38 @@ public final class ItemGameTests {
         ItemStack wand = Wands.create(WandRegistry.CAP_THAUMIUM, tainted, false);
         helper.assertTrue(Wands.isWand(wand), "tainted wand is created");
         helper.assertValueEqual(Wands.getRod(wand).tag(), "tainted", "created wand uses the tainted rod");
+        helper.succeed();
+    }
+
+    private static void creativeTabIsRegisteredWithForkIcon(GameTestHelper helper) {
+        CreativeModeTab tab = BuiltInRegistries.CREATIVE_MODE_TAB.get(ForbiddenMagic.id("forbidden"))
+            .map(holder -> holder.value())
+            .orElse(null);
+        helper.assertTrue(tab != null, "the addon registers its own creative tab");
+        helper.assertValueEqual(tab.getIconItem().getItem(), FmItems.DIABOLIST_FORK.get(), "the tab icon is the diabolist fork");
+        helper.succeed();
+    }
+
+    private static void creativeTabListsEveryRegisteredItem(GameTestHelper helper) {
+        List<ItemStack> stacks = dev.visfox.forbiddenreforged.FmCreativeTab.stacks();
+        java.util.Set<Item> listed = new java.util.HashSet<>();
+        for (ItemStack stack : stacks) {
+            listed.add(stack.getItem());
+        }
+        for (var holder : FmItems.ITEMS.getEntries()) {
+            if (holder.get() == FmItems.DEADLY_SHARDS.get("lust").get() && !dev.visfox.forbiddenreforged.FmCreativeTab.visible("lust")) {
+                continue;
+            }
+            helper.assertTrue(listed.contains(holder.get()), "the tab is missing the item " + holder.getId());
+        }
+        for (var holder : dev.visfox.forbiddenreforged.FmBlocks.BLOCKS.getEntries()) {
+            Item blockItem = holder.get().asItem();
+            if (blockItem != Items.AIR) {
+                helper.assertTrue(listed.contains(blockItem), "the tab is missing the block " + holder.getId());
+            }
+        }
+        long unique = stacks.stream().map(stack -> stack.getItem() + "#" + stack.getComponents()).distinct().count();
+        helper.assertValueEqual(stacks.size(), (int) unique, "no duplicate entries in the tab list");
         helper.succeed();
     }
 }

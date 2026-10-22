@@ -1,53 +1,55 @@
 package dev.visfox.forbiddenreforged;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Supplier;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
-import thaumcraft.registry.ModCreativeTabs;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredRegister;
 
-@EventBusSubscriber(modid = ForbiddenMagic.MODID)
 public final class FmCreativeTab {
+    private static final DeferredRegister<CreativeModeTab> TABS =
+        DeferredRegister.create(Registries.CREATIVE_MODE_TAB, ForbiddenMagic.MODID);
+
+    public static final Supplier<CreativeModeTab> FORBIDDEN = TABS.register("forbidden", () -> CreativeModeTab.builder()
+        .title(Component.translatable("itemGroup.forbiddenmagic"))
+        .icon(() -> new ItemStack(FmItems.DIABOLIST_FORK.get()))
+        .displayItems((parameters, output) -> stacks().forEach(output::accept))
+        .build());
+
     private FmCreativeTab() {
+    }
+
+    public static void register(IEventBus modEventBus) {
+        TABS.register(modEventBus);
     }
 
     public static boolean visible(String vice) {
         return !vice.equals("lust") || !FmConfig.lustDisabled();
     }
 
-    @SubscribeEvent
-    static void addItems(BuildCreativeModeTabContentsEvent event) {
-        if (event.getTab() != ModCreativeTabs.THAUMCRAFT.get()) {
-            return;
-        }
-        for (var entry : FmItems.DEADLY_SHARDS.entrySet()) {
-            if (visible(entry.getKey())) {
-                event.accept(entry.getValue().get());
+    public static List<ItemStack> stacks() {
+        List<ItemStack> stacks = new ArrayList<>();
+        Item lustShard = FmItems.DEADLY_SHARDS.get("lust").get();
+        for (DeferredHolder<Item, ? extends Item> holder : FmItems.ITEMS.getEntries()) {
+            if (holder.get() == FmItems.MOB_CRYSTAL.get()) {
+                continue;
             }
+            if (holder.get() == lustShard && !visible("lust")) {
+                continue;
+            }
+            stacks.add(new ItemStack(holder.get()));
         }
-        event.accept(FmItems.GLUTTONY_SHARD.get());
-        event.accept(FmItems.SKULL_AXE.get());
-        event.accept(FmItems.EMERALD_FRAGMENT.get());
-        event.accept(FmItems.MORPH_PICKAXE.get());
-        event.accept(FmItems.MORPH_SWORD.get());
-        event.accept(FmItems.MORPH_SHOVEL.get());
-        event.accept(FmItems.MORPH_AXE.get());
-        event.accept(FmItems.MOB_CRYSTAL.get());
-        for (String id : FmSpawnerMobs.ids()) {
-            ItemStack filled = new ItemStack(FmItems.MOB_CRYSTAL.get());
-            MobCrystalItem.setMob(filled, id);
-            event.accept(filled);
+        for (String mobId : FmSpawnerMobs.ids()) {
+            ItemStack crystal = new ItemStack(FmItems.MOB_CRYSTAL.get());
+            MobCrystalItem.setMob(crystal, mobId);
+            stacks.add(crystal);
         }
-        event.accept(FmBlocks.TAINT_LOG.get().asItem());
-        event.accept(FmBlocks.TAINT_PLANKS.get().asItem());
-        event.accept(FmBlocks.TAINT_STONE_SMOOTH.get().asItem());
-        event.accept(FmBlocks.TAINT_STONE_BRICK.get().asItem());
-        event.accept(FmBlocks.STAR_BLOCK.get().asItem());
-        event.accept(FmBlocks.TAINT_LEAVES.get().asItem());
-        event.accept(FmBlocks.TAINT_SAPLING.get().asItem());
-        event.accept(FmBlocks.UMBRAL_ROSE.get().asItem());
-        event.accept(FmBlocks.UMBRAL_ROSE_BUSH.get().asItem());
-        event.accept(FmBlocks.ARCANE_CAKE.get().asItem());
-        event.accept(FmBlocks.WRATH_CAGE.get().asItem());
+        return stacks;
     }
 }
