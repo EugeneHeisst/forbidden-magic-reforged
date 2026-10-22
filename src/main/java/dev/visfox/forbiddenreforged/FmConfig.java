@@ -10,11 +10,19 @@ public final class FmConfig {
     public static ModConfigSpec.BooleanValue noLust;
     public static ModConfigSpec.IntValue gluttony;
     public static ModConfigSpec.BooleanValue enchanting;
+    public static ModConfigSpec.BooleanValue wrathCage;
+    public static ModConfigSpec.IntValue wrathCost;
+    public static ModConfigSpec.IntValue wrathEff;
+    public static ModConfigSpec.BooleanValue wrathCrazy;
 
     static {
         noLust = BUILDER.comment("Enable to remove Luxuria aspect and related items.").define("general.no_lust", false);
         gluttony = BUILDER.comment("0 = Enabled, 1 = Disabled, 2 = Hardcore").defineInRange("general.gluttony", 0, 0, 2);
         enchanting = BUILDER.comment("Enable Forbidden Magic enchantments.").define("general.enchanting", true);
+        wrathCage = BUILDER.comment("Enable the Wrath Cage.").define("general.wrath_cage", true);
+        wrathCost = BUILDER.comment("Essentia cost per spawn round.").defineInRange("general.wrath_cost", 5, 0, 64);
+        wrathEff = BUILDER.comment("Spawns granted per essentia cost.").defineInRange("general.wrath_eff", 4, 1, 64);
+        wrathCrazy = BUILDER.comment("Let the cage imprint on any non-boss mob.").define("general.wrath_crazy", false);
         SPEC = BUILDER.build();
     }
 
@@ -29,7 +37,27 @@ public final class FmConfig {
         return SPEC.isLoaded() ? noLust.get() : noLust.getDefault();
     }
 
+    public static int gluttonyMode() {
+        return SPEC.isLoaded() ? gluttony.get() : gluttony.getDefault();
+    }
+
     public static boolean enchantmentsEnabled() {
         return SPEC.isLoaded() ? enchanting.get() : enchanting.getDefault();
+    }
+
+    public static boolean wrathCage() {
+        return SPEC.isLoaded() ? wrathCage.get() : wrathCage.getDefault();
+    }
+
+    public static int wrathCost() {
+        return SPEC.isLoaded() ? wrathCost.get() : wrathCost.getDefault();
+    }
+
+    public static int wrathEff() {
+        return SPEC.isLoaded() ? wrathEff.get() : wrathEff.getDefault();
+    }
+
+    public static boolean wrathCrazy() {
+        return SPEC.isLoaded() ? wrathCrazy.get() : wrathCrazy.getDefault();
     }
 }

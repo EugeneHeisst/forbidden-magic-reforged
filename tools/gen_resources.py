@@ -3,7 +3,7 @@ import tomllib
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-LANG_SOURCE = ROOT / "tools" / "lang"
+LANG_SOURCE = ROOT / "data" / "lang"
 ASSETS = ROOT / "src" / "generated" / "resources" / "assets" / "forbiddenmagic"
 TEXTURES = ROOT / "src" / "main" / "resources" / "assets" / "forbiddenmagic" / "textures" / "item"
 
@@ -80,6 +80,27 @@ def generate_morph_items() -> None:
     print(f"morph tools: {len(MORPH_TEXTURES)} two-layer models")
 
 
+def generate_mob_crystal() -> None:
+    write_json(ASSETS / "models" / "item" / "mob_crystal_empty.json", {
+        "parent": "minecraft:item/generated",
+        "textures": {"layer0": "forbiddenmagic:item/emptycrystal"},
+    })
+    write_json(ASSETS / "models" / "item" / "mob_crystal_filled.json", {
+        "parent": "minecraft:item/generated",
+        "textures": {"layer0": "forbiddenmagic:item/mobcrystal"},
+    })
+    write_json(ASSETS / "items" / "mob_crystal.json", {
+        "model": {
+            "type": "minecraft:condition",
+            "property": "minecraft:has_component",
+            "component": "forbiddenmagic:mob_id",
+            "on_true": {"type": "minecraft:model", "model": "forbiddenmagic:item/mob_crystal_filled"},
+            "on_false": {"type": "minecraft:model", "model": "forbiddenmagic:item/mob_crystal_empty"},
+        },
+    })
+    print("mob crystal: 2 models and one condition definition")
+
+
 
 BLOCK_TEXTURES = {
     "taint_planks": ("taint_planks",),
@@ -121,11 +142,125 @@ def generate_blocks() -> None:
     })
     print(f"blocks: {len(BLOCK_TEXTURES) + 1} models and blockstates")
 
+
+PLANT_MODELS = {
+    "taint_leaves": ("cube_all", "taint_leaves"),
+    "taint_sapling": ("cross", "sapling_taint"),
+}
+
+
+def generate_plants() -> None:
+    for name, (parent, texture) in sorted(PLANT_MODELS.items()):
+        write_json(ASSETS / "blockstates" / f"{name}.json", {"variants": {"": {"model": f"forbiddenmagic:block/{name}"}}})
+        model = {
+            "parent": f"minecraft:block/{parent}",
+            "render_type": "minecraft:cutout",
+        }
+        if parent == "cube_all":
+            model["textures"] = {"all": f"forbiddenmagic:block/{texture}"}
+        else:
+            model["textures"] = {"cross": f"forbiddenmagic:block/{texture}"}
+        write_json(ASSETS / "models" / "block" / f"{name}.json", model)
+        write_json(ASSETS / "models" / "item" / f"{name}.json", {"parent": f"forbiddenmagic:block/{name}"})
+        write_json(ASSETS / "items" / f"{name}.json", {
+            "model": {"type": "minecraft:model", "model": f"forbiddenmagic:block/{name}"},
+        })
+    print(f"plants: {len(PLANT_MODELS)} models and blockstates")
+
+
+def generate_umbral_plants() -> None:
+    write_json(ASSETS / "blockstates" / "umbral_rose.json", {"variants": {"": {"model": "forbiddenmagic:block/umbral_rose"}}})
+    write_json(ASSETS / "models" / "block" / "umbral_rose.json", {
+        "parent": "minecraft:block/cross",
+        "render_type": "minecraft:cutout",
+        "textures": {"cross": "forbiddenmagic:block/flower_black"},
+    })
+    write_json(ASSETS / "models" / "item" / "umbral_rose.json", {"parent": "forbiddenmagic:block/umbral_rose"})
+    write_json(ASSETS / "items" / "umbral_rose.json", {
+        "model": {"type": "minecraft:model", "model": "forbiddenmagic:block/umbral_rose"},
+    })
+    write_json(ASSETS / "blockstates" / "umbral_rose_bush.json", {
+        "variants": {
+            "half=lower": {"model": "forbiddenmagic:block/umbral_rose_bush_bottom"},
+            "half=upper": {"model": "forbiddenmagic:block/umbral_rose_bush_top"},
+        }
+    })
+    for half, texture in (("bottom", "umbral_rose_bottom"), ("top", "umbral_rose_top")):
+        write_json(ASSETS / "models" / "block" / f"umbral_rose_bush_{half}.json", {
+            "parent": "minecraft:block/cross",
+            "render_type": "minecraft:cutout",
+            "textures": {"cross": f"forbiddenmagic:block/{texture}"},
+        })
+    write_json(ASSETS / "models" / "item" / "umbral_rose_bush.json", {
+        "parent": "minecraft:item/generated",
+        "textures": {"layer0": "forbiddenmagic:block/umbral_rose_top"},
+    })
+    write_json(ASSETS / "items" / "umbral_rose_bush.json", {
+        "model": {"type": "minecraft:model", "model": "forbiddenmagic:item/umbral_rose_bush"},
+    })
+    print("umbral plants: 4 models and 2 blockstates")
+
+
+def generate_wrath_cage() -> None:
+    write_json(ASSETS / "blockstates" / "wrath_cage.json", {"variants": {"": {"model": "forbiddenmagic:block/wrath_cage"}}})
+    write_json(ASSETS / "models" / "block" / "wrath_cage.json", {
+        "parent": "minecraft:block/cube_all",
+        "render_type": "minecraft:cutout",
+        "textures": {"all": "forbiddenmagic:block/spirit_box"},
+    })
+    write_json(ASSETS / "models" / "item" / "wrath_cage.json", {"parent": "forbiddenmagic:block/wrath_cage"})
+    write_json(ASSETS / "items" / "wrath_cage.json", {
+        "model": {"type": "minecraft:model", "model": "forbiddenmagic:block/wrath_cage"},
+    })
+    print("wrath cage: one model and blockstate")
+
+
+def generate_cake() -> None:
+    textures = {
+        "particle": "forbiddenmagic:block/cake_side",
+        "top": "forbiddenmagic:block/cake_top",
+        "bottom": "forbiddenmagic:block/cake_bottom",
+        "side": "forbiddenmagic:block/cake_side",
+        "inner": "forbiddenmagic:block/cake_inner",
+    }
+    variants = {}
+    for slice_index in range(12):
+        x0 = min((1 + slice_index) / 12 * 16, 14.0)
+        name = f"arcane_cake_{slice_index}"
+        write_json(ASSETS / "models" / "block" / f"{name}.json", {
+            "parent": "minecraft:block/block",
+            "textures": textures,
+            "elements": [{
+                "from": [round(x0, 3), 0, 1],
+                "to": [15, 8, 15],
+                "faces": {
+                    "down": {"texture": "#bottom", "cullface": "down"},
+                    "up": {"texture": "#top"},
+                    "north": {"texture": "#side"},
+                    "south": {"texture": "#side"},
+                    "east": {"texture": "#side"},
+                    "west": {"texture": "#inner"},
+                },
+            }],
+        })
+        variants[f"slice={slice_index}"] = {"model": f"forbiddenmagic:block/{name}"}
+    write_json(ASSETS / "blockstates" / "arcane_cake.json", {"variants": variants})
+    write_json(ASSETS / "models" / "item" / "arcane_cake.json", {"parent": "forbiddenmagic:block/arcane_cake_0"})
+    write_json(ASSETS / "items" / "arcane_cake.json", {
+        "model": {"type": "minecraft:model", "model": "forbiddenmagic:block/arcane_cake_0"},
+    })
+    print("cake: 12 slice models and one blockstate")
+
 def main() -> int:
     generate_lang()
     generate_items()
     generate_morph_items()
+    generate_mob_crystal()
     generate_blocks()
+    generate_plants()
+    generate_umbral_plants()
+    generate_cake()
+    generate_wrath_cage()
     return 0
 
 

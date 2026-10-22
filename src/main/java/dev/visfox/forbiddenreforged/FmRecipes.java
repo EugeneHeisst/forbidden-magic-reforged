@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 import thaumcraft.aspect.Aspect;
 import thaumcraft.aspect.AspectList;
+import thaumcraft.crafting.CrucibleRecipe;
 import thaumcraft.crafting.InfusionEnchantmentRecipe;
 import thaumcraft.crafting.InfusionRecipe;
 import thaumcraft.crafting.TcIngredient;
@@ -12,7 +13,7 @@ import thaumcraft.crafting.TcStack;
 
 public final class FmRecipes {
     public static final Set<String> OWN_KEYS = Set.of("SKULLAXE", "WRATH", "GREEDY", "CONSUMING", "EDUCATIONAL", "CORRUPTING",
-        "MORPHPICK", "MORPHSWORD", "MORPHSHOVEL", "MORPHAXE", "CLUSTER", "IMPACT", "VOIDTOUCHED");
+        "MORPHPICK", "MORPHSWORD", "MORPHSHOVEL", "MORPHAXE", "CLUSTER", "IMPACT", "VOIDTOUCHED", "TAINTTREE", "BLACKFLOWER", "ARCANECAKE");
 
     private FmRecipes() {
     }
@@ -99,6 +100,31 @@ public final class FmRecipes {
                 )));
         }
         registerMorphTools();
+        if (FmConfig.gluttonyMode() != 1) {
+            List<TcIngredient> cakeParts = FmConfig.gluttonyMode() == 2
+                ? List.of(
+                    TcIngredient.item("thaumcraft:salis_mundus"),
+                    TcIngredient.item("forbiddenmagic:star_block"),
+                    TcIngredient.item("forbiddenmagic:star_block"),
+                    TcIngredient.item("minecraft:egg"),
+                    TcIngredient.item(FmItems.GLUTTONY_SHARD.getId().toString()),
+                    TcIngredient.item(FmItems.GLUTTONY_SHARD.getId().toString()))
+                : List.of(
+                    TcIngredient.item("thaumcraft:salis_mundus"),
+                    TcIngredient.item("minecraft:egg"),
+                    TcIngredient.item("minecraft:milk_bucket"),
+                    TcIngredient.item("minecraft:egg"),
+                    TcIngredient.item(FmItems.GLUTTONY_SHARD.getId().toString()),
+                    TcIngredient.item(FmItems.GLUTTONY_SHARD.getId().toString()));
+            TcRecipes.register(new InfusionRecipe("ARCANECAKE", "ARCANECAKE",
+                TcStack.of("forbiddenmagic:arcane_cake", 1), 3,
+                new AspectList().add(FmAspects.GLUTTONY, 12).add(Aspect.HUNGER, 24).add(Aspect.CRAFT, 24),
+                TcIngredient.item("minecraft:cake"), cakeParts));
+        }
+        TcRecipes.register(new CrucibleRecipe("TAINTTREE", "TAINTTREE", TcStack.of("forbiddenmagic:taint_sapling", 1),
+            TcIngredient.item("minecraft:oak_sapling"), new AspectList().add(Aspect.TAINT, 10).add(Aspect.POISON, 4)));
+        TcRecipes.register(new CrucibleRecipe("BLACKFLOWER", "BLACKFLOWER", TcStack.of("forbiddenmagic:umbral_rose_bush", 1),
+            TcIngredient.item("minecraft:rose_bush"), new AspectList().add(Aspect.DARKNESS, 8).add(Aspect.LIFE, 5)));
     }
 
     private static void registerMorphTools() {

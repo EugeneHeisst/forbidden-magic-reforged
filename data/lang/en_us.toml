@@ -23,6 +23,10 @@ morph_sword = "Chameleon Sword"
 morph_shovel = "Chameleon Shovel"
 morph_axe = "Chameleon Axe"
 
+[item.forbiddenmagic.mob_crystal]
+empty = "Blank Imprinting Crystal"
+filled = "%s Imprinted Crystal"
+
 [tc.research_name]
 NETHERSHARDS = "Nether Shards"
 HELLFIRE = "Lord of Hellfire"
@@ -31,6 +35,9 @@ MORPHTOOLS = "Chameleon Tools"
 CLUSTER = "Enchantment: Fiery Core"
 IMPACT = "Enchantment: Impact"
 VOIDTOUCHED = "Enchantment: Voidtouched"
+TAINTTREE = "Tainted Tree"
+BLACKFLOWER = "Umbral Rose"
+ARCANECAKE = "Thaumic Cake"
 
 [tc.research_text]
 NETHERSHARDS = "Aim to misbehave."
@@ -40,6 +47,9 @@ MORPHTOOLS = "There's an enchantment for that..."
 CLUSTER = "Chameleon of the Core"
 IMPACT = "Someday that wall is gonna fall."
 VOIDTOUCHED = "Colour Out of Space"
+TAINTTREE = "The root of flux bears gross fruit"
+BLACKFLOWER = "Save the squid!"
+ARCANECAKE = "Let them eat cake."
 
 [forbiddenmagic.research_page.NETHERSHARDS]
 1 = "Strange energies swirl through the Nether. On occasion, they have been known to solidify into crystal shards when certain sympathetic events occur."
@@ -96,3 +106,18 @@ taint_planks = "Tainted Planks"
 taint_stone_smooth = "Tainted Stone"
 taint_stone_brick = "Tainted Stone Bricks"
 star_block = "Nether Star Block"
+taint_leaves = "Tainted Leaves"
+taint_sapling = "Tainted Sapling"
+umbral_rose = "Umbral Rose"
+umbral_rose_bush = "Umbral Rose Bush"
+arcane_cake = "Thaumic Cake"
+wrath_cage = "Wrath Cage"
+
+[forbiddenmagic.research_page.TAINTTREE]
+1 = "The sick, twisted runoff of magical experiments can take on a strange life of its own. Most plants are unable to survive in Tainted Lands, but you've found a way to grow one that can. By steeping a sapling in taint, you create a tree that can thrive in Tainted Lands.<BR><BR>Its wood can also be turned into planks which are resistant to fibrous taint, allowing you to build structures safe from spreading taint.<BR><BR>The tree also seems to bear fruit, but eating them is not recommended..."
+
+[forbiddenmagic.research_page.BLACKFLOWER]
+1 = "There's no sight more pathetic than a soggy Thaumaturge.  For all your great and miraculous powers, you still have to go jump in the nearest lake and hunt for squids every time you want to refill your inkwell.<BR><BR>You're done squid hunting.  By infusing a rose with tenebrae and victus, you create a flower that spreads like a weed and whose petals can be crushed for ink."
+
+[forbiddenmagic.research_page.ARCANECAKE]
+1 = "If there's one thing you love, it's cake. You would eat its delicious goodness all day if you could, but it always runs out in the end.<BR><BR>To remedy this, you have devised a recipe to infuse a cake with longevity-enhancing magic.  The Thaumic Cake lasts significantly longer than a mundane one and will slowly repair itself as long as there's at least a sliver left.  The enchantments are unstable, however, and the cake cannot be moved again through conventional means once placed down."

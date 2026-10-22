@@ -1,5 +1,6 @@
 package dev.visfox.forbiddenreforged;
 
+import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
@@ -31,10 +32,22 @@ public final class FmCreativeTab {
         event.accept(FmItems.MORPH_SWORD.get());
         event.accept(FmItems.MORPH_SHOVEL.get());
         event.accept(FmItems.MORPH_AXE.get());
+        event.accept(FmItems.MOB_CRYSTAL.get());
+        for (String id : FmSpawnerMobs.ids()) {
+            ItemStack filled = new ItemStack(FmItems.MOB_CRYSTAL.get());
+            MobCrystalItem.setMob(filled, id);
+            event.accept(filled);
+        }
         event.accept(FmBlocks.TAINT_LOG.get().asItem());
         event.accept(FmBlocks.TAINT_PLANKS.get().asItem());
         event.accept(FmBlocks.TAINT_STONE_SMOOTH.get().asItem());
         event.accept(FmBlocks.TAINT_STONE_BRICK.get().asItem());
         event.accept(FmBlocks.STAR_BLOCK.get().asItem());
+        event.accept(FmBlocks.TAINT_LEAVES.get().asItem());
+        event.accept(FmBlocks.TAINT_SAPLING.get().asItem());
+        event.accept(FmBlocks.UMBRAL_ROSE.get().asItem());
+        event.accept(FmBlocks.UMBRAL_ROSE_BUSH.get().asItem());
+        event.accept(FmBlocks.ARCANE_CAKE.get().asItem());
+        event.accept(FmBlocks.WRATH_CAGE.get().asItem());
     }
 }

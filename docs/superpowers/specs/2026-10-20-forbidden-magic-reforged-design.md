@@ -78,7 +78,8 @@ forbidden-magic-reforged/
   src/main/resources/                       ассеты FM
   tests/java/dev/visfox/forbiddenreforged/test/   game test-ы
   src/generated/resources/                  пишут tools/, руками не правится
-  tools/                    prepare_host.py, gen_resources.py, id_map.json, vineflower, проверки
+  data/                     исходные данные: lang/en_us.toml, lang/ru_ru.toml, id_map.json
+  tools/                    prepare_host.py, gen_resources.py, vineflower, проверки
   reference/ForbiddenMagic/ исходник 1.7.10, источник истины по поведению        (gitignore)
   docs/                     этот документ, deviations.md, dropped.md, upstream.md
 ```
@@ -169,7 +170,7 @@ forbidden-magic-reforged/
 - ресурсы делают python-генераторы в `tools/`; datagen не используется, `src/generated/resources`
   руками не правится;
 - meta-варианты предметов и блоков 1.7.10 раскладываются на отдельные id и свойства blockstate по
-  `id_map.json`, как это делает хост;
+  `data/id_map.json`, как это делает хост;
 - lang: только `en_us` и `ru_ru`, формулировки оригинального FM сохраняются; ключи исследований идут
   по образцу `tc.research_name.<KEY>` / `tc.research_text.<KEY>`;
 - Java: четыре пробела, без комментариев; Python: четыре пробела, двойные кавычки, `pathlib`, без

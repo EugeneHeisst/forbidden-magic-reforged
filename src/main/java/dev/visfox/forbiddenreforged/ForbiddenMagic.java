@@ -19,6 +19,7 @@ public final class ForbiddenMagic {
         FmAspectTags.register();
         FmComponents.register(modEventBus);
         FmBlocks.BLOCKS.register(modEventBus);
+        FmBlockEntities.register(modEventBus);
         FmItems.ITEMS.register(modEventBus);
         FmDrops.register();
         FmEnchantmentEffects.register();

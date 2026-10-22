@@ -91,6 +91,21 @@ public final class FmResearch {
                 .setWarp(3)
                 .registerResearchItem();
         }
+        new ResearchItem("ARCANECAKE", "FORBIDDEN", new AspectList().add(FmAspects.GLUTTONY, 6).add(Aspect.HUNGER, 3).add(Aspect.CRAFT, 2), -12, -6, 2, TcStack.of("forbiddenmagic:arcane_cake", 1))
+            .setPages(ResearchPage.text("forbiddenmagic.research_page.ARCANECAKE.1"), ResearchPage.infusion("ARCANECAKE"))
+            .setParents("NETHERSHARDS", "INFUSION")
+            .setAspectTriggers(FmAspects.GLUTTONY)
+            .setConcealed()
+            .registerResearchItem();
+        new ResearchItem("TAINTTREE", "FORBIDDEN", new AspectList().add(Aspect.TREE, 4).add(Aspect.TAINT, 6).add(Aspect.POISON, 2).add(Aspect.PLANT, 3), -11, 3, 3, TcStack.of("forbiddenmagic:taint_sapling", 1))
+            .setPages(ResearchPage.text("forbiddenmagic.research_page.TAINTTREE.1"), ResearchPage.crucible("TAINTTREE"))
+            .setParents("THAUMIUM", "INFUSION", "ETHEREALBLOOM")
+            .setConcealed()
+            .registerResearchItem();
+        new ResearchItem("BLACKFLOWER", "FORBIDDEN", new AspectList().add(Aspect.PLANT, 3).add(Aspect.SENSES, 2).add(Aspect.DARKNESS, 4), -2, -6, 1, TcStack.of("forbiddenmagic:umbral_rose", 1))
+            .setPages(ResearchPage.text("forbiddenmagic.research_page.BLACKFLOWER.1"), ResearchPage.crucible("BLACKFLOWER"))
+            .setAspectTriggers(Aspect.SENSES)
+            .registerResearchItem();
         if (FmConfig.enchantmentsEnabled()) {
             new ResearchItem("WRATH", "FORBIDDEN", new AspectList().add(FmAspects.WRATH, 16).add(Aspect.WEAPON, 20).add(Aspect.MAGIC, 10), -6, -3, 3, ForbiddenMagic.id("textures/misc/wrath.png"))
                 .setPages(ResearchPage.text("forbiddenmagic.research_page.WRATH.1"), ResearchPage.infusionEnchantment("WRATH"))

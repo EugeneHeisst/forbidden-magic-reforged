@@ -27,12 +27,16 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.AABB;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModList;
@@ -42,6 +46,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import dev.visfox.forbiddenreforged.ForbiddenMagic;
 import dev.visfox.forbiddenreforged.FmAspectTags;
 import dev.visfox.forbiddenreforged.FmAspects;
+import dev.visfox.forbiddenreforged.ArcaneCakeBlock;
 import dev.visfox.forbiddenreforged.FmBlocks;
 import dev.visfox.forbiddenreforged.FmConfig;
 import dev.visfox.forbiddenreforged.FmCreativeTab;
@@ -50,9 +55,14 @@ import dev.visfox.forbiddenreforged.FmEnchantmentEffects;
 import dev.visfox.forbiddenreforged.FmEnchantments;
 import dev.visfox.forbiddenreforged.FmItems;
 import dev.visfox.forbiddenreforged.FmRecipes;
+import dev.visfox.forbiddenreforged.FmSpawnerMobs;
 import dev.visfox.forbiddenreforged.FmTinkerer;
+import dev.visfox.forbiddenreforged.MobCrystalItem;
 import dev.visfox.forbiddenreforged.MorphState;
 import dev.visfox.forbiddenreforged.MorphToolItem;
+import dev.visfox.forbiddenreforged.TaintTree;
+import dev.visfox.forbiddenreforged.WrathCageBlock;
+import dev.visfox.forbiddenreforged.WrathCageBlockEntity;
 import thaumcraft.crafting.InfusionRecipe;
 import thaumcraft.crafting.InfusionEnchantmentRecipe;
 import thaumcraft.crafting.TcIngredient;
@@ -70,7 +80,7 @@ import thaumcraft.research.ResearchManager;
 public final class FmGameTests {
     public static final DeferredRegister<Consumer<GameTestHelper>> FUNCTIONS =
         DeferredRegister.create(Registries.TEST_FUNCTION, ForbiddenMagic.MODID);
-    private static final String[] TESTS = {"mod_loads_and_host_is_present", "aspect_registry_keeps_builtin_order_and_combines", "addon_aspect_survives_client_sync", "sin_aspects_registered_with_own_textures", "sin_aspect_tags_merge_with_existing", "entity_aspect_tags_merge_with_existing", "every_tag_target_resolved", "shards_are_registered_with_seven_ids", "no_lust_removes_luxuria_items", "mob_killed_by_player_drops_wrath_shard", "boss_drops_pride_shards", "unattended_death_drops_sloth_shard", "forbidden_category_and_shard_entries_resolve", "skull_axe_infusion_recipe_matches_original", "every_ported_recipe_resolves_its_inputs", "chain_from_netherrack_to_wrath_shard", "enchantments_resolve_with_expected_shape", "emerald_fragment_is_registered", "consuming_destroys_garbage", "corrupting_yields_sin_shards", "greedy_drops_match_kills", "educational_multiplies_experience", "wrath_adds_damage", "enchantment_research_present", "enchantment_recipes_cover_five", "tinkerer_integration_is_optional", "morph_tools_are_registered", "morph_phase_rotates_sets", "impact_covers_a_three_by_three_plane", "voidtouched_repairs_and_warps", "morph_enchantments_and_exclusivity", "cluster_replaces_drops_with_clusters", "morph_research_entries_present", "morph_recipes_match_the_original", "taint_material_blocks_are_registered", "taint_blocks_carry_tool_tags", "materials_have_crafting_recipes"};
+    private static final String[] TESTS = {"mod_loads_and_host_is_present", "aspect_registry_keeps_builtin_order_and_combines", "addon_aspect_survives_client_sync", "sin_aspects_registered_with_own_textures", "sin_aspect_tags_merge_with_existing", "entity_aspect_tags_merge_with_existing", "every_tag_target_resolved", "shards_are_registered_with_seven_ids", "no_lust_removes_luxuria_items", "mob_killed_by_player_drops_wrath_shard", "boss_drops_pride_shards", "unattended_death_drops_sloth_shard", "forbidden_category_and_shard_entries_resolve", "skull_axe_infusion_recipe_matches_original", "every_ported_recipe_resolves_its_inputs", "chain_from_netherrack_to_wrath_shard", "enchantments_resolve_with_expected_shape", "emerald_fragment_is_registered", "consuming_destroys_garbage", "corrupting_yields_sin_shards", "greedy_drops_match_kills", "educational_multiplies_experience", "wrath_adds_damage", "enchantment_research_present", "enchantment_recipes_cover_five", "tinkerer_integration_is_optional", "morph_tools_are_registered", "morph_phase_rotates_sets", "impact_covers_a_three_by_three_plane", "voidtouched_repairs_and_warps", "morph_enchantments_and_exclusivity", "cluster_replaces_drops_with_clusters", "morph_research_entries_present", "morph_recipes_match_the_original", "taint_material_blocks_are_registered", "taint_blocks_carry_tool_tags", "materials_have_crafting_recipes", "blocks_drop_themselves", "taint_sapling_grows_a_tree", "umbral_plants_are_registered", "plant_research_and_recipes", "arcane_cake_feeds_and_keeps_slices", "mob_crystal_and_spawn_table", "wrath_cage_block_and_entity", "wrath_cage_crystal_and_spawn_rules"};
 
     static {
         FUNCTIONS.register(TESTS[0], () -> FmGameTests::modLoadsAndHostIsPresent);
@@ -110,6 +120,14 @@ public final class FmGameTests {
         FUNCTIONS.register(TESTS[34], () -> FmGameTests::taintMaterialBlocksAreRegistered);
         FUNCTIONS.register(TESTS[35], () -> FmGameTests::taintBlocksCarryToolTags);
         FUNCTIONS.register(TESTS[36], () -> FmGameTests::materialsHaveCraftingRecipes);
+        FUNCTIONS.register(TESTS[37], () -> FmGameTests::blocksDropThemselves);
+        FUNCTIONS.register(TESTS[38], () -> FmGameTests::taintSaplingGrowsATree);
+        FUNCTIONS.register(TESTS[39], () -> FmGameTests::umbralPlantsAreRegistered);
+        FUNCTIONS.register(TESTS[40], () -> FmGameTests::plantResearchAndRecipes);
+        FUNCTIONS.register(TESTS[41], () -> FmGameTests::arcaneCakeFeedsAndKeepsSlices);
+        FUNCTIONS.register(TESTS[42], () -> FmGameTests::mobCrystalAndSpawnTable);
+        FUNCTIONS.register(TESTS[43], () -> FmGameTests::wrathCageBlockAndEntity);
+        FUNCTIONS.register(TESTS[44], () -> FmGameTests::wrathCageCrystalAndSpawnRules);
     }
 
     private FmGameTests() {
@@ -588,6 +606,130 @@ public final class FmGameTests {
             var key = net.minecraft.resources.ResourceKey.create(Registries.RECIPE, Identifier.parse("forbiddenmagic:" + name));
             helper.assertTrue(manager.byKey(key).isPresent(), name + " recipe must load");
         }
+        helper.succeed();
+    }
+
+    private static void blocksDropThemselves(GameTestHelper helper) {
+        var level = helper.getLevel();
+        BlockPos pos = new BlockPos(0, 4, 0);
+        for (var block : java.util.List.of(
+            FmBlocks.TAINT_LOG.get(), FmBlocks.TAINT_PLANKS.get(),
+            FmBlocks.TAINT_STONE_SMOOTH.get(), FmBlocks.TAINT_STONE_BRICK.get(),
+            FmBlocks.STAR_BLOCK.get())) {
+            level.setBlockAndUpdate(pos, block.defaultBlockState());
+            var drops = Block.getDrops(level.getBlockState(pos), level, pos, null);
+            helper.assertTrue(drops.stream().anyMatch(stack -> stack.is(block.asItem())), BuiltInRegistries.BLOCK.getKey(block) + " must drop itself");
+        }
+        helper.succeed();
+    }
+
+    private static void taintSaplingGrowsATree(GameTestHelper helper) {
+        BlockPos soil = new BlockPos(2, 4, 2);
+        helper.getLevel().setBlockAndUpdate(soil, net.minecraft.world.level.block.Blocks.DIRT.defaultBlockState());
+        BlockPos sapling = soil.above();
+        helper.getLevel().setBlockAndUpdate(sapling, FmBlocks.TAINT_SAPLING.get().defaultBlockState());
+        boolean grown = TaintTree.grow(helper.getLevel(), sapling, RandomSource.create(3L));
+        helper.assertTrue(grown, "tree must grow on open ground");
+        helper.assertTrue(helper.getLevel().getBlockState(sapling).is(FmBlocks.TAINT_LOG.get()), "trunk replaces the sapling");
+        boolean canopy = false;
+        for (BlockPos cursor : BlockPos.betweenClosed(sapling.above(2).offset(-2, 0, -2), sapling.above(7).offset(2, 0, 2))) {
+            if (helper.getLevel().getBlockState(cursor).is(FmBlocks.TAINT_LEAVES.get())) {
+                canopy = true;
+                break;
+            }
+        }
+        helper.assertTrue(canopy, "canopy sits above the trunk");
+        helper.succeed();
+    }
+
+    private static void umbralPlantsAreRegistered(GameTestHelper helper) {
+        helper.assertValueEqual(BuiltInRegistries.BLOCK.getKey(FmBlocks.UMBRAL_ROSE.get()), Identifier.parse("forbiddenmagic:umbral_rose"), "umbral rose id");
+        helper.assertValueEqual(BuiltInRegistries.BLOCK.getKey(FmBlocks.UMBRAL_ROSE_BUSH.get()), Identifier.parse("forbiddenmagic:umbral_rose_bush"), "umbral rose bush id");
+        TagKey<Block> flowers = TagKey.create(Registries.BLOCK, Identifier.parse("minecraft:small_flowers"));
+        helper.assertTrue(BuiltInRegistries.BLOCK.wrapAsHolder(FmBlocks.UMBRAL_ROSE.get()).is(flowers), "umbral rose is a small flower");
+        helper.succeed();
+    }
+
+    private static void plantResearchAndRecipes(GameTestHelper helper) {
+        ResearchItem tree = ResearchCategories.getResearch("TAINTTREE");
+        helper.assertTrue(tree != null, "taint tree research must exist");
+        helper.assertValueEqual(tree.pages().size(), 2, "taint tree has text and crucible pages");
+        ResearchItem flower = ResearchCategories.getResearch("BLACKFLOWER");
+        helper.assertTrue(flower != null, "black flower research must exist");
+        helper.assertValueEqual(flower.pages().size(), 2, "black flower has text and crucible pages");
+        thaumcraft.crafting.CrucibleRecipe taintTree = (thaumcraft.crafting.CrucibleRecipe) TcRecipes.get("TAINTTREE");
+        helper.assertTrue(taintTree != null, "taint tree recipe exists");
+        helper.assertValueEqual(taintTree.aspects().getAmount(Aspect.TAINT), 10, "taint tree needs ten taint");
+        thaumcraft.crafting.CrucibleRecipe blackFlower = (thaumcraft.crafting.CrucibleRecipe) TcRecipes.get("BLACKFLOWER");
+        helper.assertTrue(blackFlower != null, "black flower recipe exists");
+        helper.assertValueEqual(blackFlower.aspects().getAmount(Aspect.DARKNESS), 8, "black flower needs eight darkness");
+        helper.succeed();
+    }
+
+    private static void arcaneCakeFeedsAndKeepsSlices(GameTestHelper helper) {
+        var level = helper.getLevel();
+        BlockPos pos = new BlockPos(4, 4, 4);
+        level.setBlockAndUpdate(pos, FmBlocks.ARCANE_CAKE.get().defaultBlockState());
+        helper.assertTrue(ResearchCategories.getResearch("ARCANECAKE") != null, "cake research exists");
+        helper.assertTrue(TcRecipes.get("ARCANECAKE") instanceof InfusionRecipe, "cake recipe exists");
+        ServerPlayer player = mockPlayer(helper);
+        player.getFoodData().setFoodLevel(10);
+        ArcaneCakeBlock.eat(level, pos, level.getBlockState(pos), player);
+        helper.assertValueEqual(level.getBlockState(pos).getValue(ArcaneCakeBlock.SLICE), 1, "one slice eaten");
+        helper.assertValueEqual(player.getFoodData().getFoodLevel(), 12, "cake restores two hunger");
+        helper.succeed();
+    }
+
+    private static void mobCrystalAndSpawnTable(GameTestHelper helper) {
+        helper.assertTrue(FmSpawnerMobs.aspect("minecraft:zombie") == Aspect.FLESH, "zombie carries flesh");
+        helper.assertTrue(FmSpawnerMobs.aspect("thaumcraft:brainy_zombie") == Aspect.MIND, "brainy zombie carries mind");
+        helper.assertTrue(FmSpawnerMobs.aspect("minecraft:pig") == Aspect.BEAST, "pig carries beast");
+        helper.assertValueEqual(FmSpawnerMobs.ids().size(), 42, "the table keeps exactly the original 42 mobs");
+        for (String id : FmSpawnerMobs.ids()) {
+            helper.assertTrue(FmSpawnerMobs.aspect(id) != null, id + " must map to an aspect");
+        }
+        helper.assertTrue(FmSpawnerMobs.isBoss(EntityTypes.ENDER_DRAGON), "the ender dragon is a boss");
+        helper.assertFalse(FmSpawnerMobs.isBoss(EntityTypes.ZOMBIE), "a zombie is not a boss");
+        ItemStack stack = new ItemStack(FmItems.MOB_CRYSTAL.get());
+        helper.assertTrue(MobCrystalItem.mob(stack) == null, "a fresh crystal is empty");
+        MobCrystalItem.setMob(stack, "minecraft:zombie");
+        helper.assertValueEqual(MobCrystalItem.mob(stack), "minecraft:zombie", "the crystal keeps the mob id");
+        helper.assertTrue(FmSpawnerMobs.canImprint(EntityTypes.ZOMBIE), "zombies can be imprinted");
+        helper.assertFalse(FmSpawnerMobs.canImprint(EntityTypes.ENDER_DRAGON), "bosses cannot be imprinted");
+        helper.succeed();
+    }
+
+    private static void wrathCageBlockAndEntity(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(5, 4, 5);
+        helper.getLevel().setBlockAndUpdate(pos, FmBlocks.WRATH_CAGE.get().defaultBlockState());
+        helper.assertTrue(helper.getLevel().getBlockEntity(pos) instanceof WrathCageBlockEntity, "cage creates its block entity");
+        WrathCageBlockEntity cage = (WrathCageBlockEntity) helper.getLevel().getBlockEntity(pos);
+        helper.assertTrue(cage != null && cage.getMobId() == null, "a fresh cage is unattuned");
+        ItemStack zombieCrystal = new ItemStack(FmItems.MOB_CRYSTAL.get());
+        MobCrystalItem.setMob(zombieCrystal, "minecraft:zombie");
+        helper.assertTrue(WrathCageBlock.attune(cage, zombieCrystal), "a zombie crystal attunes the cage");
+        helper.assertValueEqual(cage.getMobId(), "minecraft:zombie", "the cage keeps the mob id");
+        helper.assertTrue(MobCrystalItem.mob(zombieCrystal) == null, "attuning an empty cage blanks the crystal");
+        ItemStack skeletonCrystal = new ItemStack(FmItems.MOB_CRYSTAL.get());
+        MobCrystalItem.setMob(skeletonCrystal, "minecraft:skeleton");
+        helper.assertTrue(WrathCageBlock.attune(cage, skeletonCrystal), "a skeleton crystal re-attunes the cage");
+        helper.assertValueEqual(cage.getMobId(), "minecraft:skeleton", "the cage swaps to the new mob");
+        helper.assertValueEqual(MobCrystalItem.mob(skeletonCrystal), "minecraft:zombie", "the held crystal gets the previous mob");
+        ItemStack crystal = WrathCageBlockEntity.crystalForBreak(cage);
+        helper.assertValueEqual(MobCrystalItem.mob(crystal), "minecraft:skeleton", "breaking the cage yields the attuned crystal");
+        helper.getLevel().setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
+        ItemEntity dropped = helper.getLevel().getEntitiesOfClass(ItemEntity.class, new AABB(pos).inflate(1.0)).stream().findFirst().orElse(null);
+        helper.assertTrue(dropped != null && "minecraft:skeleton".equals(MobCrystalItem.mob(dropped.getItem())), "removing the cage drops its crystal");
+        helper.succeed();
+    }
+
+    private static void wrathCageCrystalAndSpawnRules(GameTestHelper helper) {
+        helper.assertFalse(WrathCageBlockEntity.shouldSpawn(true, true, 10, 5, 0), "a powered cage waits");
+        helper.assertTrue(WrathCageBlockEntity.shouldSpawn(false, true, 10, 5, 0), "an attuned fuelled cage spawns");
+        helper.assertFalse(WrathCageBlockEntity.shouldSpawn(false, true, 0, 5, 4), "no fuel and too little essentia waits");
+        helper.assertTrue(WrathCageBlockEntity.shouldSpawn(false, true, 0, 5, 5), "enough essentia starts a fuel cycle");
+        helper.assertFalse(WrathCageBlockEntity.shouldSpawn(false, false, 10, 5, 0), "an unattuned cage waits");
+        helper.assertTrue(WrathCageBlockEntity.shouldSpawn(false, true, 0, 0, 0), "cost 0 needs no fuel");
         helper.succeed();
     }
 
