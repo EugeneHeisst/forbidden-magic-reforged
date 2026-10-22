@@ -59,14 +59,15 @@ Forbidden Magic регистрирует семь собственных асп�
 | `switch` по аспекту | 2 в `wand/WandVis.java:32,44` (`get` и `with`) | переписываются на if-цепочки; `default` уже есть, поведение сохраняется |
 | `Aspect.valueOf`, `isEnum`, `<E extends Enum>` | нет | скрытых enum-зависимостей нет |
 | `aspect.ordinal()` за границей сериализации | **пять мест**: `entity/AspectOrb.java` — `:41` (запись в синк-данные), `:54` (`builder.define(DATA_ASPECT, Aspect.AIR.ordinal())` — дефолт в провайдере), `:60` (чтение `values()[id]` — единственная строка, где код меняется), `:132` (запись при загрузке); плюс стол деконструкции `menu/DeconstructionTableMenu.java:55` (в `ContainerData` кладётся `ordinal() + 1`) ↔ `:87` (клиент раскодует `Aspect.values()[value - 1]`) | индекс реестра обязан быть стабильным и общим для всех пяти; строка стола деконструкции в ранней оценке отсутствовала (добавлена 2026-10-22), закрывается GameTest и порядком регистрации на клиенте |
-| скрейперы `Aspect.java` в `tools/` | `gen_modern_aspects.py:12` и `convert_research.py:586` ищут имена регуляркой `^    ([A-Z_]+)\(`, `convert_recipes.py:77-80` берёт якорь `text.index("public enum Aspect")` | **`final class` ломает все три**: на пропатченной копии `gen_modern_aspects.py` даёт 0 имён и `SystemExit: unknown aspect EARTH`, `convert_recipes.py` — `ValueError`. `build`/`check_seams.py`/`runGameTestServer` этого не видят (CI генераторы не вызывает), но рабочий цикл хоста — да. Апстрим-форма обязана нести правку трёх скрейперов отдельным патчем |
+| скрейперы `Aspect.java` в `tools/` | `gen_modern_aspects.py:12` и `convert_research.py:586` ищут имена регуляркой `^    ([A-Z_]+)\(`, `convert_recipes.py:77-80` берёт якорь `text.index("public enum Aspect")` | **`final class` ломает все три**: 0 имён и `SystemExit: unknown aspect EARTH` / `ValueError`. Это standalone-прогоны: `gen_resources.py` их не импортирует (проверено — на пропатченной копии он даёт `generated 1783 files`, exit 0), CI их не вызывает. Правка в серию входит отдельным патчем, но отправку запроса не блокирует |
 | enum-специфичное внутри самого `Aspect` | `CODEC` через `StringRepresentable.fromEnum(Aspect::values)` (`aspect/Aspect.java:68`), обходы `values()` в `combine`, `getPrimalAspects`, `getCompoundAspects` | локализовано в одном файле; `fromEnum` типизирован под `Enum`, поэтому в классе кодек строится из `getSerializedName()`, а не `fromEnum` |
 
 Итог: по Java изменяются `aspect/Aspect.java`, `wand/WandVis.java`, `entity/AspectOrb.java` (0001, 3 файла
 +173/−96) и `aspect/AddonAspects.java` + три правки под вызов хука (0002, 4 файла +60/−0). Отдельно, и раньше
-это было не учтено: правка трёх скрейперов `Aspect.java` в `tools/` (см. строку таблицы выше) — без неё
-генерация ресурсов хоста падает, хотя компиляция и тесты зелёные. В швы `platform/` изменение не заходит,
-поэтому гейт хоста `tools/check_seams.py` не задевается (проверено: 932 файла на пропатченной копии).
+это было не учтено: правка трёх standalone-скрейперов `Aspect.java` в `tools/` (см. строку таблицы выше) — сборка,
+`gen_resources.py` и тесты их не зовут, но при следующем ручном прогоне они дадут пустой словарь имён. В швы
+`platform/` изменение не заходит, поэтому гейт хоста `tools/check_seams.py` не задевается (проверено: 932 файла на
+пропатченной копии).
 
 ## 4. Архитектура
 
