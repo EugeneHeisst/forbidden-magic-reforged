@@ -59,6 +59,15 @@ public final class FmResearch {
             .setConcealed()
             .setWarp(1)
             .registerResearchItem();
+        new ResearchItem("FORK", "FORBIDDEN", new AspectList().add(Aspect.FIRE, 3).add(Aspect.MECHANISM, 1).add(Aspect.TOOL, 1), -6, -7, 0, TcStack.of(FmItems.DIABOLIST_FORK.getId().toString(), 1))
+            .setPages(
+                ResearchPage.text("forbiddenmagic.research_page.FORK.1"),
+                ResearchPage.infusion("FORK")
+            )
+            .setSecondary()
+            .setConcealed()
+            .setParents("INFUSION", "NETHERSHARDS", "THAUMIUM")
+            .registerResearchItem();
         new ResearchItem("MORPHTOOLS", "FORBIDDEN", new AspectList().add(Aspect.TOOL, 2).add(FmAspects.ENVY, 3).add(Aspect.EXCHANGE, 2), -9, -3, 3, TcStack.of("forbiddenmagic:morph_pickaxe", 1))
             .setPages(
                 ResearchPage.text("forbiddenmagic.research_page.MORPHTOOLS.1"),

@@ -12,7 +12,7 @@ import thaumcraft.crafting.TcRecipes;
 import thaumcraft.crafting.TcStack;
 
 public final class FmRecipes {
-    public static final Set<String> OWN_KEYS = Set.of("SKULLAXE", "WRATH", "GREEDY", "CONSUMING", "EDUCATIONAL", "CORRUPTING",
+    public static final Set<String> OWN_KEYS = Set.of("SKULLAXE", "FORK", "WRATH", "GREEDY", "CONSUMING", "EDUCATIONAL", "CORRUPTING",
         "MORPHPICK", "MORPHSWORD", "MORPHSHOVEL", "MORPHAXE", "CLUSTER", "IMPACT", "VOIDTOUCHED", "TAINTTREE", "BLACKFLOWER", "ARCANECAKE",
         "WRATHCAGE", "MOBCRYSTAL");
 
@@ -32,6 +32,20 @@ public final class FmRecipes {
                 TcIngredient.item(FmItems.id("wrath").toString()),
                 TcIngredient.item("minecraft:diamond"),
                 TcIngredient.item("minecraft:wither_skeleton_skull")
+            )
+        ));
+        TcRecipes.register(new InfusionRecipe(
+            "FORK",
+            "FORK",
+            TcStack.of(FmItems.DIABOLIST_FORK.getId().toString(), 1),
+            1,
+            new AspectList().add(Aspect.FIRE, 8).add(Aspect.MECHANISM, 8).add(Aspect.ENERGY, 8),
+            TcIngredient.item("thaumcraft:thaumium_sword"),
+            List.of(
+                TcIngredient.item("minecraft:quartz"),
+                TcIngredient.item("minecraft:quartz"),
+                TcIngredient.item("minecraft:quartz"),
+                TcIngredient.item("minecraft:redstone")
             )
         ));
         if (FmConfig.enchantmentsEnabled()) {

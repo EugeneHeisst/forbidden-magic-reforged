@@ -21,6 +21,7 @@ public final class FmItems {
     public static final DeferredItem<Item> MORPH_SHOVEL;
     public static final DeferredItem<Item> MORPH_AXE;
     public static final DeferredItem<Item> MOB_CRYSTAL;
+    public static final DeferredItem<Item> DIABOLIST_FORK;
 
     static {
         for (String vice : new String[]{"wrath", "envy", "taint", "pride", "lust", "sloth", "greed"}) {
@@ -39,6 +40,9 @@ public final class FmItems {
             properties -> repairable(Registration.axe(properties.rarity(Rarity.EPIC), TcMaterials.ELEMENTAL_TOOL, 3.0F, -3.0F)));
         MOB_CRYSTAL = ITEMS.registerItem("mob_crystal", MobCrystalItem::new,
             properties -> properties.stacksTo(1).rarity(Rarity.UNCOMMON));
+        DIABOLIST_FORK = ITEMS.registerItem("diabolist_fork", Item::new,
+            properties -> Registration.sword(properties.rarity(Rarity.UNCOMMON), TcMaterials.THAUMIUM_TOOL, 3.0F, -2.4F)
+                .repairable(net.minecraft.world.item.Items.QUARTZ));
     }
 
     private FmItems() {

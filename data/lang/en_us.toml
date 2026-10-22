@@ -17,6 +17,7 @@ sloth_shard = "Sloth Shard"
 greed_shard = "Greed Shard"
 gluttony_shard = "Gluttony Shard"
 skull_axe = "Axe of the Skulltaker"
+diabolist_fork = "Diabolist Fork"
 emerald_fragment = "Emerald Fragment"
 morph_pickaxe = "Chameleon Pickaxe"
 morph_sword = "Chameleon Sword"
@@ -64,6 +65,9 @@ WRATHCAGE = "Neverending battle"
 
 [forbiddenmagic.research_page.SKULLAXE]
 1 = "Some monsters just really boil your blood. Skeletons! Always clacking around and using you for target practice. Or those Creepers! They just creep around blowing things up like they own the place! You wish you could just chop all their smug heads off and place them on pikes.<BR><BR>Fortunately, you've discovered an item that will let you do just that.  The Axe of the Skulltaker has a chance to remove the heads of monsters it slays. It might even work on other humans! Unfortunately, the infusion leaves the axe far too bloodthirsty to effectively cleave through boring plant matter."
+
+[forbiddenmagic.research_page.FORK]
+1 = "A curious tinkering tool, this fork hums with infernal energy. When wielded against the creatures of the world, it can capture their essence into Blank Imprinting Crystals carried in your inventory. The fork also serves as a key for configuring the Wrath Cage, cycling through its fuel modes when right-clicked upon it."
 
 [enchantment.forbiddenmagic]
 wrath = "Wrath"
