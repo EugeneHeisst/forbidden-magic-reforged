@@ -1,0 +1,16 @@
+{
+  "wants": {
+    "id": "minecraft:emerald",
+    "count": {
+      "type": "minecraft:uniform",
+      "min": 4,
+      "max": 6
+    }
+  },
+  "gives": {
+    "id": "minecraft:ghast_tear"
+  },
+  "max_uses": 3,
+  "xp": 20,
+  "reputation_discount": 0.15
+}

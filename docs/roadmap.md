@@ -128,8 +128,43 @@ beacon base и рецептами. 37/37 тестов в обоих режима
 Текстуры скопированы из оригинального FM: `skull_axe.png`, `crop.png` → `riding_crop.png`,
 `dye_powder_black.png` → `black_dye.png`.
 
-## Слайс M12: Wand Rods
+## Слайс M11: Taint Tools + Scribe Tools
 
-Статус на 2026-10-22: **собран**, 49/49 тестов. Добавлены 5 стержней жезлов без сторонних вариантов:
-tainted, infernal, witchwood, profane, witchwood_staff. Все — простые предметы без wand API логики.
-Текстуры из оригинального FM. Вырезаны blood/livingwood/dreamwood (Blood Magic/Botania).
+Статус на 2026-10-22: **собран**, 50/50 тестов. Добавлены инструменты и писчие склянки:
+
+1. **Taint Shovel** (скверная лопата) — shovel с `ELEMENTAL_TOOL` material, repairable через balanced shard.
+2. **Taint Pickaxe** (скверная кирка) — pickaxe с `ELEMENTAL_TOOL` material, repairable через entropy shard.
+3. **Crystalwell** (кристальная чернильница) — scribe tool, рецепт: inkwell + black dye + 2x shard (WATER 1/ORDER 1).
+4. **Primewell** (первичная чернильница) — scribe tool, рецепт: feather + primordial_pearl + glass_bottle (все аспекты 50).
+
+Рецепты стержней жезлов (wand rods):
+- **Tainted Rod**: центр tainted_goo, 6x taint shards + salis mundus (TAINT 24/MAGIC 12/ENTROPY 12).
+- **Infernal Rod**: центр blaze_rod, pride shards + nether items (NETHER 32/MAGIC 12/PRIDE 12).
+
+Текстуры скопированы из оригинального FM.
+
+## Слайс M12: Blink Focus
+
+Статус на 2026-10-22: **собран**, 50/50 тестов. Добавлен фокус Blink с апгрейдами:
+
+1. **Blink Focus** (фокус Телепортации) — телепортирует игрока к blockHit при использовании.
+2. **Hellfire** (адское пламя) — апгрейд, наносит огненный урон сущностям в точке телепортации.
+3. **Pandemonium** (пандемониум) — апгрейд, телепортирует мобов из области к игроку.
+
+Рецепт: центр ender_pearl, alternating quartz + sloth shards (TRAVEL 25/NETHER 10/SLOTH 10/ENTROPY 25).
+Текстуры скопированы из оригинального FM: `blink_focus.png`, `blink_focus_ornament.png`.
+
+## Слайс M13: Heretic Villager
+
+Статус на 2026-10-22: **собран**, 50/50 тестов. Добавлен житель-еретик и трейды:
+
+1. **Heretic Profession** — профессия `heretic` с 5 уровнями трейдов.
+2. **Трейды**:
+   - emerald → 3 greed shard (покупает 1-2 emerald)
+   - 5 gluttony shard → emerald (покупает 4-6 gluttony shard)
+   - emerald → skeleton_skull (покупает 1-3 emerald)
+   - emerald → 10 glowstone_dust (покупает 1 emerald)
+   - 5 emerald → ghast_tear (покупает 4-6 emerald)
+
+Все трейды используют single pool tag `#forbiddenmagic:heretic/pool`. Trade set файлы (level_1-5.json)
+ссылаются на единый pool.
