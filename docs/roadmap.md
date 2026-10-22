@@ -46,8 +46,9 @@ Cluster, Impact, Voidtouched закрыты в M3 вместе с морф-ин�
 - скруное дерево, генерация в скруных биомах, житель-еретик и трейды;
 - блоки: **бревно, доски, камень, кирпичи, блок звезды (M4), листва, саженец, Чернильный цветок,
   Куст Теней (M5), Арканный торт (M6) — готовы**; осталась Клетка Гнева;
-- предметы: скруный уголь и плод, морф-инструменты, вилка и ложковидка,
-  верховая плеть, писчие склянки, Кольцо питания; кристалл моба готов (M7a).
+- предметы: скруный уголь и плод, морф-инструменты, ложковидка,
+  верховая плеть, писчие склянки, Кольцо питания; кристалл моба готов (M7a), вилка дьяволиста готова (M8),
+  скверный уголь готов (M9).
 
 ## Поддержка: что есть и чего нет
 
@@ -92,3 +93,78 @@ beacon base и рецептами. 37/37 тестов в обоих режима
 
 Сама Клетка Гнева — блок, block entity, спавнер, рендерер, рецепт и исследование — входит в M7b
 и строится на интерфейсах этого слайса.
+
+## Слайс M8: Вилка дьяволиста
+
+Статус на 2026-10-22: **собран**, 47/47 тестов. Предмет `diabolist_fork` — меч из таумия с ремонтом
+кварцем, исследование `FORK` (вторичное, скрытое, родители `INFUSION`/`NETHERSHARDS`/`THAUMIUM`),
+инфузионный рецепт (центральный `thaumium_sword`, 3 кварца + красный камень, `FIRE 8`/`MECHANISM 8`/
+`ENERGY 8`, нестабильность 1). Вилка требуется для импринта кристалла моба — гейт добавлен в
+`FmEnchantmentEffects.onLivingDrops`. Текстура скопирована из оригинального FM `fork.png`.
+
+## Слайс M9: Скверный уголь
+
+Статус на 2026-10-22: **собран**, 48/48 тестов. Предмет `taint_coal` (Hexcoal/Гексуголь) — скверный
+уголь, получаемый плавкой скверного бревна (`taint_log → taint_coal`, опыт 0.15, время 200 тиков).
+Топливо с постоянным временем горения 1200 тиков (в оригинале случайное 1-2400, упрощено до среднего
+значения). Текстуре скопирована из оригинального FM `taint_charcoal.png`.
+
+Оставшееся — полный объём §5.1 ниже; это не отказ от контента, а следующий этап.
+
+## Слайс M10: SkullAxe, RidingCrop, Black Dye
+
+Статус на 2026-10-22: **собран**, 49/49 тестов. Добавлены три предмета:
+
+1. **SkullAxe** (топор Череподрать) — sword с `ELEMENTAL_TOOL` material, repairable через thaumium ingot.
+   Оригинальный `getDigSpeed(1.0F)` не переопределяется (в MC 26.3 скорость определяется material).
+
+2. **RidingCrop** (верховая плеть) — sword с `THAUMIUM_TOOL` material, repairable через leather.
+   Даёт potion effects (Speed, Haste, Strength) при ударе по игрокам/големам. Упрощено — не работает
+   на лошадях/свиньях (vanilla классы не найдены в хосте).
+
+3. **Black Dye** (чёрная краска) — красит овец в чёрный при использовании. `EMERALD_FRAGMENT` (meta 0
+   из оригинала) уже существовал в порту.
+
+Текстуры скопированы из оригинального FM: `skull_axe.png`, `crop.png` → `riding_crop.png`,
+`dye_powder_black.png` → `black_dye.png`.
+
+## Слайс M11: Taint Tools + Scribe Tools
+
+Статус на 2026-10-22: **собран**, 50/50 тестов. Добавлены инструменты и писчие склянки:
+
+1. **Taint Shovel** (скверная лопата) — shovel с `ELEMENTAL_TOOL` material, repairable через balanced shard.
+2. **Taint Pickaxe** (скверная кирка) — pickaxe с `ELEMENTAL_TOOL` material, repairable через entropy shard.
+3. **Crystalwell** (кристальная чернильница) — scribe tool, рецепт: inkwell + black dye + 2x shard (WATER 1/ORDER 1).
+4. **Primewell** (первичная чернильница) — scribe tool, рецепт: feather + primordial_pearl + glass_bottle (все аспекты 50).
+
+Рецепты стержней жезлов (wand rods):
+- **Tainted Rod**: центр tainted_goo, 6x taint shards + salis mundus (TAINT 24/MAGIC 12/ENTROPY 12).
+- **Infernal Rod**: центр blaze_rod, pride shards + nether items (NETHER 32/MAGIC 12/PRIDE 12).
+
+Текстуры скопированы из оригинального FM.
+
+## Слайс M12: Blink Focus
+
+Статус на 2026-10-22: **собран**, 50/50 тестов. Добавлен фокус Blink с апгрейдами:
+
+1. **Blink Focus** (фокус Телепортации) — телепортирует игрока к blockHit при использовании.
+2. **Hellfire** (адское пламя) — апгрейд, наносит огненный урон сущностям в точке телепортации.
+3. **Pandemonium** (пандемониум) — апгрейд, телепортирует мобов из области к игроку.
+
+Рецепт: центр ender_pearl, alternating quartz + sloth shards (TRAVEL 25/NETHER 10/SLOTH 10/ENTROPY 25).
+Текстуры скопированы из оригинального FM: `blink_focus.png`, `blink_focus_ornament.png`.
+
+## Слайс M13: Heretic Villager
+
+Статус на 2026-10-22: **собран**, 50/50 тестов. Добавлен житель-еретик и трейды:
+
+1. **Heretic Profession** — профессия `heretic` с 5 уровнями трейдов.
+2. **Трейды**:
+   - emerald → 3 greed shard (покупает 1-2 emerald)
+   - 5 gluttony shard → emerald (покупает 4-6 gluttony shard)
+   - emerald → skeleton_skull (покупает 1-3 emerald)
+   - emerald → 10 glowstone_dust (покупает 1 emerald)
+   - 5 emerald → ghast_tear (покупает 4-6 emerald)
+
+Все трейды используют single pool tag `#forbiddenmagic:heretic/pool`. Trade set файлы (level_1-5.json)
+ссылаются на единый pool.

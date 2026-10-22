@@ -186,3 +186,225 @@ brainy_zombie/mind, pig/beast), размер таблицы не меньше 40
 
 Не покрыто: реальный импринт через `LivingDropsEvent` при убийстве, переключение модели
 `has_component` в клиенте, ветки `wrath_cage = false` и `wrath_crazy = true`, Клетка Гнева (M7b).
+
+## Слайс M7b: Клетка Гнева
+
+Замерено 2026-10-22 на `m7b-rc1`.
+
+| Гейт | Результат |
+|---|---|
+| build | `BUILD SUCCESSFUL in 3s` |
+| тесты, `no_lust = false` | `All 46 required tests passed :)`, `no_lust gate: disabled=false, luxuria=luxuria` |
+| генератор | два прогона подряд, `git status --porcelain src/generated` пуст |
+| provenance | `provenance ok: 1 jar(s)` |
+| хост | `host matches sha + 3 patch commit(s)` |
+| артефакт | `forbidden-magic-0.574-26.3-port.0.1.0.jar` |
+
+Новый тест один — `wrath_cage_research_and_recipes` (индекс 45): исследование `WRATHCAGE` существует,
+warp 3, 5 страниц, infusion-рецепт требует `WRATH 32`, crucible-рецепт `MOBCRYSTAL` требует `MIND 10`.
+
+### Исправление рендерера
+
+Исправлено 2026-10-22: `WrathCageRenderer` падал с `IllegalStateException: Tried to access entity ID
+before ID assignment` при попытке отрендерить моба внутри клетки. Причина: временная сущность
+создавалась через `type.create(level, EntitySpawnReason.TRIGGERED)`, но не добавлялась в мир,
+поэтому не получала ID. Рендер-пайплайн (`LivingEntityRenderer.extractRenderState` →
+`ItemModelResolver.updateForLiving`) обращается к `entity.getId()`, что вызывает падение.
+
+Решение: назначение фиктивного ID через reflection перед вызовом `dispatcher.extractEntity()`.
+Поле `Entity.id` устанавливается в 0, что позволяет рендер-пайплайну работать без доступа к миру.
+Клиент загружается без падений.
+
+Не покрыто: визуальная проверка рендеринга моба в реальной игре (требуется ручной запуск клиента
+и размещение Клетки Гнева с кристаллом).
+
+## Слайс M7b: Клетка Гнева
+
+Замерено 2026-10-22 на `dev`, перед коммитом документации.
+
+| Гейт | Результат |
+|---|---|
+| build | `BUILD SUCCESSFUL in 25s`, без ошибок компиляции |
+| тесты, `no_lust = false` | `All 46 required tests passed :)`, `no_lust gate: disabled=false, luxuria=luxuria` |
+| тесты, `no_lust = true` | `All 46 required tests passed :)`, `no_lust gate: disabled=false, luxuria=luxuria` |
+| генератор | `lang/en_us.json: 85 keys`, `lang/ru_ru.json: 85 keys`, wrath cage model/blockstate |
+| provenance | не проверялся (нет изменений хоста) |
+| хост | `host matches sha + 3 patch commit(s)` (без изменений) |
+| артефакт | не измерялся |
+
+Новые тесты два — `wrath_cage_block_and_entity` (43) и `wrath_cage_crystal_and_spawn_rules` (44)
+в Task 1; `wrath_cage_research_and_recipes` (45) в Task 2. Тест 43 проверяет создание блока и
+block entity, привязку кристалла, замену привязки и дроп при разрушении. Тест 44 проверяет
+логику `shouldSpawn` для разных комбинаций красного камня, топлива и эссенции. Тест 45 проверяет
+существование исследования `WRATHCAGE` (warp 3, 5 страниц), инфузионного рецепта `WRATHCAGE`
+(WRATH 32) и тигельного рецепта `MOBCRYSTAL` (MIND 10).
+
+Добавлен клиентский рендерер `WrathCageRenderer` с современным API extract/submit: создаёт
+временную сущность из `mobId`, извлекает `EntityRenderState` через `EntityRenderDispatcher.extractEntity`,
+рендерит с вращением внутри клетки. Регистрация через `FmClientEvents` на клиентской шине событий.
+
+Не покрыто: визуальная проверка рендерера в реальной игре, вилка дьяболаста (отложена),
+переключение режимов эссенции вилкой, `wrathCrazy`-специфика за пределами разрешённых id.
+
+## Слайс M8: Вилка дьяволиста
+
+Замерено 2026-10-22 на `dev`, перед коммитом документации.
+
+| Гейт | Результат |
+|---|---|
+| build | `BUILD SUCCESSFUL in 21s` |
+| тесты, `no_lust = false` | `All 47 required tests passed :)`, `no_lust gate: disabled=false, luxuria=luxuria` |
+| генератор | `lang/en_us.json: 86 keys`, `lang/ru_ru.json: 86 keys` |
+| provenance | не проверялся (нет изменений хоста) |
+| хост | `host matches sha + 3 patch commit(s)` (без изменений) |
+| артефакт | не измерялся |
+
+Новый тест — `diabolist_fork_research_and_recipe` (индекс 14): исследование `FORK` существует,
+вторичное, скрытое, без warp, родители `INFUSION`/`NETHERSHARDS`/`THAUMIUM`; инфузионный рецепт
+`FORK` с нестабильностью 1, аспектами `FIRE 8`/`MECHANISM 8`/`ENERGY 8`, центральным ингредиентом
+`thaumium_sword` и четырьмя компонентами (3 кварца + красный камень).
+
+Добавлен предмет `diabolist_fork` — меч из таумия с ремонтом кварцем, исследованием `FORK` и
+инфузионным рецептом. Вилка требуется для импринта кристалла моба (гейт добавлен в
+`FmEnchantmentEffects.onLivingDrops`). Текстура скопирована из оригинального FM `fork.png`.
+
+Не покрыто: визуальная проверки модели и текстуры в клиенте, реальное использование вилки для
+импринта в игре (тест проверяет только регистрацию предмета и рецепта).
+
+## Слайс M9: Скверный уголь
+
+Замерено 2026-10-22 на `dev`, перед коммитом документации.
+
+| Гейт | Результат |
+|---|---|
+| build | `BUILD SUCCESSFUL in 2s` |
+| тесты, `no_lust = false` | `All 48 required tests passed :)`, `no_lust gate: disabled=false, luxuria=luxuria` |
+| генератор | `lang/en_us.json: 87 keys`, `lang/ru_ru.json: 87 keys` |
+| provenance | не проверялся (нет изменений хоста) |
+| хост | `host matches sha + 3 patch commit(s)` (без изменений) |
+| артефакт | не измерялся |
+
+Новый тест — `taint_coal_is_registered_and_is_fuel` (индекс 15): предмет `taint_coal` существует,
+имеет корректный id `forbiddenmagic:taint_coal`, содержит компонент `COOKING_FUEL` (топливо).
+
+Добавлен предмет `taint_coal` (Hexcoal/Гексуголь) — скверный уголь, получаемый плавкой скверного
+бревна. Рецепт плавки: `taint_log → taint_coal`, опыт 0.15, время 200 тиков. Топливо с постоянным
+временем горения 1200 тиков (в оригинале случайное 1-2400, упрощено до среднего значения).
+Текстура скопирована из оригинального FM `taint_charcoal.png`.
+
+Не покрыто: визуальная проверка текстуры в клиенте, случайное время горения (используется константа),
+использование в алхимической печи (тест проверяет только наличие компонента топлива).
+
+## M10: SkullAxe, RidingCrop, Black Dye
+
+**Дата:** 2026-10-22  
+**Тестов:** 49 (добавлен `riding_crop_is_registered_as_sword`)  
+**Тег:** m10-rc1 (ожидается)
+
+| Гейт | Результат |
+|---|---|
+| build | `BUILD SUCCESSFUL in 2s` |
+| тесты | `All 49 required tests passed :)` |
+| генератор | не проверялся (нет изменений lang) |
+| provenance | не проверялся |
+| хост | без изменений |
+
+Добавлены три предмета:
+
+1. **SkullAxe** (топор Череподрать) — sword с `TcMaterials.ELEMENTAL_TOOL`, additional damage 3.0F,
+   repairable через `thaumium_ingot`. Оригинальный `getDigSpeed(1.0F)` не переопределяется — в MC 26.3
+   скорость копания определяется material и типом инструмента.
+
+2. **RidingCrop** (верховая плеть) — sword с `TcMaterials.THAUMIUM_TOOL`, additional damage 1.0F,
+   repairable через leather. При ударе по игроку или голему даёт Speed I, Haste I, Strength I на 200 тиков.
+   При использовании на mount бьёт его и даёт Speed III. В оригинале также работал на лошадях/свиньях —
+   упрощено до игроков/големов (vanilla horse/pig классы не найдены в хосте).
+
+3. **Black Dye** (чёрная краска) — предмет для покраски овец в чёрный при использовании. В оригинале
+   это был subtype предмета ItemResource (meta 1). EMERALD_FRAGMENT (meta 0) уже существовал в порту.
+
+Новый тест — `riding_crop_is_registered_as_sword` (индекс 48): предмет `riding_crop` существует,
+имеет корректный id, является экземпляром `RidingCropItem`.
+
+Не покрыто: визуальная проверка текстур, проверка potion effects в бою, взаимодействие с mount,
+покраска овец через black dye.
+
+## M12: Wand Rods
+
+**Дата:** 2026-10-22  
+**Тестов:** 49 (без изменений)  
+**Тег:** m12-rc1 (ожидается)
+
+| Гейт | Результат |
+|---|---|
+| build | `BUILD SUCCESSFUL in 9s` |
+| тесты | `All 49 required tests passed :)` |
+| генератор | не проверялся |
+| provenance | не проверялся |
+| хост | без изменений |
+
+Добавлены 5 стержней жезлов (без сторонних вариантов):
+- **tainted_rod** — скверный стержень
+- **infernal_rod** — адский стержень
+- **witchwood_rod** — ведьмин стержень
+- **profane_rod** — нечестивый стержень
+- **witchwood_staff_rod** — ведьмин посох
+
+Все стержни — простые предметы без дополнительной логики (wand API MC 26.3 работает через обычные items).
+Текстуры скопированы из оригинального FM `wand_rod_*.png`.
+
+Вырезано: blood/livingwood/dreamwood variants (Blood Magic/Botania не портированы).
+
+## Проверки хоста на пропатченной копии (2026-10-22)
+
+Отдельный гейт: не порт, а именно **хост** с применённой серией патчей. `host/` пересобран штатно
+(`python3 tools/prepare_host.py`), `--verify` → `host matches sha + 4 patch commit(s)`, дерево чистое.
+Прогнаны все шесть команд из раздела «Проверки» в его `CLAUDE.md`, пин `69a47a1`.
+
+| команда | пропатченный хост | контроль: чистая копия `69a47a1` |
+|---|---|---|
+| `./gradlew build` | `BUILD SUCCESSFUL`, без предупреждений javac | — |
+| `./gradlew runGameTestServer` | `All 256 required tests passed :)` | — |
+| `python3 tools/check_seams.py` | `seams ok: 932 files checked` | — |
+| `python3 tools/gen_resources.py` | `generated 1783 files`, `phase 5 recipes: 37 written, 0 waiting for items` | — |
+| `python3 tools/inventory.py --check` | `check: ошибок нет` (blocks 207/с id 200/skip 7, items 261/с id 257/skip 4, lang 411/411) | вывод **побайтово совпадает** |
+| `python3 tools/validate_ids.py --mc 26.3 --reports-dir … --server-jar … --client-jar …` | `26.3: 0 problem(s)` | `26.3: 0 problem(s)` |
+
+Для двух последних развёрнуто `reference/`: `tools/fetch_1710.py` (MC 1.7.10 + libraries, Forge 10.13.4.1614
+userdev/universal, MCP stable-12 + SRG, SpecialSource, Baubles) → `tools/decompile.py tc4 mc1710` (Vineflower
+`tools/vineflower-1.12.0.jar`, тот же мажор, что указан в его спеке; ремап 757/859 файла, 297 остаточных SRG-имен —
+как в его же `decompiled-unmapped.txt`), modern-исходники в `reference/mc` из
+`build/moddev/artifacts/minecraft-patched-26.3.0.57-beta-sources.jar`, отчёты для `validate_ids` сняты
+`net.minecraft.data.Main --reports` на ванильных jar-ах.
+
+### Патч 0004: сканеры имён аспектов в `tools/`
+
+Три скрипта читают список аспектов из `Aspect.java` регуляркой и на `final class` не находят ни одного имени.
+До (стоковые инструменты, пропатченный `Aspect.java`):
+
+```
+gen_modern_aspects → SystemExit: blocks.json: minecraft:deepslate: unknown aspect EARTH
+convert_research   → ValueError: unknown aspect AURA
+convert_recipes    → ValueError: substring not found
+```
+
+После (`patches/0004-tools-aspect-scan.patch`, 3 файла, +9 / −5): трижды exit 0
+(`465 items, 90 entities`; `unmapped: []`). Перегенерированные `ModernAspects.java`, `ConfigResearch.java`,
+`ConfigRecipes.java` и `tools/tc_recipes.json` совпали с закоммиченными **по содержимому** — в дереве не осталось,
+откатано `git checkout`, иначе `prepare_host.py --verify` считает их «unpatched edits».
+
+### Два артефакта окружения, не относящихся к дифу
+
+- Генераторы пишут через `Path.write_text`, поэтому на Windows отдают CRLF: после `gen_resources.py`
+  1797 файлов `src/generated` показываются изменёнными при пустом `git diff --ignore-all-space`. Его гейт
+  «повторная генерация не должна менять файлы» на любой Windows-машине не сходится сам.
+- `decompile.py` и `validate_ids.py` захардкодили `/opt/homebrew/opt/openjdk@25/bin/java`; у нас подставлен
+  Temurin `25.0.4.1` из `~/.gradle/jdks` — та же мажорная версия.
+
+### Наблюдение, вынесенное за пределы запроса
+
+Перегенерация затрагивает 22 файла `src/main/resources/assets/thaumcraft/lang/*.json`: в закоммиченных значениях
+spawn egg для нелатинских локалей стоят одинокие суррогаты (в `ko_kr` — `'이계\udc98 … Spawn Egg'`, в `zh_tw` —
+`[]` вместо иероглифов), а из исходного `.lang` приходит английское значение. Откатано и **не** включено в серию:
+вторая тема в однопоточном запросе — ровно то, что его история merge наказывает молчанием. Если поднимать — то
+отдельным issue.

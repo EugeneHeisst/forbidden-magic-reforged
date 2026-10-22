@@ -17,6 +17,7 @@ sloth_shard = "Sloth Shard"
 greed_shard = "Greed Shard"
 gluttony_shard = "Gluttony Shard"
 skull_axe = "Axe of the Skulltaker"
+diabolist_fork = "Diabolist Fork"
 emerald_fragment = "Emerald Fragment"
 morph_pickaxe = "Chameleon Pickaxe"
 morph_sword = "Chameleon Sword"
@@ -38,6 +39,7 @@ VOIDTOUCHED = "Enchantment: Voidtouched"
 TAINTTREE = "Tainted Tree"
 BLACKFLOWER = "Umbral Rose"
 ARCANECAKE = "Thaumic Cake"
+WRATHCAGE = "Wrath Cage"
 
 [tc.research_text]
 NETHERSHARDS = "Aim to misbehave."
@@ -50,6 +52,7 @@ VOIDTOUCHED = "Colour Out of Space"
 TAINTTREE = "The root of flux bears gross fruit"
 BLACKFLOWER = "Save the squid!"
 ARCANECAKE = "Let them eat cake."
+WRATHCAGE = "Neverending battle"
 
 [forbiddenmagic.research_page.NETHERSHARDS]
 1 = "Strange energies swirl through the Nether. On occasion, they have been known to solidify into crystal shards when certain sympathetic events occur."
@@ -62,6 +65,9 @@ ARCANECAKE = "Let them eat cake."
 
 [forbiddenmagic.research_page.SKULLAXE]
 1 = "Some monsters just really boil your blood. Skeletons! Always clacking around and using you for target practice. Or those Creepers! They just creep around blowing things up like they own the place! You wish you could just chop all their smug heads off and place them on pikes.<BR><BR>Fortunately, you've discovered an item that will let you do just that.  The Axe of the Skulltaker has a chance to remove the heads of monsters it slays. It might even work on other humans! Unfortunately, the infusion leaves the axe far too bloodthirsty to effectively cleave through boring plant matter."
+
+[forbiddenmagic.research_page.FORK]
+1 = "A curious tinkering tool, this fork hums with infernal energy. When wielded against the creatures of the world, it can capture their essence into Blank Imprinting Crystals carried in your inventory. The fork also serves as a key for configuring the Wrath Cage, cycling through its fuel modes when right-clicked upon it."
 
 [enchantment.forbiddenmagic]
 wrath = "Wrath"
@@ -113,6 +119,11 @@ umbral_rose_bush = "Umbral Rose Bush"
 arcane_cake = "Thaumic Cake"
 wrath_cage = "Wrath Cage"
 
+[forbiddenmagic.research_page.WRATHCAGE]
+1 = "Sometimes, it is not enough to kill something only once. You have reconstructed the monster spawners found in ancient ruins, but made yours answer to redstone instead of requiring a nearby player. The Wrath Cage reacts to a redstone signal: powered it stops, unpowered it continues its cycle. It also works much faster than the ancient analogues."
+2 = "However, you could not recreate the original method of infinite creature spawning. For each creature the cage requires some essentia, which must be piped in. The device accepts different types of essentia depending on the imprinted creature. Ira can also serve as fuel. The cage also accepts Desidia, but it adds a substantial delay to the next cycle."
+3 = "Right-click the cage with an imprinted crystal to attune it. If it was already attuned, the previous imprint is returned directly to your hand. Breaking the cage also releases its imprint crystal. To imprint a crystal, kill a compatible mob with a blank crystal in your inventory."
+
 [forbiddenmagic.research_page.TAINTTREE]
 1 = "The sick, twisted runoff of magical experiments can take on a strange life of its own. Most plants are unable to survive in Tainted Lands, but you've found a way to grow one that can. By steeping a sapling in taint, you create a tree that can thrive in Tainted Lands.<BR><BR>Its wood can also be turned into planks which are resistant to fibrous taint, allowing you to build structures safe from spreading taint.<BR><BR>The tree also seems to bear fruit, but eating them is not recommended..."
 
@@ -121,3 +132,33 @@ wrath_cage = "Wrath Cage"
 
 [forbiddenmagic.research_page.ARCANECAKE]
 1 = "If there's one thing you love, it's cake. You would eat its delicious goodness all day if you could, but it always runs out in the end.<BR><BR>To remedy this, you have devised a recipe to infuse a cake with longevity-enhancing magic.  The Thaumic Cake lasts significantly longer than a mundane one and will slowly repair itself as long as there's at least a sliver left.  The enchantments are unstable, however, and the cake cannot be moved again through conventional means once placed down."
+
+item.forbiddenmagic.taint_coal = "Hexcoal"
+item.forbiddenmagic.riding_crop = "Riding Crop"
+item.forbiddenmagic.black_dye = "Black Dye"
+item.forbiddenmagic.taint_fruit = "Tainted Fruit"
+item.forbiddenmagic.ring_nutrition = "Ring of Nutrition"
+item.forbiddenmagic.tainted_rod = "Tainted Wand Rod"
+item.forbiddenmagic.infernal_rod = "Infernal Wand Rod"
+item.forbiddenmagic.witchwood_rod = "Witchwood Wand Rod"
+item.forbiddenmagic.profane_rod = "Profane Wand Rod"
+item.forbiddenmagic.witchwood_staff_rod = "Witchwood Staff Rod"
+forbiddenmagic.research_page.RIDINGCROP.1 = "A simple crop for urging mounts forward."
+forbiddenmagic.research_page.RINGFOOD.1 = "A ring that sustains the wearer, reducing the need for food."
+forbiddenmagic.research_page.ROD_tainted.1 = "A rod infused with the essence of taint."
+forbiddenmagic.research_page.ROD_infernal.1 = "A rod forged in the fires of the Nether."
+forbiddenmagic.research_page.ROD_witchwood.1 = "A rod crafted from witchwood."
+forbiddenmagic.research_page.ROD_profane.1 = "A profane rod of dark power."
+forbiddenmagic.research_page.ROD_witchwood_staff.1 = "A staff rod of witchwood."
+forbiddenmagic.research_page.TRANSEMERALD.1 = "Transmute gold into emerald fragments."
+item.forbiddenmagic.taint_shovel = "Taint Shovel"
+item.forbiddenmagic.taint_pickaxe = "Taint Pickaxe"
+item.forbiddenmagic.crystalwell = "Crystal Inkwell"
+item.forbiddenmagic.primewell = "Primordial Inkwell"
+forbiddenmagic.research_page.CRYSTALWELL.1 = "A crystal-infused inkwell that never runs dry."
+forbiddenmagic.research_page.PRIMEWELL.1 = "An inkwell infused with primordial power."
+forbiddenmagic.research_page.TAINTSHOVEL.1 = "A shovel infused with taint, capable of mining vast areas."
+forbiddenmagic.research_page.TAINTPICK.1 = "A pickaxe infused with taint and entropy."
+item.forbiddenmagic.blink_focus = "Blink Focus"
+forbiddenmagic.research_page.FOCUSBLINK.1 = "A focus that allows instant teleportation to a targeted location. Can be upgraded with Hellfire to damage nearby entities or Pandemonium to teleport mobs to you."
+entity.forbiddenmagic.villager.heretic = "Heretic"

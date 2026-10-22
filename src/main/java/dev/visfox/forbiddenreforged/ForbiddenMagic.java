@@ -1,6 +1,11 @@
 package dev.visfox.forbiddenreforged;
 
-import dev.visfox.forbiddenreforged.test.FmGameTests;
+import dev.visfox.forbiddenreforged.test.AspectGameTests;
+import dev.visfox.forbiddenreforged.test.BlockGameTests;
+import dev.visfox.forbiddenreforged.test.EnchantmentGameTests;
+import dev.visfox.forbiddenreforged.test.EntityGameTests;
+import dev.visfox.forbiddenreforged.test.ItemGameTests;
+import dev.visfox.forbiddenreforged.test.RecipeGameTests;
 import net.minecraft.resources.Identifier;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -21,9 +26,15 @@ public final class ForbiddenMagic {
         FmBlocks.BLOCKS.register(modEventBus);
         FmBlockEntities.register(modEventBus);
         FmItems.ITEMS.register(modEventBus);
+        FmVillagers.register(modEventBus);
         FmDrops.register();
         FmEnchantmentEffects.register();
-        FmGameTests.register(modEventBus);
+        AspectGameTests.FUNCTIONS.register(modEventBus);
+        ItemGameTests.FUNCTIONS.register(modEventBus);
+        RecipeGameTests.FUNCTIONS.register(modEventBus);
+        EnchantmentGameTests.FUNCTIONS.register(modEventBus);
+        BlockGameTests.FUNCTIONS.register(modEventBus);
+        EntityGameTests.FUNCTIONS.register(modEventBus);
     }
 
     public static Identifier id(String path) {

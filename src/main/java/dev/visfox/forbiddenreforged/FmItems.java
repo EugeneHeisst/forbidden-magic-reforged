@@ -9,6 +9,8 @@ import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import thaumcraft.item.gear.TcMaterials;
 import thaumcraft.platform.Registration;
+import thaumcraft.registry.ModItems;
+import thaumcraft.wand.focus.FocusItem;
 
 public final class FmItems {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(ForbiddenMagic.MODID);
@@ -21,13 +23,31 @@ public final class FmItems {
     public static final DeferredItem<Item> MORPH_SHOVEL;
     public static final DeferredItem<Item> MORPH_AXE;
     public static final DeferredItem<Item> MOB_CRYSTAL;
+    public static final DeferredItem<Item> DIABOLIST_FORK;
+    public static final DeferredItem<Item> TAINT_COAL;
+    public static final DeferredItem<Item> RIDING_CROP;
+    public static final DeferredItem<Item> BLACK_DYE;
+    public static final DeferredItem<Item> TAINT_FRUIT;
+    public static final DeferredItem<Item> RING_NUTRITION;
+    public static final DeferredItem<Item> TAINTED_ROD;
+    public static final DeferredItem<Item> INFERNAL_ROD;
+    public static final DeferredItem<Item> WITCHWOOD_ROD;
+    public static final DeferredItem<Item> PROFANE_ROD;
+    public static final DeferredItem<Item> WITCHWOOD_STAFF_ROD;
+    public static final DeferredItem<Item> TAINT_SHOVEL;
+    public static final DeferredItem<Item> TAINT_PICKAXE;
+    public static final DeferredItem<Item> CRYSTALWELL;
+    public static final DeferredItem<Item> PRIMEWELL;
+    public static final DeferredItem<Item> BLINK_FOCUS;
 
     static {
         for (String vice : new String[]{"wrath", "envy", "taint", "pride", "lust", "sloth", "greed"}) {
             DEADLY_SHARDS.put(vice, ITEMS.registerSimpleItem(vice + "_shard"));
         }
         GLUTTONY_SHARD = ITEMS.registerSimpleItem("gluttony_shard", properties -> Registration.food(properties, 2, 0.1F));
-        SKULL_AXE = ITEMS.registerSimpleItem("skull_axe", properties -> properties.stacksTo(1).rarity(Rarity.UNCOMMON));
+        SKULL_AXE = ITEMS.registerItem("skull_axe", Item::new,
+            properties -> Registration.sword(properties.rarity(Rarity.UNCOMMON), TcMaterials.ELEMENTAL_TOOL, 3.0F, -2.4F)
+                .repairable(ModItems.THAUMIUM_INGOT.get()));
         EMERALD_FRAGMENT = ITEMS.registerSimpleItem("emerald_fragment");
         MORPH_PICKAXE = ITEMS.registerItem("morph_pickaxe", MorphToolItem::new,
             properties -> repairable(Registration.pickaxe(properties.rarity(Rarity.EPIC), TcMaterials.ELEMENTAL_TOOL, 2.0F, -2.8F)));
@@ -39,6 +59,34 @@ public final class FmItems {
             properties -> repairable(Registration.axe(properties.rarity(Rarity.EPIC), TcMaterials.ELEMENTAL_TOOL, 3.0F, -3.0F)));
         MOB_CRYSTAL = ITEMS.registerItem("mob_crystal", MobCrystalItem::new,
             properties -> properties.stacksTo(1).rarity(Rarity.UNCOMMON));
+        DIABOLIST_FORK = ITEMS.registerItem("diabolist_fork", Item::new,
+            properties -> Registration.sword(properties.rarity(Rarity.UNCOMMON), TcMaterials.THAUMIUM_TOOL, 3.0F, -2.4F)
+                .repairable(net.minecraft.world.item.Items.QUARTZ));
+        TAINT_COAL = ITEMS.registerSimpleItem("taint_coal", properties -> Registration.fuel(properties, 1200));
+        RIDING_CROP = ITEMS.registerItem("riding_crop", RidingCropItem::new,
+            properties -> Registration.sword(properties.rarity(Rarity.UNCOMMON), TcMaterials.THAUMIUM_TOOL, 1.0F, -2.8F)
+                .repairable(net.minecraft.world.item.Items.LEATHER));
+        BLACK_DYE = ITEMS.registerItem("black_dye", BlackDyeItem::new,
+            properties -> properties.stacksTo(64));
+        TAINT_FRUIT = ITEMS.registerItem("taint_fruit", TaintFruitItem::new,
+            properties -> properties.stacksTo(64));
+        RING_NUTRITION = ITEMS.registerItem("ring_nutrition", RingNutritionItem::new,
+            properties -> properties.stacksTo(1));
+        TAINTED_ROD = ITEMS.registerSimpleItem("tainted_rod");
+        INFERNAL_ROD = ITEMS.registerSimpleItem("infernal_rod");
+        WITCHWOOD_ROD = ITEMS.registerSimpleItem("witchwood_rod");
+        PROFANE_ROD = ITEMS.registerSimpleItem("profane_rod");
+        WITCHWOOD_STAFF_ROD = ITEMS.registerSimpleItem("witchwood_staff_rod");
+        TAINT_SHOVEL = ITEMS.registerItem("taint_shovel", Item::new,
+            properties -> Registration.shovel(properties.rarity(Rarity.UNCOMMON), TcMaterials.ELEMENTAL_TOOL, 1.0F, -3.0F)
+                .repairable(DEADLY_SHARDS.get("taint").get()));
+        TAINT_PICKAXE = ITEMS.registerItem("taint_pickaxe", Item::new,
+            properties -> Registration.pickaxe(properties.rarity(Rarity.UNCOMMON), TcMaterials.ELEMENTAL_TOOL, 1.0F, -2.8F)
+                .repairable(DEADLY_SHARDS.get("taint").get()));
+        CRYSTALWELL = ITEMS.registerSimpleItem("crystalwell", properties -> properties.stacksTo(1));
+        PRIMEWELL = ITEMS.registerSimpleItem("primewell", properties -> properties.stacksTo(1).durability(100));
+        BLINK_FOCUS = ITEMS.registerItem("blink_focus", BlinkFocusItem::new,
+            properties -> FocusItem.properties(properties));
     }
 
     private FmItems() {

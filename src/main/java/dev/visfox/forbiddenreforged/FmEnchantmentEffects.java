@@ -120,6 +120,10 @@ public final class FmEnchantmentEffects {
         if (FmEnchantments.enabled()) {
             greedyDrops(event, player);
         }
+        ItemStack weapon = player.getMainHandItem();
+        if (!weapon.is(FmItems.DIABOLIST_FORK.get())) {
+            return;
+        }
         if (FmSpawnerMobs.canImprint(event.getEntity().getType())) {
             String id = BuiltInRegistries.ENTITY_TYPE.getKey(event.getEntity().getType()).toString();
             for (int slot = 0; slot < player.getInventory().getContainerSize(); slot++) {

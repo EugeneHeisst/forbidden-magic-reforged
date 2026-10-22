@@ -1185,6 +1185,13 @@ git commit -m "feat: expose an add-on aspect hook and publish the host locally"
 
 Why this task exists: on 2026-10-20 the host author said in chat that he intends to port Forbidden Magic himself when he gets back to it («если вайбик найдется после перерыва то forbidden magic портану»). As of that day the host repo has no add-on content in it (one commit on `main`, no second addon, no FM issue or branch), so nothing is in flight — but the plan should not spend nine more tasks assuming it is the only attempt.
 
+> **Superseded 2026-10-22 (текст обращения).** Шаг 1 ниже описывает форму v1: три абзаца и вопрос в конце. Замер
+> трекера показал, что автор не оставил в нём ни одного комментария за 31 ишью, поэтому актуальный payload — это
+> `docs/upstream/issue.md` (ни одного вопроса, форма `Summary`/`Key Changes`/`Verification`, патчи приложением),
+> разбор — `docs/upstream/issue-draft.md`. Шаг 2 («не отправляет проект») в силе без изменений. Текст шага 1
+> сохранён как история решения, числа в нём («two files», «1827 references») — срез того дня; перемерено позже
+> и исправлено в спеке.
+
 - [ ] **Step 1: Write the draft.** Three paragraphs, in this order: what we measured (`Aspect` is an `enum` of 48, so an add-on cannot register an aspect; the change is two files plus the `AspectOrb` index read and one registration point, and every one of the 1827 existing references survives), what we built (the patch series, with `build` and `runGameTestServer` output attached, plus the aspect registry game test), and the question: do you want the aspect API as a host feature, are you taking Forbidden Magic yourself, or should this stay a third-party add-on. Mention that the work is AI-assisted. Offer the seven sin aspects as the concrete use case, and note that a sibling TC4 port already ships data-driven add-on aspects with 32 add-ons on top.
 
 - [ ] **Step 2: Hand it to the user.** This project does not send it. No fork, no issue, no comment, no PR from `MxxFoxx2` without an explicit instruction.

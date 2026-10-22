@@ -7,13 +7,15 @@ import thaumcraft.aspect.AspectList;
 import thaumcraft.crafting.CrucibleRecipe;
 import thaumcraft.crafting.InfusionEnchantmentRecipe;
 import thaumcraft.crafting.InfusionRecipe;
+import thaumcraft.crafting.ShapelessArcaneRecipe;
 import thaumcraft.crafting.TcIngredient;
 import thaumcraft.crafting.TcRecipes;
 import thaumcraft.crafting.TcStack;
 
 public final class FmRecipes {
-    public static final Set<String> OWN_KEYS = Set.of("SKULLAXE", "WRATH", "GREEDY", "CONSUMING", "EDUCATIONAL", "CORRUPTING",
-        "MORPHPICK", "MORPHSWORD", "MORPHSHOVEL", "MORPHAXE", "CLUSTER", "IMPACT", "VOIDTOUCHED", "TAINTTREE", "BLACKFLOWER", "ARCANECAKE");
+    public static final Set<String> OWN_KEYS = Set.of("SKULLAXE", "FORK", "WRATH", "GREEDY", "CONSUMING", "EDUCATIONAL", "CORRUPTING",
+        "MORPHPICK", "MORPHSWORD", "MORPHSHOVEL", "MORPHAXE", "CLUSTER", "IMPACT", "VOIDTOUCHED", "TAINTTREE", "BLACKFLOWER", "ARCANECAKE",
+        "WRATHCAGE", "MOBCRYSTAL", "ROD_TAINTED", "ROD_INFERNAL", "TAINTSHOVEL", "TAINTPICK", "CRYSTALWELL", "PRIMEWELL", "FOCUSBLINK");
 
     private FmRecipes() {
     }
@@ -31,6 +33,20 @@ public final class FmRecipes {
                 TcIngredient.item(FmItems.id("wrath").toString()),
                 TcIngredient.item("minecraft:diamond"),
                 TcIngredient.item("minecraft:wither_skeleton_skull")
+            )
+        ));
+        TcRecipes.register(new InfusionRecipe(
+            "FORK",
+            "FORK",
+            TcStack.of(FmItems.DIABOLIST_FORK.getId().toString(), 1),
+            1,
+            new AspectList().add(Aspect.FIRE, 8).add(Aspect.MECHANISM, 8).add(Aspect.ENERGY, 8),
+            TcIngredient.item("thaumcraft:thaumium_sword"),
+            List.of(
+                TcIngredient.item("minecraft:quartz"),
+                TcIngredient.item("minecraft:quartz"),
+                TcIngredient.item("minecraft:quartz"),
+                TcIngredient.item("minecraft:redstone")
             )
         ));
         if (FmConfig.enchantmentsEnabled()) {
@@ -125,6 +141,124 @@ public final class FmRecipes {
             TcIngredient.item("minecraft:oak_sapling"), new AspectList().add(Aspect.TAINT, 10).add(Aspect.POISON, 4)));
         TcRecipes.register(new CrucibleRecipe("BLACKFLOWER", "BLACKFLOWER", TcStack.of("forbiddenmagic:umbral_rose_bush", 1),
             TcIngredient.item("minecraft:rose_bush"), new AspectList().add(Aspect.DARKNESS, 8).add(Aspect.LIFE, 5)));
+        TcRecipes.register(new InfusionRecipe(
+            "WRATHCAGE",
+            "WRATHCAGE",
+            TcStack.of("forbiddenmagic:wrath_cage", 1),
+            10,
+            new AspectList().add(FmAspects.WRATH, 32).add(Aspect.MAGIC, 32).add(Aspect.BEAST, 32).add(Aspect.MECHANISM, 16),
+            TcIngredient.item("thaumcraft:thaumium_block"),
+            List.of(
+                TcIngredient.item(FmItems.id("wrath").toString()),
+                TcIngredient.item(FmItems.id("wrath").toString()),
+                TcIngredient.item(FmItems.id("wrath").toString()),
+                TcIngredient.item(FmItems.id("wrath").toString()),
+                TcIngredient.item("minecraft:diamond"),
+                TcIngredient.item("minecraft:diamond"),
+                TcIngredient.item("minecraft:diamond"),
+                TcIngredient.item("minecraft:diamond"),
+                TcIngredient.item("thaumcraft:warded_jar"),
+                TcIngredient.item("thaumcraft:warded_jar"),
+                TcIngredient.item("thaumcraft:warded_jar")
+            )
+        ));
+        TcRecipes.register(new CrucibleRecipe("MOBCRYSTAL", "WRATHCAGE", TcStack.of("forbiddenmagic:mob_crystal", 1),
+            TcIngredient.item("minecraft:diamond"), new AspectList().add(Aspect.MIND, 10).add(Aspect.ENERGY, 10)));
+        TcRecipes.register(new InfusionRecipe(
+            "ROD_TAINTED",
+            "ROD_TAINTED",
+            TcStack.of(FmItems.TAINTED_ROD.getId().toString(), 1),
+            5,
+            new AspectList().add(Aspect.TAINT, 24).add(Aspect.MAGIC, 12).add(Aspect.ENTROPY, 12),
+            TcIngredient.item("thaumcraft:tainted_goo"),
+            List.of(
+                TcIngredient.item("thaumcraft:salis_mundus"),
+                TcIngredient.item(FmItems.id("taint").toString()),
+                TcIngredient.item(FmItems.id("taint").toString()),
+                TcIngredient.item(FmItems.id("taint").toString()),
+                TcIngredient.item(FmItems.id("taint").toString()),
+                TcIngredient.item(FmItems.id("taint").toString()),
+                TcIngredient.item(FmItems.id("taint").toString())
+            )
+        ));
+        TcRecipes.register(new InfusionRecipe(
+            "ROD_INFERNAL",
+            "ROD_INFERNAL",
+            TcStack.of(FmItems.INFERNAL_ROD.getId().toString(), 1),
+            5,
+            new AspectList().add(FmAspects.NETHER, 32).add(Aspect.MAGIC, 12).add(FmAspects.PRIDE, 12),
+            TcIngredient.item("minecraft:blaze_rod"),
+            List.of(
+                TcIngredient.item("thaumcraft:salis_mundus"),
+                TcIngredient.item(FmItems.id("pride").toString()),
+                TcIngredient.item(FmItems.id("pride").toString()),
+                TcIngredient.item("minecraft:soul_sand"),
+                TcIngredient.item("minecraft:wither_skeleton_skull"),
+                TcIngredient.item("minecraft:quartz"),
+                TcIngredient.item("minecraft:blaze_powder")
+            )
+        ));
+        TcRecipes.register(new InfusionRecipe(
+            "TAINTSHOVEL",
+            "TAINTSHOVEL",
+            TcStack.of(FmItems.TAINT_SHOVEL.getId().toString(), 1),
+            5,
+            new AspectList().add(Aspect.HEAL, 8).add(Aspect.CRYSTAL, 24).add(Aspect.MINE, 12),
+            TcIngredient.item("thaumcraft:thaumium_shovel"),
+            List.of(
+                TcIngredient.item("thaumcraft:balanced_shard"),
+                TcIngredient.item("thaumcraft:balanced_shard"),
+                TcIngredient.item("minecraft:diamond"),
+                TcIngredient.item("thaumcraft:silverwood_log")
+            )
+        ));
+        TcRecipes.register(new InfusionRecipe(
+            "TAINTPICK",
+            "TAINTPICK",
+            TcStack.of(FmItems.TAINT_PICKAXE.getId().toString(), 1),
+            1,
+            new AspectList().add(Aspect.ENTROPY, 8).add(Aspect.MINE, 8).add(Aspect.TAINT, 12),
+            TcIngredient.item("thaumcraft:thaumium_pickaxe"),
+            List.of(
+                TcIngredient.item("thaumcraft:entropy_shard"),
+                TcIngredient.item("thaumcraft:entropy_shard"),
+                TcIngredient.item("minecraft:diamond"),
+                TcIngredient.item("thaumcraft:greatwood_log")
+            )
+        ));
+        TcRecipes.register(new ShapelessArcaneRecipe("CRYSTALWELL", "CRYSTALWELL",
+            TcStack.of(FmItems.CRYSTALWELL.getId().toString(), 1),
+            new AspectList().add(Aspect.WATER, 1).add(Aspect.ORDER, 1),
+            List.of(
+                TcIngredient.item("thaumcraft:inkwell"),
+                TcIngredient.tag("c:dyes/black"),
+                TcIngredient.item("thaumcraft:shard"),
+                TcIngredient.item("thaumcraft:shard")
+            )));
+        TcRecipes.register(new ShapelessArcaneRecipe("PRIMEWELL", "PRIMEWELL",
+            TcStack.of(FmItems.PRIMEWELL.getId().toString(), 1),
+            new AspectList().add(Aspect.WATER, 50).add(Aspect.EARTH, 50).add(Aspect.FIRE, 50).add(Aspect.AIR, 50).add(Aspect.ORDER, 50).add(Aspect.ENTROPY, 50),
+            List.of(
+                TcIngredient.item("minecraft:feather"),
+                TcIngredient.item("thaumcraft:primordial_pearl"),
+                TcIngredient.item("minecraft:glass_bottle")
+            )));
+        TcRecipes.register(new InfusionRecipe(
+            "FOCUSBLINK",
+            "FOCUSBLINK",
+            TcStack.of(FmItems.BLINK_FOCUS.getId().toString(), 1),
+            3,
+            new AspectList().add(Aspect.TRAVEL, 25).add(FmAspects.NETHER, 10).add(FmAspects.SLOTH, 10).add(Aspect.ENTROPY, 25),
+            TcIngredient.item("minecraft:ender_pearl"),
+            List.of(
+                TcIngredient.item("minecraft:quartz"),
+                TcIngredient.item(FmItems.id("sloth").toString()),
+                TcIngredient.item("minecraft:quartz"),
+                TcIngredient.item(FmItems.id("sloth").toString()),
+                TcIngredient.item("minecraft:quartz"),
+                TcIngredient.item(FmItems.id("sloth").toString())
+            )
+        ));
     }
 
     private static void registerMorphTools() {
