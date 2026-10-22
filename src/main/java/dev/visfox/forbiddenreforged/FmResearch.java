@@ -158,5 +158,47 @@ public final class FmResearch {
                 .setConcealed()
                 .registerResearchItem();
         }
+        new ResearchItem("RIDINGCROP", "FORBIDDEN", new AspectList(), 0, -8, 0, TcStack.of(FmItems.RIDING_CROP.getId().toString(), 1))
+            .setPages(ResearchPage.text("forbiddenmagic.research_page.RIDINGCROP.1"))
+            .setStub()
+            .setRound()
+            .setAutoUnlock()
+            .registerResearchItem();
+        new ResearchItem("RINGFOOD", "FORBIDDEN", new AspectList().add(FmAspects.GLUTTONY, 4).add(Aspect.HUNGER, 3).add(Aspect.LIFE, 2), -11, -6, 2, TcStack.of(FmItems.RING_NUTRITION.getId().toString(), 1))
+            .setPages(ResearchPage.text("forbiddenmagic.research_page.RINGFOOD.1"))
+            .setParents("NETHERSHARDS")
+            .registerResearchItem();
+        new ResearchItem("ROD_tainted", "FORBIDDEN", new AspectList().add(Aspect.TAINT, 4).add(Aspect.MAGIC, 2), -10, -4, 1, TcStack.of(FmItems.TAINTED_ROD.getId().toString(), 1))
+            .setPages(ResearchPage.text("forbiddenmagic.research_page.ROD_tainted.1"))
+            .setParents("NETHERSHARDS")
+            .setHidden()
+            .registerResearchItem();
+        new ResearchItem("ROD_infernal", "FORBIDDEN", new AspectList().add(FmAspects.NETHER, 4).add(Aspect.FIRE, 3).add(Aspect.TOOL, 1), -11, -4, 3, TcStack.of(FmItems.INFERNAL_ROD.getId().toString(), 1))
+            .setPages(ResearchPage.text("forbiddenmagic.research_page.ROD_infernal.1"))
+            .setParents("ROD_silverwood", "INFUSION", "NETHERSHARDS")
+            .setConcealed()
+            .registerResearchItem();
+        new ResearchItem("ROD_witchwood", "FORBIDDEN", new AspectList().add(Aspect.TREE, 3).add(Aspect.MAGIC, 2), -10, -5, 2, TcStack.of(FmItems.WITCHWOOD_ROD.getId().toString(), 1))
+            .setPages(ResearchPage.text("forbiddenmagic.research_page.ROD_witchwood.1"))
+            .setParents("NETHERSHARDS")
+            .setHidden()
+            .registerResearchItem();
+        new ResearchItem("ROD_profane", "FORBIDDEN", new AspectList(), -9, -8, 0, TcStack.of(FmItems.PROFANE_ROD.getId().toString(), 1))
+            .setPages(ResearchPage.text("forbiddenmagic.research_page.ROD_profane.1"))
+            .setParents("NETHERSHARDS")
+            .setHidden()
+            .setStub()
+            .registerResearchItem();
+        new ResearchItem("ROD_witchwood_staff", "FORBIDDEN", new AspectList().add(Aspect.TREE, 4).add(Aspect.MAGIC, 3), -10, -6, 3, TcStack.of(FmItems.WITCHWOOD_STAFF_ROD.getId().toString(), 1))
+            .setPages(ResearchPage.text("forbiddenmagic.research_page.ROD_witchwood_staff.1"))
+            .setParents("ROD_witchwood")
+            .setHidden()
+            .registerResearchItem();
+        new ResearchItem("TRANSEMERALD", "FORBIDDEN", new AspectList().add(Aspect.CRYSTAL, 2).add(Aspect.EXCHANGE, 5).add(Aspect.GREED, 4), 0, -6, 3, TcStack.of(FmItems.EMERALD_FRAGMENT.getId().toString(), 1))
+            .setPages(ResearchPage.text("forbiddenmagic.research_page.TRANSEMERALD.1"))
+            .setSecondary()
+            .setConcealed()
+            .setParents("TRANSGOLD")
+            .registerResearchItem();
     }
 }

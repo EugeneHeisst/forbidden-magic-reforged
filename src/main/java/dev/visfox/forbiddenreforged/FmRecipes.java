@@ -14,7 +14,7 @@ import thaumcraft.crafting.TcStack;
 public final class FmRecipes {
     public static final Set<String> OWN_KEYS = Set.of("SKULLAXE", "FORK", "WRATH", "GREEDY", "CONSUMING", "EDUCATIONAL", "CORRUPTING",
         "MORPHPICK", "MORPHSWORD", "MORPHSHOVEL", "MORPHAXE", "CLUSTER", "IMPACT", "VOIDTOUCHED", "TAINTTREE", "BLACKFLOWER", "ARCANECAKE",
-        "WRATHCAGE", "MOBCRYSTAL");
+        "WRATHCAGE", "MOBCRYSTAL", "ROD_TAINTED", "ROD_INFERNAL");
 
     private FmRecipes() {
     }
@@ -163,6 +163,40 @@ public final class FmRecipes {
         ));
         TcRecipes.register(new CrucibleRecipe("MOBCRYSTAL", "WRATHCAGE", TcStack.of("forbiddenmagic:mob_crystal", 1),
             TcIngredient.item("minecraft:diamond"), new AspectList().add(Aspect.MIND, 10).add(Aspect.ENERGY, 10)));
+        TcRecipes.register(new InfusionRecipe(
+            "ROD_TAINTED",
+            "ROD_TAINTED",
+            TcStack.of(FmItems.TAINTED_ROD.getId().toString(), 1),
+            5,
+            new AspectList().add(Aspect.TAINT, 24).add(Aspect.MAGIC, 12).add(Aspect.ENTROPY, 12),
+            TcIngredient.item("thaumcraft:tainted_goo"),
+            List.of(
+                TcIngredient.item("thaumcraft:salis_mundus"),
+                TcIngredient.item(FmItems.id("taint").toString()),
+                TcIngredient.item(FmItems.id("taint").toString()),
+                TcIngredient.item(FmItems.id("taint").toString()),
+                TcIngredient.item(FmItems.id("taint").toString()),
+                TcIngredient.item(FmItems.id("taint").toString()),
+                TcIngredient.item(FmItems.id("taint").toString())
+            )
+        ));
+        TcRecipes.register(new InfusionRecipe(
+            "ROD_INFERNAL",
+            "ROD_INFERNAL",
+            TcStack.of(FmItems.INFERNAL_ROD.getId().toString(), 1),
+            5,
+            new AspectList().add(FmAspects.NETHER, 32).add(Aspect.MAGIC, 12).add(FmAspects.PRIDE, 12),
+            TcIngredient.item("minecraft:blaze_rod"),
+            List.of(
+                TcIngredient.item("thaumcraft:salis_mundus"),
+                TcIngredient.item(FmItems.id("pride").toString()),
+                TcIngredient.item(FmItems.id("pride").toString()),
+                TcIngredient.item("minecraft:soul_sand"),
+                TcIngredient.item("minecraft:wither_skeleton_skull"),
+                TcIngredient.item("minecraft:quartz"),
+                TcIngredient.item("minecraft:blaze_powder")
+            )
+        ));
     }
 
     private static void registerMorphTools() {

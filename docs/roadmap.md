@@ -110,3 +110,26 @@ beacon base и рецептами. 37/37 тестов в обоих режима
 значения). Текстуре скопирована из оригинального FM `taint_charcoal.png`.
 
 Оставшееся — полный объём §5.1 ниже; это не отказ от контента, а следующий этап.
+
+## Слайс M10: SkullAxe, RidingCrop, Black Dye
+
+Статус на 2026-10-22: **собран**, 49/49 тестов. Добавлены три предмета:
+
+1. **SkullAxe** (топор Череподрать) — sword с `ELEMENTAL_TOOL` material, repairable через thaumium ingot.
+   Оригинальный `getDigSpeed(1.0F)` не переопределяется (в MC 26.3 скорость определяется material).
+
+2. **RidingCrop** (верховая плеть) — sword с `THAUMIUM_TOOL` material, repairable через leather.
+   Даёт potion effects (Speed, Haste, Strength) при ударе по игрокам/големам. Упрощено — не работает
+   на лошадях/свиньях (vanilla классы не найдены в хосте).
+
+3. **Black Dye** (чёрная краска) — красит овец в чёрный при использовании. `EMERALD_FRAGMENT` (meta 0
+   из оригинала) уже существовал в порту.
+
+Текстуры скопированы из оригинального FM: `skull_axe.png`, `crop.png` → `riding_crop.png`,
+`dye_powder_black.png` → `black_dye.png`.
+
+## Слайс M12: Wand Rods
+
+Статус на 2026-10-22: **собран**, 49/49 тестов. Добавлены 5 стержней жезлов без сторонних вариантов:
+tainted, infernal, witchwood, profane, witchwood_staff. Все — простые предметы без wand API логики.
+Текстуры из оригинального FM. Вырезаны blood/livingwood/dreamwood (Blood Magic/Botania).
