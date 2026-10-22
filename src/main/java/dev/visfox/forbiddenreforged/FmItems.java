@@ -33,6 +33,10 @@ public final class FmItems {
     public static final DeferredItem<Item> WITCHWOOD_ROD;
     public static final DeferredItem<Item> PROFANE_ROD;
     public static final DeferredItem<Item> WITCHWOOD_STAFF_ROD;
+    public static final DeferredItem<Item> TAINT_SHOVEL;
+    public static final DeferredItem<Item> TAINT_PICKAXE;
+    public static final DeferredItem<Item> CRYSTALWELL;
+    public static final DeferredItem<Item> PRIMEWELL;
 
     static {
         for (String vice : new String[]{"wrath", "envy", "taint", "pride", "lust", "sloth", "greed"}) {
@@ -71,6 +75,14 @@ public final class FmItems {
         WITCHWOOD_ROD = ITEMS.registerSimpleItem("witchwood_rod");
         PROFANE_ROD = ITEMS.registerSimpleItem("profane_rod");
         WITCHWOOD_STAFF_ROD = ITEMS.registerSimpleItem("witchwood_staff_rod");
+        TAINT_SHOVEL = ITEMS.registerItem("taint_shovel", Item::new,
+            properties -> Registration.shovel(properties.rarity(Rarity.UNCOMMON), TcMaterials.ELEMENTAL_TOOL, 1.0F, -3.0F)
+                .repairable(DEADLY_SHARDS.get("taint").get()));
+        TAINT_PICKAXE = ITEMS.registerItem("taint_pickaxe", Item::new,
+            properties -> Registration.pickaxe(properties.rarity(Rarity.UNCOMMON), TcMaterials.ELEMENTAL_TOOL, 1.0F, -2.8F)
+                .repairable(DEADLY_SHARDS.get("taint").get()));
+        CRYSTALWELL = ITEMS.registerSimpleItem("crystalwell", properties -> properties.stacksTo(1));
+        PRIMEWELL = ITEMS.registerSimpleItem("primewell", properties -> properties.stacksTo(1).durability(100));
     }
 
     private FmItems() {

@@ -200,5 +200,24 @@ public final class FmResearch {
             .setConcealed()
             .setParents("TRANSGOLD")
             .registerResearchItem();
+        new ResearchItem("CRYSTALWELL", "FORBIDDEN", new AspectList().add(Aspect.MIND, 3).add(Aspect.CRYSTAL, 2).add(Aspect.MAGIC, 1), -2, -8, 1, TcStack.of(FmItems.CRYSTALWELL.getId().toString(), 1))
+            .setPages(ResearchPage.text("forbiddenmagic.research_page.CRYSTALWELL.1"), ResearchPage.arcane("CRYSTALWELL"))
+            .setParents("RESEARCH")
+            .registerResearchItem();
+        new ResearchItem("PRIMEWELL", "FORBIDDEN", new AspectList().add(Aspect.MIND, 3).add(Aspect.ELDRITCH, 6).add(Aspect.CRAFT, 1), 2, -8, 1, TcStack.of(FmItems.PRIMEWELL.getId().toString(), 1))
+            .setPages(ResearchPage.text("forbiddenmagic.research_page.PRIMEWELL.1"), ResearchPage.arcane("PRIMEWELL"))
+            .setParents("PRIMPEARL")
+            .setConcealed()
+            .registerResearchItem();
+        new ResearchItem("TAINTSHOVEL", "FORBIDDEN", new AspectList().add(Aspect.TOOL, 2).add(Aspect.TAINT, 4).add(Aspect.HEAL, 3), -10, 2, 2, TcStack.of(FmItems.TAINT_SHOVEL.getId().toString(), 1))
+            .setPages(ResearchPage.text("forbiddenmagic.research_page.TAINTSHOVEL.1"), ResearchPage.infusion("TAINTSHOVEL"))
+            .setParents("THAUMIUM", "INFUSION")
+            .setConcealed()
+            .registerResearchItem();
+        new ResearchItem("TAINTPICK", "FORBIDDEN", new AspectList().add(Aspect.TOOL, 2).add(Aspect.TAINT, 4).add(Aspect.ENTROPY, 3), -10, 1, 2, TcStack.of(FmItems.TAINT_PICKAXE.getId().toString(), 1))
+            .setPages(ResearchPage.text("forbiddenmagic.research_page.TAINTPICK.1"), ResearchPage.infusion("TAINTPICK"))
+            .setParents("THAUMIUM", "INFUSION")
+            .setConcealed()
+            .registerResearchItem();
     }
 }

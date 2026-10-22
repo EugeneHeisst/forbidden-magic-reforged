@@ -7,6 +7,7 @@ import thaumcraft.aspect.AspectList;
 import thaumcraft.crafting.CrucibleRecipe;
 import thaumcraft.crafting.InfusionEnchantmentRecipe;
 import thaumcraft.crafting.InfusionRecipe;
+import thaumcraft.crafting.ShapelessArcaneRecipe;
 import thaumcraft.crafting.TcIngredient;
 import thaumcraft.crafting.TcRecipes;
 import thaumcraft.crafting.TcStack;
@@ -14,7 +15,7 @@ import thaumcraft.crafting.TcStack;
 public final class FmRecipes {
     public static final Set<String> OWN_KEYS = Set.of("SKULLAXE", "FORK", "WRATH", "GREEDY", "CONSUMING", "EDUCATIONAL", "CORRUPTING",
         "MORPHPICK", "MORPHSWORD", "MORPHSHOVEL", "MORPHAXE", "CLUSTER", "IMPACT", "VOIDTOUCHED", "TAINTTREE", "BLACKFLOWER", "ARCANECAKE",
-        "WRATHCAGE", "MOBCRYSTAL", "ROD_TAINTED", "ROD_INFERNAL");
+        "WRATHCAGE", "MOBCRYSTAL", "ROD_TAINTED", "ROD_INFERNAL", "TAINTSHOVEL", "TAINTPICK", "CRYSTALWELL", "PRIMEWELL");
 
     private FmRecipes() {
     }
@@ -197,6 +198,51 @@ public final class FmRecipes {
                 TcIngredient.item("minecraft:blaze_powder")
             )
         ));
+        TcRecipes.register(new InfusionRecipe(
+            "TAINTSHOVEL",
+            "TAINTSHOVEL",
+            TcStack.of(FmItems.TAINT_SHOVEL.getId().toString(), 1),
+            5,
+            new AspectList().add(Aspect.HEAL, 8).add(Aspect.CRYSTAL, 24).add(Aspect.MINE, 12),
+            TcIngredient.item("thaumcraft:thaumium_shovel"),
+            List.of(
+                TcIngredient.item("thaumcraft:balanced_shard"),
+                TcIngredient.item("thaumcraft:balanced_shard"),
+                TcIngredient.item("minecraft:diamond"),
+                TcIngredient.item("thaumcraft:silverwood_log")
+            )
+        ));
+        TcRecipes.register(new InfusionRecipe(
+            "TAINTPICK",
+            "TAINTPICK",
+            TcStack.of(FmItems.TAINT_PICKAXE.getId().toString(), 1),
+            1,
+            new AspectList().add(Aspect.ENTROPY, 8).add(Aspect.MINE, 8).add(Aspect.TAINT, 12),
+            TcIngredient.item("thaumcraft:thaumium_pickaxe"),
+            List.of(
+                TcIngredient.item("thaumcraft:entropy_shard"),
+                TcIngredient.item("thaumcraft:entropy_shard"),
+                TcIngredient.item("minecraft:diamond"),
+                TcIngredient.item("thaumcraft:greatwood_log")
+            )
+        ));
+        TcRecipes.register(new ShapelessArcaneRecipe("CRYSTALWELL", "CRYSTALWELL",
+            TcStack.of(FmItems.CRYSTALWELL.getId().toString(), 1),
+            new AspectList().add(Aspect.WATER, 1).add(Aspect.ORDER, 1),
+            List.of(
+                TcIngredient.item("thaumcraft:inkwell"),
+                TcIngredient.tag("c:dyes/black"),
+                TcIngredient.item("thaumcraft:shard"),
+                TcIngredient.item("thaumcraft:shard")
+            )));
+        TcRecipes.register(new ShapelessArcaneRecipe("PRIMEWELL", "PRIMEWELL",
+            TcStack.of(FmItems.PRIMEWELL.getId().toString(), 1),
+            new AspectList().add(Aspect.WATER, 50).add(Aspect.EARTH, 50).add(Aspect.FIRE, 50).add(Aspect.AIR, 50).add(Aspect.ORDER, 50).add(Aspect.ENTROPY, 50),
+            List.of(
+                TcIngredient.item("minecraft:feather"),
+                TcIngredient.item("thaumcraft:primordial_pearl"),
+                TcIngredient.item("minecraft:glass_bottle")
+            )));
     }
 
     private static void registerMorphTools() {
