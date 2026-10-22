@@ -22,6 +22,7 @@ public final class FmItems {
     public static final DeferredItem<Item> MORPH_AXE;
     public static final DeferredItem<Item> MOB_CRYSTAL;
     public static final DeferredItem<Item> DIABOLIST_FORK;
+    public static final DeferredItem<Item> TAINT_COAL;
 
     static {
         for (String vice : new String[]{"wrath", "envy", "taint", "pride", "lust", "sloth", "greed"}) {
@@ -43,6 +44,7 @@ public final class FmItems {
         DIABOLIST_FORK = ITEMS.registerItem("diabolist_fork", Item::new,
             properties -> Registration.sword(properties.rarity(Rarity.UNCOMMON), TcMaterials.THAUMIUM_TOOL, 3.0F, -2.4F)
                 .repairable(net.minecraft.world.item.Items.QUARTZ));
+        TAINT_COAL = ITEMS.registerSimpleItem("taint_coal", properties -> Registration.fuel(properties, 1200));
     }
 
     private FmItems() {

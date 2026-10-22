@@ -80,7 +80,7 @@ import thaumcraft.research.ResearchManager;
 public final class FmGameTests {
     public static final DeferredRegister<Consumer<GameTestHelper>> FUNCTIONS =
         DeferredRegister.create(Registries.TEST_FUNCTION, ForbiddenMagic.MODID);
-    private static final String[] TESTS = {"mod_loads_and_host_is_present", "aspect_registry_keeps_builtin_order_and_combines", "addon_aspect_survives_client_sync", "sin_aspects_registered_with_own_textures", "sin_aspect_tags_merge_with_existing", "entity_aspect_tags_merge_with_existing", "every_tag_target_resolved", "shards_are_registered_with_seven_ids", "no_lust_removes_luxuria_items", "mob_killed_by_player_drops_wrath_shard", "boss_drops_pride_shards", "unattended_death_drops_sloth_shard", "forbidden_category_and_shard_entries_resolve", "skull_axe_infusion_recipe_matches_original", "diabolist_fork_research_and_recipe", "every_ported_recipe_resolves_its_inputs", "chain_from_netherrack_to_wrath_shard", "enchantments_resolve_with_expected_shape", "emerald_fragment_is_registered", "consuming_destroys_garbage", "corrupting_yields_sin_shards", "greedy_drops_match_kills", "educational_multiplies_experience", "wrath_adds_damage", "enchantment_research_present", "enchantment_recipes_cover_five", "tinkerer_integration_is_optional", "morph_tools_are_registered", "morph_phase_rotates_sets", "impact_covers_a_three_by_three_plane", "voidtouched_repairs_and_warps", "morph_enchantments_and_exclusivity", "cluster_replaces_drops_with_clusters", "morph_research_entries_present", "morph_recipes_match_the_original", "taint_material_blocks_are_registered", "taint_blocks_carry_tool_tags", "materials_have_crafting_recipes", "blocks_drop_themselves", "taint_sapling_grows_a_tree", "umbral_plants_are_registered", "plant_research_and_recipes", "arcane_cake_feeds_and_keeps_slices", "mob_crystal_and_spawn_table", "wrath_cage_block_and_entity", "wrath_cage_crystal_and_spawn_rules", "wrath_cage_research_and_recipes"};
+    private static final String[] TESTS = {"mod_loads_and_host_is_present", "aspect_registry_keeps_builtin_order_and_combines", "addon_aspect_survives_client_sync", "sin_aspects_registered_with_own_textures", "sin_aspect_tags_merge_with_existing", "entity_aspect_tags_merge_with_existing", "every_tag_target_resolved", "shards_are_registered_with_seven_ids", "no_lust_removes_luxuria_items", "mob_killed_by_player_drops_wrath_shard", "boss_drops_pride_shards", "unattended_death_drops_sloth_shard", "forbidden_category_and_shard_entries_resolve", "skull_axe_infusion_recipe_matches_original", "diabolist_fork_research_and_recipe", "taint_coal_is_registered_and_is_fuel", "every_ported_recipe_resolves_its_inputs", "chain_from_netherrack_to_wrath_shard", "enchantments_resolve_with_expected_shape", "emerald_fragment_is_registered", "consuming_destroys_garbage", "corrupting_yields_sin_shards", "greedy_drops_match_kills", "educational_multiplies_experience", "wrath_adds_damage", "enchantment_research_present", "enchantment_recipes_cover_five", "tinkerer_integration_is_optional", "morph_tools_are_registered", "morph_phase_rotates_sets", "impact_covers_a_three_by_three_plane", "voidtouched_repairs_and_warps", "morph_enchantments_and_exclusivity", "cluster_replaces_drops_with_clusters", "morph_research_entries_present", "morph_recipes_match_the_original", "taint_material_blocks_are_registered", "taint_blocks_carry_tool_tags", "materials_have_crafting_recipes", "blocks_drop_themselves", "taint_sapling_grows_a_tree", "umbral_plants_are_registered", "plant_research_and_recipes", "arcane_cake_feeds_and_keeps_slices", "mob_crystal_and_spawn_table", "wrath_cage_block_and_entity", "wrath_cage_crystal_and_spawn_rules", "wrath_cage_research_and_recipes"};
 
     static {
         FUNCTIONS.register(TESTS[0], () -> FmGameTests::modLoadsAndHostIsPresent);
@@ -98,38 +98,39 @@ public final class FmGameTests {
         FUNCTIONS.register(TESTS[12], () -> FmGameTests::forbiddenCategoryAndShardEntriesResolve);
         FUNCTIONS.register(TESTS[13], () -> FmGameTests::skullAxeInfusionRecipeMatchesOriginal);
         FUNCTIONS.register(TESTS[14], () -> FmGameTests::diabolistForkResearchAndRecipe);
-        FUNCTIONS.register(TESTS[15], () -> FmGameTests::everyPortedRecipeResolvesItsInputs);
-        FUNCTIONS.register(TESTS[16], () -> FmGameTests::chainFromNetherrackToWrathShard);
-        FUNCTIONS.register(TESTS[17], () -> FmGameTests::enchantmentsResolveWithExpectedShape);
-        FUNCTIONS.register(TESTS[18], () -> FmGameTests::emeraldFragmentIsRegistered);
-        FUNCTIONS.register(TESTS[19], () -> FmGameTests::consumingDestroysGarbage);
-        FUNCTIONS.register(TESTS[20], () -> FmGameTests::corruptingYieldsSinShards);
-        FUNCTIONS.register(TESTS[21], () -> FmGameTests::greedyDropsMatchKills);
-        FUNCTIONS.register(TESTS[22], () -> FmGameTests::educationalMultipliesExperience);
-        FUNCTIONS.register(TESTS[23], () -> FmGameTests::wrathAddsDamage);
-        FUNCTIONS.register(TESTS[24], () -> FmGameTests::enchantmentResearchPresent);
-        FUNCTIONS.register(TESTS[25], () -> FmGameTests::enchantmentRecipesCoverFive);
-        FUNCTIONS.register(TESTS[26], () -> FmGameTests::tinkererIntegrationIsOptional);
-        FUNCTIONS.register(TESTS[27], () -> FmGameTests::morphToolsAreRegistered);
-        FUNCTIONS.register(TESTS[28], () -> FmGameTests::morphPhaseRotatesSets);
-        FUNCTIONS.register(TESTS[29], () -> FmGameTests::impactCoversAThreeByThreePlane);
-        FUNCTIONS.register(TESTS[30], () -> FmGameTests::voidtouchedRepairsAndWarps);
-        FUNCTIONS.register(TESTS[31], () -> FmGameTests::morphEnchantmentsAndExclusivity);
-        FUNCTIONS.register(TESTS[32], () -> FmGameTests::clusterReplacesDropsWithClusters);
-        FUNCTIONS.register(TESTS[33], () -> FmGameTests::morphResearchEntriesPresent);
-        FUNCTIONS.register(TESTS[34], () -> FmGameTests::morphRecipesMatchTheOriginal);
-        FUNCTIONS.register(TESTS[35], () -> FmGameTests::taintMaterialBlocksAreRegistered);
-        FUNCTIONS.register(TESTS[36], () -> FmGameTests::taintBlocksCarryToolTags);
-        FUNCTIONS.register(TESTS[37], () -> FmGameTests::materialsHaveCraftingRecipes);
-        FUNCTIONS.register(TESTS[38], () -> FmGameTests::blocksDropThemselves);
-        FUNCTIONS.register(TESTS[39], () -> FmGameTests::taintSaplingGrowsATree);
-        FUNCTIONS.register(TESTS[40], () -> FmGameTests::umbralPlantsAreRegistered);
-        FUNCTIONS.register(TESTS[41], () -> FmGameTests::plantResearchAndRecipes);
-        FUNCTIONS.register(TESTS[42], () -> FmGameTests::arcaneCakeFeedsAndKeepsSlices);
-        FUNCTIONS.register(TESTS[43], () -> FmGameTests::mobCrystalAndSpawnTable);
-        FUNCTIONS.register(TESTS[44], () -> FmGameTests::wrathCageBlockAndEntity);
-        FUNCTIONS.register(TESTS[45], () -> FmGameTests::wrathCageCrystalAndSpawnRules);
-        FUNCTIONS.register(TESTS[46], () -> FmGameTests::wrathCageResearchAndRecipes);
+        FUNCTIONS.register(TESTS[15], () -> FmGameTests::taintCoalIsRegisteredAndIsFuel);
+        FUNCTIONS.register(TESTS[16], () -> FmGameTests::everyPortedRecipeResolvesItsInputs);
+        FUNCTIONS.register(TESTS[17], () -> FmGameTests::chainFromNetherrackToWrathShard);
+        FUNCTIONS.register(TESTS[18], () -> FmGameTests::enchantmentsResolveWithExpectedShape);
+        FUNCTIONS.register(TESTS[19], () -> FmGameTests::emeraldFragmentIsRegistered);
+        FUNCTIONS.register(TESTS[20], () -> FmGameTests::consumingDestroysGarbage);
+        FUNCTIONS.register(TESTS[21], () -> FmGameTests::corruptingYieldsSinShards);
+        FUNCTIONS.register(TESTS[22], () -> FmGameTests::greedyDropsMatchKills);
+        FUNCTIONS.register(TESTS[23], () -> FmGameTests::educationalMultipliesExperience);
+        FUNCTIONS.register(TESTS[24], () -> FmGameTests::wrathAddsDamage);
+        FUNCTIONS.register(TESTS[25], () -> FmGameTests::enchantmentResearchPresent);
+        FUNCTIONS.register(TESTS[26], () -> FmGameTests::enchantmentRecipesCoverFive);
+        FUNCTIONS.register(TESTS[27], () -> FmGameTests::tinkererIntegrationIsOptional);
+        FUNCTIONS.register(TESTS[28], () -> FmGameTests::morphToolsAreRegistered);
+        FUNCTIONS.register(TESTS[29], () -> FmGameTests::morphPhaseRotatesSets);
+        FUNCTIONS.register(TESTS[30], () -> FmGameTests::impactCoversAThreeByThreePlane);
+        FUNCTIONS.register(TESTS[31], () -> FmGameTests::voidtouchedRepairsAndWarps);
+        FUNCTIONS.register(TESTS[32], () -> FmGameTests::morphEnchantmentsAndExclusivity);
+        FUNCTIONS.register(TESTS[33], () -> FmGameTests::clusterReplacesDropsWithClusters);
+        FUNCTIONS.register(TESTS[34], () -> FmGameTests::morphResearchEntriesPresent);
+        FUNCTIONS.register(TESTS[35], () -> FmGameTests::morphRecipesMatchTheOriginal);
+        FUNCTIONS.register(TESTS[36], () -> FmGameTests::taintMaterialBlocksAreRegistered);
+        FUNCTIONS.register(TESTS[37], () -> FmGameTests::taintBlocksCarryToolTags);
+        FUNCTIONS.register(TESTS[38], () -> FmGameTests::materialsHaveCraftingRecipes);
+        FUNCTIONS.register(TESTS[39], () -> FmGameTests::blocksDropThemselves);
+        FUNCTIONS.register(TESTS[40], () -> FmGameTests::taintSaplingGrowsATree);
+        FUNCTIONS.register(TESTS[41], () -> FmGameTests::umbralPlantsAreRegistered);
+        FUNCTIONS.register(TESTS[42], () -> FmGameTests::plantResearchAndRecipes);
+        FUNCTIONS.register(TESTS[43], () -> FmGameTests::arcaneCakeFeedsAndKeepsSlices);
+        FUNCTIONS.register(TESTS[44], () -> FmGameTests::mobCrystalAndSpawnTable);
+        FUNCTIONS.register(TESTS[45], () -> FmGameTests::wrathCageBlockAndEntity);
+        FUNCTIONS.register(TESTS[46], () -> FmGameTests::wrathCageCrystalAndSpawnRules);
+        FUNCTIONS.register(TESTS[47], () -> FmGameTests::wrathCageResearchAndRecipes);
     }
 
     private FmGameTests() {
@@ -333,6 +334,14 @@ public final class FmGameTests {
         helper.assertValueEqual(recipe.aspects().getAmount(Aspect.MECHANISM), 8, "FORK mechanism cost");
         helper.assertValueEqual(recipe.aspects().getAmount(Aspect.ENERGY), 8, "FORK energy cost");
         helper.assertValueEqual(recipe.components().size(), 4, "FORK has 4 components");
+        helper.succeed();
+    }
+
+    private static void taintCoalIsRegisteredAndIsFuel(GameTestHelper helper) {
+        ItemStack stack = new ItemStack(FmItems.TAINT_COAL.get());
+        helper.assertFalse(stack.isEmpty(), "taint coal must exist");
+        helper.assertValueEqual(BuiltInRegistries.ITEM.getKey(stack.getItem()), Identifier.parse("forbiddenmagic:taint_coal"), "taint coal id");
+        helper.assertTrue(stack.has(net.minecraft.core.component.DataComponents.COOKING_FUEL), "taint coal is a fuel");
         helper.succeed();
     }
 
