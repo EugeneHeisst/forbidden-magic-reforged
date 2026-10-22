@@ -167,3 +167,6 @@ forbiddenmagic.research_page.TAINTPICK.1 = "Кирка, наполненная �
 item.forbiddenmagic.blink_focus = "Фокус телепортации"
 forbiddenmagic.research_page.FOCUSBLINK.1 = "Фокус, позволяющий мгновенно телепортироваться в указанную точку. Можно улучшить Адским огнём для урона ближайшим существам или Пандемонием для телепортации мобов к вам."
 entity.forbiddenmagic.villager.heretic = "Еретик"
+
+[itemGroup]
+forbiddenmagic = "Запретная магия"

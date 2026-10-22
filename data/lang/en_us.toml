@@ -167,3 +167,6 @@ forbiddenmagic.research_page.TAINTPICK.1 = "A pickaxe infused with taint and ent
 item.forbiddenmagic.blink_focus = "Blink Focus"
 forbiddenmagic.research_page.FOCUSBLINK.1 = "A focus that allows instant teleportation to a targeted location. Can be upgraded with Hellfire to damage nearby entities or Pandemonium to teleport mobs to you."
 entity.forbiddenmagic.villager.heretic = "Heretic"
+
+[itemGroup]
+forbiddenmagic = "Forbidden Magic"
