@@ -3,13 +3,23 @@
 Сюда перенесены отступления, по которым решение принято и реализовано — дальше они не требуют работы.
 Рабочий список (открытое / блокированное хостом / на проверку) — в [deviations.md](deviations.md).
 
+Порядок: сначала строки с явной меткой этапа, по убыванию этапа (свежие выше); затем принятые без метки.
+
 | Что | Оригинал 1.7.10 | Порт | Причина |
 |---|---|---|---|
+| Чернила | umbral_rose → 2 чёрных красителя | крафт-рецепт `ink_from_rose.json`: umbral_rose → 2 `forbiddenmagic:black_dye` | готово M17; `black_dye` есть с M10 |
+| Скверный плод | листва редко роняет `taintFruit` | дроп из `taint_leaves` loot (шанс 0.02) | готово M17 |
+| `gluttony` 0/1/2 | конфиг глушит рецепты Arcane Cake / Ring Food | торт и кольцо оба под `gluttonyMode() != 1` | готово M17; кольцо раньше не гейтилось |
+| «Ложковилка» (spork) | `Config.spork` переименовывает вилку в `DiabolistSpork` | конфиг-флаг `spork` + `DiabolistForkItem.getName` → alt-имя | готово M17; икону не меняем (нет spork.png) |
+| Теги осколков | meta 0-6 одного предмета | отдельные id, теги не нужны | проверено M17: рецепты ссылаются на id напрямую, отдельного тега нет и в хосте |
+| Арканный рецепт скверного камня | `addArcaneCraftingRecipe` с research `TAINTSTONE` | обычный datapack-крафт `taint_stone_brick.json` | проверено M17: `TAINTSTONE`/`resourceTaint` в порту нет; блок крафтится через datapack, арканный вариант не воспроизводим без research-ключа |
+| Клетка Гнева: рендерер | `getOrCreateRenderEntity` + старый `render()` | `extractEntity/submit` с временной сущностью | современный API рендеринга; проверено в runClient (моб рендерится в клетке, M16) |
+| Топор Череподрать | полноценный инструмент | меч/топор с `ELEMENTAL_TOOL`, ремонт таумием (M10) | готово в M10; скорость задаёт material, а не `getDigSpeed` |
+| Плавка скверного бревна | `taint_charcoal` | `taint_log → forbiddenmagic:taint_coal`, опыт 0.15 | готово в M9 |
 | Портал | `new ItemStack(Blocks.portal)` + `infernus` 4 | `minecraft:obsidian` + `infernus` 4 | у блока портала нет предметной формы; тег ставится на рамку |
 | Метки сущностей | мутация `ThaumcraftApi.scanEntities` | `entityCopy` (merge) из патча 0002 | в API хоста не было слияния с базовыми метками |
 | `ItemMobCrystal` | предмет FM | портируется | ядровой предмет без сторонних импортов, нужен Клетке Гнева |
 | Осколок lust при `no_lust` | мета 4 переименовывается в `despair`, тег VOID 1 | предмет `lust_shard` остаётся зарегистрированным, но без тега, вне creative/дропа/рецептов | современный порт выражает отсутствие контента доступностью, а не переименованием |
-| Топор Череподрать | полноценный инструмент | меч/топор с `ELEMENTAL_TOOL`, ремонт таумием (M10) | готово в M10; скорость задаёт material, а не `getDigSpeed` |
 | Бонус wrath | урон инструмента/меча + sharpness/power/fire aspect/flame/smite/bane | `ATTACK_DAMAGE - 1` + те же зачарования + focus potency | современный attribute API не даёт исходный modifier один-в-один; числа проверяются в GameTest границей |
 | Боссы для pride | `IBossDisplayData` | `WitherBoss`, `EnderDragon`, `ThaumcraftBoss` | явные типы вместо удалённого интерфейса |
 | Иконка HELLFIRE | `new ItemStack(Blocks.fire)` | `minecraft:flint_and_steel` | у блока огня нет предметной формы |
@@ -26,7 +36,6 @@
 | Рецепт Voidtouched | `itemResource` мета 16 | `thaumcraft:void_seed` | единственный предмет хоста, соответствующий мете |
 | Скверный камень | один блок с метой 0/1 | два блока `taint_stone_smooth` и `taint_stone_brick` | в 26.3 нет метапредметов |
 | Боковые текстуры скверного бревна | 75% чистых, 25% «gross» по позиции | всегда чистый `taint_log_side` | позиционный выбор текстуры не выражается blockstate |
-| Плавка скверного бревна | `taint_charcoal` | `taint_log → forbiddenmagic:taint_coal`, опыт 0.15 | готово в M9 |
 | Арканный торт: восстановление | срез возвращается на random tick | то же | поведение оригинала сохранено |
 | Арканный торт: дроп | блок не дропается | `noLootTable()` | торт нельзя перенести после установки, как в оригинале |
 | Арканный торт при `gluttony = 1` | рецепта нет | рецепт не регистрируется, исследование остаётся со страницей без рецепта | как в оригинале |
@@ -36,15 +45,8 @@
 | Импринт | любой моб из Config.spawnerMobs + wrathCrazy | карта современных id в FmSpawnerMobs | имена 1.7.10 заменены на id 26.3 |
 | Клетка Гнева: центр инфузии | `arcane_stone` (по плану) | `thaumium_block` | сверено с референсным датапаком 1.21.1: центр — блок таумия |
 | Клетка Гнева: банки | `empty_warded_jar` (специальный тип ингредиента) | `thaumcraft:warded_jar` (обычный предмет) | в хосте нет отдельного предмета пустой банки; `warded_jar` — блок-банка без эссенции |
-| Клетка Гнева: рендерер | `getOrCreateRenderEntity` + старый `render()` | `extractEntity/submit` с временной сущностью | современный API рендеринга; проверено в runClient (моб рендерится в клетке, M16) |
 | Скверный уголь: время горения | случайное 1-2400 тиков (`1 + randy.nextInt(2400)`) | постоянное 1200 тиков | упрощение: компонент `COOKING_FUEL` требует константу; среднее значение оригинала |
 | Стержни: способ регистрации | `new WandRod(...)` кладёт в `WandRod.rods` | `WandRegistry.registerRod(...)` из `FmSetup.commonSetup` | публичный add-on хук хоста; рецепт жезла генерируется `ArcaneWandRecipe` динамически |
 | tainted update: проверка биома | `biomeGenForCoords(...).biomeID == Config.biomeTaintID` | `TaintBiomes.isTainted(level, pos)` | в 26.3 нет числовых biomeID; хост даёт предикат скверны |
 | profane update: «контракт» | NBT `tag.contract` + `completeResearch(player, "ROD_profane")` | компонент `FmComponents.PROFANE_CONTRACT` (Integer); программный добор исследования убран | современный data-component API; `ROD_profane` уже гейтит крафт, поэтому форс не нужен |
 | profaned стержень | item `Blocks.bedrock`, cost 1000, конверсия через `setRod` | то же: `minecraft:bedrock` + `WandKeys.PARTS.set(...,"profaned",...)` | burnout-состояние только программное, не крафтится; отдельного предмета нет |
-| Чернила | umbral_rose → 2 чёрных красителя | крафт-рецепт `ink_from_rose.json`: umbral_rose → 2 `forbiddenmagic:black_dye` | готово M17; `black_dye` есть с M10 |
-| Скверный плод | листва редко роняет `taintFruit` | дроп из `taint_leaves` loot (шанс 0.02) | готово M17 |
-| `gluttony` 0/1/2 | конфиг глушит рецепты Arcane Cake / Ring Food | торт и кольцо оба под `gluttonyMode() != 1` | готово M17; кольцо раньше не гейтилось |
-| «Ложковилка» (spork) | `Config.spork` переименовывает вилку в `DiabolistSpork` | конфиг-флаг `spork` + `DiabolistForkItem.getName` → alt-имя | готово M17; икону не меняем (нет spork.png) |
-| Теги осколков | meta 0-6 одного предмета | отдельные id, теги не нужны | проверено M17: рецепты ссылаются на id напрямую, отдельного тега нет и в хосте |
-| Арканный рецепт скверного камня | `addArcaneCraftingRecipe` с research `TAINTSTONE` | обычный datapack-крафт `taint_stone_brick.json` | проверено M17: `TAINTSTONE`/`resourceTaint` в порту нет; блок крафтится через datapack, арканный вариант не воспроизводим без research-ключа |
