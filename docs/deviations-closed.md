@@ -10,20 +10,16 @@
 | Чернила | umbral_rose → 2 чёрных красителя | крафт-рецепт `ink_from_rose.json`: umbral_rose → 2 `forbiddenmagic:black_dye` | готово M17; `black_dye` есть с M10 |
 | Скверный плод | листва редко роняет `taintFruit` | дроп из `taint_leaves` loot (шанс 0.02) | готово M17 |
 | `gluttony` 0/1/2 | конфиг глушит рецепты Arcane Cake / Ring Food | торт и кольцо оба под `gluttonyMode() != 1` | готово M17; кольцо раньше не гейтилось |
-| «Ложковилка» (spork) | `Config.spork` переименовывает вилку в `DiabolistSpork` | конфиг-флаг `spork` + `DiabolistForkItem.getName` → alt-имя | готово M17; икону не меняем (нет spork.png) |
 | Теги осколков | meta 0-6 одного предмета | отдельные id, теги не нужны | проверено M17: рецепты ссылаются на id напрямую, отдельного тега нет и в хосте |
 | Клетка Гнева: рендерер | `getOrCreateRenderEntity` + старый `render()` | `extractEntity/submit` с временной сущностью | современный API рендеринга; проверено в runClient (моб рендерится в клетке, M16) |
-| Топор Череподрать | полноценный инструмент | меч/топор с `ELEMENTAL_TOOL`, ремонт таумием (M10) | готово в M10; скорость задаёт material, а не `getDigSpeed` |
 | Плавка скверного бревна | `taint_charcoal` | `taint_log → forbiddenmagic:taint_coal`, опыт 0.15 | готово в M9 |
 | Портал | `new ItemStack(Blocks.portal)` + `infernus` 4 | `minecraft:obsidian` + `infernus` 4 | у блока портала нет предметной формы; тег ставится на рамку |
 | Метки сущностей | мутация `ThaumcraftApi.scanEntities` | `entityCopy` (merge) из патча 0002 | в API хоста не было слияния с базовыми метками |
 | `ItemMobCrystal` | предмет FM | портируется | ядровой предмет без сторонних импортов, нужен Клетке Гнева |
-| Осколок lust при `no_lust` | мета 4 переименовывается в `despair`, тег VOID 1 | предмет `lust_shard` остаётся зарегистрированным, но без тега, вне creative/дропа/рецептов | современный порт выражает отсутствие контента доступностью, а не переименованием |
 | Бонус wrath | урон инструмента/меча + sharpness/power/fire aspect/flame/smite/bane | `ATTACK_DAMAGE - 1` + те же зачарования + focus potency | современный attribute API не даёт исходный modifier один-в-один; числа проверяются в GameTest границей |
 | Боссы для pride | `IBossDisplayData` | `WitherBoss`, `EnderDragon`, `ThaumcraftBoss` | явные типы вместо удалённого интерфейса |
 | Иконка HELLFIRE | `new ItemStack(Blocks.fire)` | `minecraft:flint_and_steel` | у блока огня нет предметной формы |
 | Картинки в страницах исследований | `<IMG>forbidden:textures/misc/research.png...` | `<IMG>forbiddenmagic:textures/misc/research.png...` | namespace порта; файл скопирован в `assets/forbiddenmagic/textures/misc/` |
-| Corrupting: цель | `blockCustomOre` (infused stone) заменяет осколки стихий | тег `forbiddenmagic:infused_stones`, дроп `thaumcraft:*_shard` заменяется грешным осколком с шансом 1/3 | в 26.3 infused stone сам дропает осколки; выбор пула повторяет `getSinShard` (taint заменён на gluttony, lust выпадает при `no_lust`) |
 | Стоимость зачарований | min/max enchantability 1.7.10 | `min_cost`/`max_cost` в JSON зачарования | зачарования недоступны на столе ни в оригинале, ни в порту, поэтому числа влияют только на infusion-рецепт |
 | `enchanting = false` | зачарования не регистрируются | JSON остаётся в реестре, отключены эффекты, исследования, рецепты и TT-стоимость | датапак-записи нельзя снять конфигом; контент недостижим без рецепта |
 | TT-интеграция | прямое обращение к `EnchantmentManager` | reflection по публичному API | TT под ARR и не входит в compile classpath; сборка порта от него не зависит |
@@ -39,7 +35,6 @@
 | Импринт кристалла | в оригинале требуется убийство вилкой дьяволиста | импринт срабатывает при убийстве игроком с вилкой дьяволиста в основной руке | гейт вилки добавлен; поведение соответствует оригиналу |
 | Кристалл моба: варианты | мета 0/1 в одном предмете | компонент `forbiddenmagic:mob_id`, модель через `has_component` | в 26.3 нет метапредметов |
 | Импринт | любой моб из Config.spawnerMobs + wrathCrazy | карта современных id в FmSpawnerMobs | имена 1.7.10 заменены на id 26.3 |
-| Клетка Гнева: центр инфузии | `arcane_stone` (по плану) | `thaumium_block` | сверено с референсным датапаком 1.21.1: центр — блок таумия |
 | Клетка Гнева: банки | `empty_warded_jar` (специальный тип ингредиента) | `thaumcraft:warded_jar` (обычный предмет) | в хосте нет отдельного предмета пустой банки; `warded_jar` — блок-банка без эссенции |
 | Стержни: способ регистрации | `new WandRod(...)` кладёт в `WandRod.rods` | `WandRegistry.registerRod(...)` из `FmSetup.commonSetup` | публичный add-on хук хоста; рецепт жезла генерируется `ArcaneWandRecipe` динамически |
 | tainted update: проверка биома | `biomeGenForCoords(...).biomeID == Config.biomeTaintID` | `TaintBiomes.isTainted(level, pos)` | в 26.3 нет числовых biomeID; хост даёт предикат скверны |
