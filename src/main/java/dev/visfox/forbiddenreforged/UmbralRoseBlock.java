@@ -29,7 +29,7 @@ public class UmbralRoseBlock extends VegetationBlock {
         }
     }
 
-    private static void spread(ServerLevel level, BlockPos pos, RandomSource random) {
+    static void spread(ServerLevel level, BlockPos pos, RandomSource random) {
         int nearby = 0;
         for (BlockPos cursor : BlockPos.betweenClosed(pos.offset(-2, -1, -2), pos.offset(2, 1, 2))) {
             if (level.getBlockState(cursor).is(FmBlocks.UMBRAL_ROSE.get()) && ++nearby >= 10) {

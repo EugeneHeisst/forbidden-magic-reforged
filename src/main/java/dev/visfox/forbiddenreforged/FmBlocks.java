@@ -44,7 +44,7 @@ public final class FmBlocks {
         UMBRAL_ROSE = BLOCKS.registerBlock("umbral_rose", UmbralRoseBlock::new,
             properties -> properties.mapColor(MapColor.COLOR_BLACK).instabreak().sound(SoundType.GRASS).randomTicks().noCollision());
         UMBRAL_ROSE_BUSH = BLOCKS.registerBlock("umbral_rose_bush", UmbralRoseBushBlock::new,
-            properties -> properties.mapColor(MapColor.COLOR_BLACK).instabreak().sound(SoundType.GRASS).noCollision());
+            properties -> properties.mapColor(MapColor.COLOR_BLACK).instabreak().sound(SoundType.GRASS).randomTicks().noCollision());
         ARCANE_CAKE = BLOCKS.registerBlock("arcane_cake", ArcaneCakeBlock::new,
             properties -> properties.mapColor(MapColor.COLOR_BROWN).strength(0.5F).sound(SoundType.WOOL)
                 .randomTicks().noOcclusion().noLootTable());
