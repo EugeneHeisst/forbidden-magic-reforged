@@ -18,6 +18,21 @@ ITEM_TEXTURES = {
     "gluttony_shard": "gluttonyshard",
     "skull_axe": "skullaxe",
     "emerald_fragment": "emerald_nugget",
+    "diabolist_fork": "diabolist_fork",
+    "taint_coal": "taint_coal",
+    "riding_crop": "riding_crop",
+    "black_dye": "black_dye",
+    "taint_fruit": "taint_fruit",
+    "ring_nutrition": "ring_nutrition",
+    "tainted_rod": "tainted_rod",
+    "infernal_rod": "infernal_rod",
+    "witchwood_rod": "witchwood_rod",
+    "profane_rod": "profane_rod",
+    "witchwood_staff_rod": "witchwood_staff_rod",
+    "taint_shovel": "taint_shovel",
+    "taint_pickaxe": "taint_pickaxe",
+    "crystalwell": "crystalwell",
+    "primewell": "primewell",
 }
 
 MORPH_TEXTURES = {
@@ -25,6 +40,11 @@ MORPH_TEXTURES = {
     "morph_sword": ("chameleonsword", "eyesword"),
     "morph_shovel": ("chameleonshovel", "eyeshovel"),
     "morph_axe": ("chameleonaxe", "eyeaxe"),
+}
+
+# Two-layer items: base texture + ornament overlay (id == layer0 texture name).
+TWO_LAYER_TEXTURES = {
+    "blink_focus": "blink_focus_ornament",
 }
 
 
@@ -99,6 +119,21 @@ def generate_mob_crystal() -> None:
         },
     })
     print("mob crystal: 2 models and one condition definition")
+
+
+def generate_two_layer_items() -> None:
+    for name, overlay in sorted(TWO_LAYER_TEXTURES.items()):
+        write_json(ASSETS / "models" / "item" / f"{name}.json", {
+            "parent": "minecraft:item/generated",
+            "textures": {
+                "layer0": f"forbiddenmagic:item/{name}",
+                "layer1": f"forbiddenmagic:item/{overlay}",
+            },
+        })
+        write_json(ASSETS / "items" / f"{name}.json", {
+            "model": {"type": "minecraft:model", "model": f"forbiddenmagic:item/{name}"},
+        })
+    print(f"two-layer items: {len(TWO_LAYER_TEXTURES)} models and definitions")
 
 
 
@@ -256,6 +291,7 @@ def main() -> int:
     generate_items()
     generate_morph_items()
     generate_mob_crystal()
+    generate_two_layer_items()
     generate_blocks()
     generate_plants()
     generate_umbral_plants()
