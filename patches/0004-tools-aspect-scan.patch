@@ -1,0 +1,61 @@
+From fa042c0d50d081b0d552ec1ac393f121a808a969 Mon Sep 17 00:00:00 2001
+From: MxxFoxx2 <MxxFoxx2@users.noreply.github.com>
+Date: Thu, 22 Oct 2026 19:21:23 +0300
+Subject: [PATCH] aspect name scan for class-form constants
+
+---
+ tools/convert_recipes.py    | 8 +++++---
+ tools/convert_research.py   | 2 +-
+ tools/gen_modern_aspects.py | 4 +++-
+ 3 files changed, 9 insertions(+), 5 deletions(-)
+
+diff --git a/tools/convert_recipes.py b/tools/convert_recipes.py
+index 85fea29..4fe1e1f 100644
+--- a/tools/convert_recipes.py
++++ b/tools/convert_recipes.py
+@@ -75,9 +75,11 @@ DYNAMIC = []
+ 
+ def aspect_names():
+     text = ASPECT_SOURCE.read_text()
+-    start = text.index("public enum Aspect")
+-    body = text[text.index("{", start) + 1:text.index(";", start)]
+-    return re.findall(r"^\s*([A-Z_]+)\(", body, re.MULTILINE)
++    if "public enum Aspect" in text:
++        start = text.index("public enum Aspect")
++        body = text[text.index("{", start) + 1:text.index(";", start)]
++        return re.findall(r"^\s*([A-Z_]+)\(", body, re.MULTILINE)
++    return re.findall(r"^    public static final Aspect ([A-Z_]+) = ", text, re.MULTILINE)
+ 
+ 
+ ASPECTS = aspect_names()
+diff --git a/tools/convert_research.py b/tools/convert_research.py
+index ebe4531..72ea034 100644
+--- a/tools/convert_research.py
++++ b/tools/convert_research.py
+@@ -584,7 +584,7 @@ class Executor:
+ def read_aspects():
+     text = ASPECT_SOURCE.read_text()
+     names = re.findall(r"^    ([A-Z_]+)\(", text, re.M)
+-    return names
++    return names or re.findall(r"^    public static final Aspect ([A-Z_]+) = ", text, re.M)
+ 
+ 
+ def load_lang():
+diff --git a/tools/gen_modern_aspects.py b/tools/gen_modern_aspects.py
+index 617fe0c..1896c85 100644
+--- a/tools/gen_modern_aspects.py
++++ b/tools/gen_modern_aspects.py
+@@ -10,7 +10,9 @@ TARGET = re.compile(r"^#?[a-z0-9_.-]+:[a-z0-9_./-]+$")
+ 
+ 
+ def aspect_names():
+-    return set(re.findall(r"^    ([A-Z_]+)\(\"", ASPECT_JAVA.read_text(encoding="utf-8"), re.MULTILINE))
++    text = ASPECT_JAVA.read_text(encoding="utf-8")
++    enum_form = set(re.findall(r"^    ([A-Z_]+)\(\"", text, re.MULTILINE))
++    return enum_form or set(re.findall(r"^    public static final Aspect ([A-Z_]+) = ", text, re.MULTILINE))
+ 
+ 
+ def load_entries():
+-- 
+2.52.0.windows.1
+

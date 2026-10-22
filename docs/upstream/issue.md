@@ -40,6 +40,11 @@ enum извне. Прошу вернуться к оригинальному п�
 - `aspect/AspectRegistrar.java`, `aspect/AspectRegistry.java`, `aspect/AspectSync.java` — вызов в `rebuild` после
   `ConfigAspects`, до `registerDerived` (там же, где уже живёт `addRegistrar`).
 
+**0004 — чтобы твои скрипты продолжали находить имена аспектов** (3 файла, +9 / −5)
+
+- `tools/gen_modern_aspects.py`, `tools/convert_research.py`, `tools/convert_recipes.py` — чтение имён аспектов из
+  обеих форм объявления. Подробности и прогон до/после ниже.
+
 Если форма удобнее другая — данные в `data/<ns>/thaumcraft/aspects/*.json` вместо кода — готов обсудить; приложенный
 диф — это то, что уже собрано и прогнано.
 
@@ -52,7 +57,8 @@ Javadoc оригинала про праймальный конструктор 
 
 ## Verification
 
-Пин `69a47a1` (HEAD `main`, тег `26.3`), патчи 0001+0002 применены к копии дерева:
+Пин `69a47a1` (HEAD `main`, тег `26.3`). Все шесть проверок из раздела «Проверки» в `CLAUDE.md` прогнаны на
+копии дерева с применёнными патчами; `reference/` собран той же цепочкой, что и у тебя.
 
 | команда | результат |
 |---|---|
@@ -60,16 +66,24 @@ Javadoc оригинала про праймальный конструктор 
 | `./gradlew build` | `BUILD SUCCESSFUL`, ни одного предупреждения javac |
 | `./gradlew runGameTestServer` | `All 256 required tests passed :)` |
 | `python3 tools/gen_resources.py` | `generated 1783 files`, `phase 5 recipes: 37 written, 0 waiting for items` |
+| `python3 tools/inventory.py --check` | `check: ошибок нет` (blocks 207/с id 200/skip 7, items 261/257, lang 411/411) |
+| `python3 tools/validate_ids.py --mc 26.3 --reports-dir … --server-jar … --client-jar …` | `26.3: 0 problem(s)` |
 
-Гейт «повторная генерация не должна менять файлы» с моей машины снять нельзя: перегенерированный файл побайтово
-равен HEAD после нормализации переносов строк (`HEAD` — LF, рабочее дерево — CRLF), то есть шумят окончания строк
-моей Windows-копии, а не диф.
+Контроль: `inventory.py --check` и `validate_ids.py` прогнаны ещё и на **чистой** копии `69a47a1` — вывод
+`inventory.py` совпадает побайтово, `validate_ids` даёт `0 problem(s)` там же. То есть диф не двигает ни инвентарь,
+ни валидацию id.
 
-**Не прогонял** — из-за стоимости, а не из-за того, что это твоя машина: `inventory.py --check` требует
-`reference/decompiled` (полная цепочка `fetch_1710.py` + SpecialSource + Vineflower над TC4), а
-`validate_ids.py --mc 26.3` — ванильные `server.jar`/`client.jar` и прогон ванильного data generator. Диф ни
-`tools/`, ни id, ни ресурсы не трогает; если эти две всё-таки нужны перед merge — скажи, я их разверну у себя,
-просто это десятки минут и лишние загрузки.
+Как развёрнуто `reference/`: `tools/fetch_1710.py` (MC 1.7.10 + libraries, Forge 10.13.4.1614 userdev/universal,
+MCP stable-12 + SRG, SpecialSource, Baubles), затем `tools/decompile.py tc4 mc1710` (Vineflower 1.12, ремап
+757/859 файлов, 297 остаточных SRG-имен — как в твоём `decompiled-unmapped.txt`), modern-исходники
+`reference/mc` распакованы из `build/moddev/artifacts/minecraft-patched-26.3.0.57-beta-sources.jar`, отчёты для
+`validate_ids` сняты `net.minecraft.data.Main --reports` на ванильных `server.jar`/`client.jar`.
+Признак, что дерево воспроизведено верно: перегенерированные `ModernAspects.java`, `ConfigResearch.java`,
+`ConfigRecipes.java` и `tc_recipes.json` не отличаются от закоммиченных по содержимому — расходятся только
+переносы строк.
+
+Про переносы строк отдельно: гейт «повторная генерация не должна менять файлы» на Windows не выполняется сам по
+себе — генераторы пишут через `Path.write_text`, а это платформенный CRLF. К дифу это отношения не имеет.
 
 Что сверено статически по всей `src/main/java`: **1830 строк, содержащих 4118 обращений** вида
 `Aspect.<КОНСТАНТА>`, не меняют текста (`Aspect.FIRE` остаётся валидным статическим полем `final class`); 19 мест
@@ -85,32 +99,32 @@ Javadoc оригинала про праймальный конструктор 
 декодирования пакета; вызов `AddonAspects.init()` в `rebuild` — это порядок на сервере, а не замена конструктору.
 Если хочешь, могу вынести это в Javadoc `AddonAspects`.
 
-## Что диф ломает, и это надо починить в нём же
+## Что диф ломает, и как это чинит 0004
 
 Три отдельных скрипта узнают имена аспектов, скрейпя `Aspect.java` регуляркой, и на `final class` не находят ничего.
 Они **не** в графе `gen_resources.py` и не в CI — это ручные maintenance-прогоны (перевыгрузка оригинальных
 конфигов и генерация аспектов для современного контента), поэтому сборка и тесты зелёные, а прогон любого из трёх
 упирается в исключение:
 
-| место | чем меряно | стоковый enum | пропатченный класс |
+| место | чем меряно | до | после (патч 0004) |
 |---|---|---|---|
-| `tools/gen_modern_aspects.py:12` | `^    ([A-Z_]+)\(` | 48 имён | **0**, и следом `SystemExit: blocks.json: minecraft:deepslate: unknown aspect EARTH` |
-| `tools/convert_research.py:586` | `^    ([A-Z_]+)\(` | 48 имён | **0** |
-| `tools/convert_recipes.py:77-80` | `text.index("public enum Aspect")` | 48 имён | **`ValueError: substring not found`** |
+| `tools/gen_modern_aspects.py:12` | `^    ([A-Z_]+)\(` | `SystemExit: blocks.json: minecraft:deepslate: unknown aspect EARTH` | exit 0, `465 items, 90 entities -> ModernAspects.java` |
+| `tools/convert_research.py:586` | `^    ([A-Z_]+)\(` | `ValueError: unknown aspect AURA` | exit 0 |
+| `tools/convert_recipes.py:77-80` | якорь `text.index("public enum Aspect")` | `ValueError: substring not found` | exit 0, `unmapped: []` |
 
-Это я нашёл только что и поначалу приписал патчу больше, чем он ломает: `gen_resources.py` на пропатченной копии
-проходит (строка в таблице выше), так что речь не о сборке, а о трёх ручных скриптах, которые при следующем их
-прогоне дадут пустой словарь имён.
-
-Правка на несколько строк в каждом из трёх файлов: читать имена из обеих форм объявления, например
+Правка — читать имена из обеих форм объявления, по две строки на файл:
 
 ```python
 names = re.findall(r"^    ([A-Z_]+)\(", text, re.M) or re.findall(r"^    public static final Aspect ([A-Z_]+) = ", text, re.M)
 ```
 
-плюс в `convert_recipes.py` заменить якорь `"public enum Aspect"` на tolerant-поиск. Скажи, форма приемлемая —
-и я приложу это четвёртым патчем к тем же двум, с прогоном `gen_modern_aspects.py`, `convert_research.py` и
-`convert_recipes.py` до/после.
+а в `convert_recipes.py` вместо жёсткого якоря — ветка на класс. Это оформлено как `0004-tools-aspect-scan.patch`
+и лежит рядом с 0001–0003; прогнано на собранном из четырёх патчей дереве, вывод перегенерированных
+`ModernAspects.java` / `ConfigResearch.java` / `ConfigRecipes.java` / `tc_recipes.json` совпадает с закоммиченным по
+содержимому.
+
+Сразу оговорка, потому что я сам на этом попался: к сборке это не относится. `gen_resources.py` эти три скрипта не
+импортирует и CI их не вызывает, поэтому `build` и `runGameTestServer` были зелёные и с слепыми скрейперами.
 
 ## Стоимость для тебя
 
@@ -138,7 +152,8 @@ names = re.findall(r"^    ([A-Z_]+)\(", text, re.M) or re.findall(r"^    public 
 Соседний порт, Thaumcraft 4 Reconstructed, возит аддон-аспекты как данные, и на этой точке расширения стоит линейка
 из 32 аддонов — спрос за пределами этого репо уже измерен.
 
-Патч-файлы приложены: `0001-aspect-registry.patch`, `0002-aspect-addon-init.patch`.
+Патч-файлы приложены: `0001-aspect-registry.patch`, `0002-aspect-addon-init.patch`,
+`0004-tools-aspect-scan.patch`.
 
 Работа сделана с участием ИИ (агент), автор порта — MxxFoxx2; Forbidden Magic — SpitefulFox, Thaumcraft 4 — Azanor.
 Если удобнее получить это веткой или PR — скажи, оформлю.

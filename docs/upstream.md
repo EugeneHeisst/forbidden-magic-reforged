@@ -27,18 +27,38 @@ Payload: `docs/upstream/issue.md` (заголовок для поля Title + т
 `pull_request` нет), поэтому внешний PR приходит без единой проверки; единственный такой (#30) стоит нетронутым.
 PR — только по его просьбе, в том числе как draft.
 
-## Что стоит добавить в серию
+## Четвёртый патч серии
 
-Правки трёх скрейперов `Aspect.java` в `tools/` (`gen_modern_aspects.py`, `convert_research.py`,
-`convert_recipes.py`): на `final class` они не находят ни одного имени аспекта. Это standalone-прогоны —
-`gen_resources.py` (1783 файла, exit 0 на пропатченной копии) и CI их не зовут, — поэтому отправке запроса это не
-мешает, но патч по две строки на файл серия должна включать.
+`patches/0004-tools-aspect-scan.patch` (3 файла, +9 / −5) — правка трёх скрейперов `Aspect.java` в `tools/`
+(`gen_modern_aspects.py`, `convert_research.py`, `convert_recipes.py`): на `final class` они не находили ни одного
+имени аспекта. Это standalone-прогоны — `gen_resources.py` (1783 файла, exit 0) и CI их не зовут, — поэтому они не
+ломали сборку, но ломали следующий ручной пересчёт конфигов. Проверено до/после: три падения → три exit 0.
 
-Из шести проверок хоста у нас прогнаны четыре: `build`, `runGameTestServer`, `check_seams.py`, `gen_resources.py`.
-`inventory.py --check` требует цепочку декомпиляции 1.7.10 (`fetch_1710.py` → SpecialSource → Vineflower),
-`validate_ids.py --mc 26.3` — ванильные `server.jar`/`client.jar` и прогон ванильного data generator (в скрипте
-захардкожены пути Homebrew-java, их придётся обойти вызовом своего JDK). Ни одна из двух не требует машины автора —
-только время и загрузки.
+## Проверки хоста
+
+Все шесть из раздела «Проверки» в его `CLAUDE.md` прогнаны на копии с четырьмя патчами, и две из них — ещё раз на
+чистой копии `69a47a1` как контроль:
+
+| проверка | пропатченный хост | чистый хост |
+|---|---|---|
+| `./gradlew build` | BUILD SUCCESSFUL | — |
+| `./gradlew runGameTestServer` | 256/256 | — |
+| `check_seams.py` | 932 файла | — |
+| `gen_resources.py` | 1783 файла, exit 0 | — |
+| `inventory.py --check` | `check: ошибок нет` | вывод совпадает побайтово |
+| `validate_ids.py --mc 26.3` | `0 problem(s)` | `0 problem(s)` |
+
+Что для этого пришлось развернуть: `tools/fetch_1710.py` (MC 1.7.10 + libraries, Forge userdev/universal,
+MCP stable-12 + SRG, SpecialSource, Baubles), `tools/decompile.py tc4 mc1710` (Vineflower 1.12 — наш вендоренный
+`tools/vineflower-1.12.0.jar`, тот же мажор, что у него; ремап 757/859, 297 остаточных SRG), modern-исходники в
+`reference/mc` из `build/moddev/artifacts/minecraft-patched-*-sources.jar`, отчёты ванильного data generator для
+`validate_ids`. Признаться: в тексте обращения я сначала написал «эти две требуют твоей машины» — не требуют,
+требуют времени, и я это исправил.
+
+Два известных окруженческих артефакта, не связанных с дифом: `decompile.py` и `validate_ids.py` захардкодили
+пути `/opt/homebrew/opt/openjdk@25` (на Windows — обход вызовом своего JDK; у нас Temurin 25.0.4.1 из
+`~/.gradle/jdks`), а генераторы пишут через `Path.write_text` и потому на Windows выдают CRLF — отсюда «изменённые»
+1797 файлов `src/generated` при побайтовом совпадении содержимого.
 
 ## Если API принят
 
