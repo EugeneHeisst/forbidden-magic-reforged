@@ -354,3 +354,57 @@ block entity, привязку кристалла, замену привязки
 Текстуры скопированы из оригинального FM `wand_rod_*.png`.
 
 Вырезано: blood/livingwood/dreamwood variants (Blood Magic/Botania не портированы).
+
+## Проверки хоста на пропатченной копии (2026-10-22)
+
+Отдельный гейт: не порт, а именно **хост** с применённой серией патчей. `host/` пересобран штатно
+(`python3 tools/prepare_host.py`), `--verify` → `host matches sha + 4 patch commit(s)`, дерево чистое.
+Прогнаны все шесть команд из раздела «Проверки» в его `CLAUDE.md`, пин `69a47a1`.
+
+| команда | пропатченный хост | контроль: чистая копия `69a47a1` |
+|---|---|---|
+| `./gradlew build` | `BUILD SUCCESSFUL`, без предупреждений javac | — |
+| `./gradlew runGameTestServer` | `All 256 required tests passed :)` | — |
+| `python3 tools/check_seams.py` | `seams ok: 932 files checked` | — |
+| `python3 tools/gen_resources.py` | `generated 1783 files`, `phase 5 recipes: 37 written, 0 waiting for items` | — |
+| `python3 tools/inventory.py --check` | `check: ошибок нет` (blocks 207/с id 200/skip 7, items 261/с id 257/skip 4, lang 411/411) | вывод **побайтово совпадает** |
+| `python3 tools/validate_ids.py --mc 26.3 --reports-dir … --server-jar … --client-jar …` | `26.3: 0 problem(s)` | `26.3: 0 problem(s)` |
+
+Для двух последних развёрнуто `reference/`: `tools/fetch_1710.py` (MC 1.7.10 + libraries, Forge 10.13.4.1614
+userdev/universal, MCP stable-12 + SRG, SpecialSource, Baubles) → `tools/decompile.py tc4 mc1710` (Vineflower
+`tools/vineflower-1.12.0.jar`, тот же мажор, что указан в его спеке; ремап 757/859 файла, 297 остаточных SRG-имен —
+как в его же `decompiled-unmapped.txt`), modern-исходники в `reference/mc` из
+`build/moddev/artifacts/minecraft-patched-26.3.0.57-beta-sources.jar`, отчёты для `validate_ids` сняты
+`net.minecraft.data.Main --reports` на ванильных jar-ах.
+
+### Патч 0004: сканеры имён аспектов в `tools/`
+
+Три скрипта читают список аспектов из `Aspect.java` регуляркой и на `final class` не находят ни одного имени.
+До (стоковые инструменты, пропатченный `Aspect.java`):
+
+```
+gen_modern_aspects → SystemExit: blocks.json: minecraft:deepslate: unknown aspect EARTH
+convert_research   → ValueError: unknown aspect AURA
+convert_recipes    → ValueError: substring not found
+```
+
+После (`patches/0004-tools-aspect-scan.patch`, 3 файла, +9 / −5): трижды exit 0
+(`465 items, 90 entities`; `unmapped: []`). Перегенерированные `ModernAspects.java`, `ConfigResearch.java`,
+`ConfigRecipes.java` и `tools/tc_recipes.json` совпали с закоммиченными **по содержимому** — в дереве не осталось,
+откатано `git checkout`, иначе `prepare_host.py --verify` считает их «unpatched edits».
+
+### Два артефакта окружения, не относящихся к дифу
+
+- Генераторы пишут через `Path.write_text`, поэтому на Windows отдают CRLF: после `gen_resources.py`
+  1797 файлов `src/generated` показываются изменёнными при пустом `git diff --ignore-all-space`. Его гейт
+  «повторная генерация не должна менять файлы» на любой Windows-машине не сходится сам.
+- `decompile.py` и `validate_ids.py` захардкодили `/opt/homebrew/opt/openjdk@25/bin/java`; у нас подставлен
+  Temurin `25.0.4.1` из `~/.gradle/jdks` — та же мажорная версия.
+
+### Наблюдение, вынесенное за пределы запроса
+
+Перегенерация затрагивает 22 файла `src/main/resources/assets/thaumcraft/lang/*.json`: в закоммиченных значениях
+spawn egg для нелатинских локалей стоят одинокие суррогаты (в `ko_kr` — `'이계\udc98 … Spawn Egg'`, в `zh_tw` —
+`[]` вместо иероглифов), а из исходного `.lang` приходит английское значение. Откатано и **не** включено в серию:
+вторая тема в однопоточном запросе — ровно то, что его история merge наказывает молчанием. Если поднимать — то
+отдельным issue.

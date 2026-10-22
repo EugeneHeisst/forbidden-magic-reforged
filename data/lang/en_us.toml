@@ -159,3 +159,5 @@ forbiddenmagic.research_page.CRYSTALWELL.1 = "A crystal-infused inkwell that nev
 forbiddenmagic.research_page.PRIMEWELL.1 = "An inkwell infused with primordial power."
 forbiddenmagic.research_page.TAINTSHOVEL.1 = "A shovel infused with taint, capable of mining vast areas."
 forbiddenmagic.research_page.TAINTPICK.1 = "A pickaxe infused with taint and entropy."
+item.forbiddenmagic.blink_focus = "Blink Focus"
+forbiddenmagic.research_page.FOCUSBLINK.1 = "A focus that allows instant teleportation to a targeted location. Can be upgraded with Hellfire to damage nearby entities or Pandemonium to teleport mobs to you."

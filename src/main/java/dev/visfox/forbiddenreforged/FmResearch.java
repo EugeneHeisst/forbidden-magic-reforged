@@ -219,5 +219,10 @@ public final class FmResearch {
             .setParents("THAUMIUM", "INFUSION")
             .setConcealed()
             .registerResearchItem();
+        new ResearchItem("FOCUSBLINK", "FORBIDDEN", new AspectList().add(Aspect.TRAVEL, 3).add(Aspect.ENTROPY, 3).add(FmAspects.NETHER, 3).add(FmAspects.SLOTH, 6), -11, -3, 2, TcStack.of(FmItems.BLINK_FOCUS.getId().toString(), 1))
+            .setPages(ResearchPage.text("forbiddenmagic.research_page.FOCUSBLINK.1"), ResearchPage.infusion("FOCUSBLINK"))
+            .setParents("NETHERSHARDS", "INFUSION")
+            .setConcealed()
+            .registerResearchItem();
     }
 }

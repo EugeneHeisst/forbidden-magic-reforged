@@ -10,6 +10,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import thaumcraft.item.gear.TcMaterials;
 import thaumcraft.platform.Registration;
 import thaumcraft.registry.ModItems;
+import thaumcraft.wand.focus.FocusItem;
 
 public final class FmItems {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(ForbiddenMagic.MODID);
@@ -37,6 +38,7 @@ public final class FmItems {
     public static final DeferredItem<Item> TAINT_PICKAXE;
     public static final DeferredItem<Item> CRYSTALWELL;
     public static final DeferredItem<Item> PRIMEWELL;
+    public static final DeferredItem<Item> BLINK_FOCUS;
 
     static {
         for (String vice : new String[]{"wrath", "envy", "taint", "pride", "lust", "sloth", "greed"}) {
@@ -83,6 +85,8 @@ public final class FmItems {
                 .repairable(DEADLY_SHARDS.get("taint").get()));
         CRYSTALWELL = ITEMS.registerSimpleItem("crystalwell", properties -> properties.stacksTo(1));
         PRIMEWELL = ITEMS.registerSimpleItem("primewell", properties -> properties.stacksTo(1).durability(100));
+        BLINK_FOCUS = ITEMS.registerItem("blink_focus", BlinkFocusItem::new,
+            properties -> FocusItem.properties(properties));
     }
 
     private FmItems() {

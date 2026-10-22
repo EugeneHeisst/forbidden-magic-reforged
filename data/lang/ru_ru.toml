@@ -159,3 +159,5 @@ forbiddenmagic.research_page.CRYSTALWELL.1 = "Чернильница, напол
 forbiddenmagic.research_page.PRIMEWELL.1 = "Чернильница, наполненная первозданной силой."
 forbiddenmagic.research_page.TAINTSHOVEL.1 = "Лопата, наполненная скверной, способна копать огромные области."
 forbiddenmagic.research_page.TAINTPICK.1 = "Кирка, наполненная скверной и энтропией."
+item.forbiddenmagic.blink_focus = "Фокус телепортации"
+forbiddenmagic.research_page.FOCUSBLINK.1 = "Фокус, позволяющий мгновенно телепортироваться в указанную точку. Можно улучшить Адским огнём для урона ближайшим существам или Пандемонием для телепортации мобов к вам."

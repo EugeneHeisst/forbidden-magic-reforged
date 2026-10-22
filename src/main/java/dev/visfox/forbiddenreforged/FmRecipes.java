@@ -15,7 +15,7 @@ import thaumcraft.crafting.TcStack;
 public final class FmRecipes {
     public static final Set<String> OWN_KEYS = Set.of("SKULLAXE", "FORK", "WRATH", "GREEDY", "CONSUMING", "EDUCATIONAL", "CORRUPTING",
         "MORPHPICK", "MORPHSWORD", "MORPHSHOVEL", "MORPHAXE", "CLUSTER", "IMPACT", "VOIDTOUCHED", "TAINTTREE", "BLACKFLOWER", "ARCANECAKE",
-        "WRATHCAGE", "MOBCRYSTAL", "ROD_TAINTED", "ROD_INFERNAL", "TAINTSHOVEL", "TAINTPICK", "CRYSTALWELL", "PRIMEWELL");
+        "WRATHCAGE", "MOBCRYSTAL", "ROD_TAINTED", "ROD_INFERNAL", "TAINTSHOVEL", "TAINTPICK", "CRYSTALWELL", "PRIMEWELL", "FOCUSBLINK");
 
     private FmRecipes() {
     }
@@ -243,6 +243,22 @@ public final class FmRecipes {
                 TcIngredient.item("thaumcraft:primordial_pearl"),
                 TcIngredient.item("minecraft:glass_bottle")
             )));
+        TcRecipes.register(new InfusionRecipe(
+            "FOCUSBLINK",
+            "FOCUSBLINK",
+            TcStack.of(FmItems.BLINK_FOCUS.getId().toString(), 1),
+            3,
+            new AspectList().add(Aspect.TRAVEL, 25).add(FmAspects.NETHER, 10).add(FmAspects.SLOTH, 10).add(Aspect.ENTROPY, 25),
+            TcIngredient.item("minecraft:ender_pearl"),
+            List.of(
+                TcIngredient.item("minecraft:quartz"),
+                TcIngredient.item(FmItems.id("sloth").toString()),
+                TcIngredient.item("minecraft:quartz"),
+                TcIngredient.item(FmItems.id("sloth").toString()),
+                TcIngredient.item("minecraft:quartz"),
+                TcIngredient.item(FmItems.id("sloth").toString())
+            )
+        ));
     }
 
     private static void registerMorphTools() {
