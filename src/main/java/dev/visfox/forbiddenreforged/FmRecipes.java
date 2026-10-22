@@ -15,7 +15,7 @@ import thaumcraft.crafting.TcStack;
 public final class FmRecipes {
     public static final Set<String> OWN_KEYS = Set.of("SKULLAXE", "FORK", "WRATH", "GREEDY", "CONSUMING", "EDUCATIONAL", "CORRUPTING",
         "MORPHPICK", "MORPHSWORD", "MORPHSHOVEL", "MORPHAXE", "CLUSTER", "IMPACT", "VOIDTOUCHED", "TAINTTREE", "BLACKFLOWER", "ARCANECAKE",
-        "WRATHCAGE", "MOBCRYSTAL", "ROD_TAINTED", "ROD_INFERNAL", "TAINTSHOVEL", "TAINTPICK", "CRYSTALWELL", "PRIMEWELL", "FOCUSBLINK");
+        "WRATHCAGE", "MOBCRYSTAL", "ROD_TAINTED", "ROD_INFERNAL", "TAINTSHOVEL", "TAINTPICK", "CRYSTALWELL", "PRIMEWELL", "FOCUSBLINK", "RINGFOOD");
 
     private FmRecipes() {
     }
@@ -243,6 +243,20 @@ public final class FmRecipes {
                 TcIngredient.item("thaumcraft:primordial_pearl"),
                 TcIngredient.item("minecraft:glass_bottle")
             )));
+        TcRecipes.register(new InfusionRecipe(
+            "RINGFOOD",
+            "RINGFOOD",
+            TcStack.of(FmItems.RING_NUTRITION.getId().toString(), 1),
+            2,
+            new AspectList().add(FmAspects.GLUTTONY, 16).add(Aspect.HUNGER, 12).add(Aspect.LIFE, 8),
+            TcIngredient.item("minecraft:gold_ingot"),
+            List.of(
+                TcIngredient.item(FmItems.id("gluttony").toString()),
+                TcIngredient.item("minecraft:bread"),
+                TcIngredient.item(FmItems.id("gluttony").toString()),
+                TcIngredient.item("minecraft:cookie")
+            )
+        ));
         TcRecipes.register(new InfusionRecipe(
             "FOCUSBLINK",
             "FOCUSBLINK",

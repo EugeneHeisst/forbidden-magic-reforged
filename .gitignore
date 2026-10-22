@@ -21,6 +21,9 @@ logs/
 *.iml
 .vscode/
 
+# Private upstream notes (kept locally, never published)
+docs/upstream/
+
 # Secrets and local settings
 .env
 *.key

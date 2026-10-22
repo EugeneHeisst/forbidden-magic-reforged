@@ -12,10 +12,8 @@ import net.minecraft.gametest.framework.TestEnvironmentDefinition;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.phys.AABB;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.RegisterGameTestsEvent;
@@ -91,9 +89,9 @@ public final class EntityGameTests {
 
     private static void wrathCageBlockAndEntity(GameTestHelper helper) {
         BlockPos pos = new BlockPos(5, 4, 5);
-        helper.getLevel().setBlockAndUpdate(pos, FmBlocks.WRATH_CAGE.get().defaultBlockState());
-        helper.assertTrue(helper.getLevel().getBlockEntity(pos) instanceof WrathCageBlockEntity, "cage creates its block entity");
-        WrathCageBlockEntity cage = (WrathCageBlockEntity) helper.getLevel().getBlockEntity(pos);
+        helper.setBlock(pos, FmBlocks.WRATH_CAGE.get().defaultBlockState());
+        WrathCageBlockEntity cage = helper.getBlockEntity(pos, WrathCageBlockEntity.class);
+        helper.assertTrue(cage != null, "cage creates its block entity");
         helper.assertTrue(cage != null && cage.getMobId() == null, "a fresh cage is unattuned");
         ItemStack zombieCrystal = new ItemStack(FmItems.MOB_CRYSTAL.get());
         MobCrystalItem.setMob(zombieCrystal, "minecraft:zombie");
@@ -107,8 +105,8 @@ public final class EntityGameTests {
         helper.assertValueEqual(MobCrystalItem.mob(skeletonCrystal), "minecraft:zombie", "the held crystal gets the previous mob");
         ItemStack crystal = WrathCageBlockEntity.crystalForBreak(cage);
         helper.assertValueEqual(MobCrystalItem.mob(crystal), "minecraft:skeleton", "breaking the cage yields the attuned crystal");
-        helper.getLevel().setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
-        ItemEntity dropped = helper.getLevel().getEntitiesOfClass(ItemEntity.class, new AABB(pos).inflate(1.0)).stream().findFirst().orElse(null);
+        helper.destroyBlock(pos);
+        ItemEntity dropped = helper.getEntities(EntityTypes.ITEM, pos, 1.0).stream().findFirst().orElse(null);
         helper.assertTrue(dropped != null && "minecraft:skeleton".equals(MobCrystalItem.mob(dropped.getItem())), "removing the cage drops its crystal");
         helper.succeed();
     }
