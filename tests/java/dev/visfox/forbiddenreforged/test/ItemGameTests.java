@@ -47,7 +47,8 @@ public final class ItemGameTests {
         "riding_crop_is_registered_as_sword",
         "wand_rods_register_as_functional_cores",
         "creative_tab_is_registered_with_fork_icon",
-        "creative_tab_lists_every_registered_item"
+        "creative_tab_lists_every_registered_item",
+        "orichalcum_cap_is_registered"
     };
 
     static {
@@ -59,6 +60,7 @@ public final class ItemGameTests {
         FUNCTIONS.register(TESTS[5], () -> ItemGameTests::wandRodsRegisterAsFunctionalCores);
         FUNCTIONS.register(TESTS[6], () -> ItemGameTests::creativeTabIsRegisteredWithForkIcon);
         FUNCTIONS.register(TESTS[7], () -> ItemGameTests::creativeTabListsEveryRegisteredItem);
+        FUNCTIONS.register(TESTS[8], () -> ItemGameTests::orichalcumCapIsRegistered);
     }
 
     private ItemGameTests() {}
@@ -179,6 +181,15 @@ public final class ItemGameTests {
         }
         long unique = stacks.stream().map(stack -> stack.getItem() + "#" + stack.getComponents()).distinct().count();
         helper.assertValueEqual(stacks.size(), (int) unique, "no duplicate entries in the tab list");
+        helper.succeed();
+    }
+
+    private static void orichalcumCapIsRegistered(GameTestHelper helper) {
+        thaumcraft.wand.WandCap cap = WandRegistry.findCap("orichalcum");
+        helper.assertTrue(cap != null, "the creative orichalcum cap is registered");
+        helper.assertValueEqual(cap.baseCostModifier(), 0.0F, "orichalcum charges no vis");
+        helper.assertValueEqual(cap.craftCost(), 1000, "orichalcum craft cost is 1000");
+        helper.assertTrue(cap.specialAspects().isEmpty(), "orichalcum has no special aspects");
         helper.succeed();
     }
 }
