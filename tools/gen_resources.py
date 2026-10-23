@@ -45,11 +45,13 @@ MORPH_TEXTURES = {
 # Extra layer0 models referenced from conditional item definitions (model name -> texture name).
 EXTRA_ITEM_MODELS = {
     "diabolist_fork_spork": "spork",
+    "lust_shard_despair": "despair_shard",
 }
 
 # Items whose definition picks a model with a condition (item -> (property, on_true model)).
 ITEM_CONDITIONS = {
     "diabolist_fork": ("forbiddenmagic:spork", "diabolist_fork_spork"),
+    "lust_shard": ("forbiddenmagic:no_lust", "lust_shard_despair"),
 }
 
 # Two-layer items: base texture + ornament overlay (id == layer0 texture name).

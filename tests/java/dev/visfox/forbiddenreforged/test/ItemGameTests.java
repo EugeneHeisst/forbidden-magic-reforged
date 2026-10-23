@@ -64,7 +64,8 @@ public final class ItemGameTests {
         "creative_tab_is_registered_with_fork_icon",
         "creative_tab_lists_every_registered_item",
         "orichalcum_cap_is_registered",
-        "diabolist_fork_switches_to_the_spork_model"
+        "diabolist_fork_switches_to_the_spork_model",
+        "lust_shard_switches_to_the_despair_model"
     };
 
     static {
@@ -79,6 +80,7 @@ public final class ItemGameTests {
         FUNCTIONS.register(TESTS[8], () -> ItemGameTests::creativeTabListsEveryRegisteredItem);
         FUNCTIONS.register(TESTS[9], () -> ItemGameTests::orichalcumCapIsRegistered);
         FUNCTIONS.register(TESTS[10], () -> ItemGameTests::diabolistForkSwitchesToTheSporkModel);
+        FUNCTIONS.register(TESTS[11], () -> ItemGameTests::lustShardSwitchesToTheDespairModel);
     }
 
     private ItemGameTests() {}
@@ -204,9 +206,6 @@ public final class ItemGameTests {
             listed.add(stack.getItem());
         }
         for (var holder : FmItems.ITEMS.getEntries()) {
-            if (holder.get() == FmItems.DEADLY_SHARDS.get("lust").get() && !dev.visfox.forbiddenreforged.FmCreativeTab.visible("lust")) {
-                continue;
-            }
             helper.assertTrue(listed.contains(holder.get()), "the tab is missing the item " + holder.getId());
         }
         for (var holder : dev.visfox.forbiddenreforged.FmBlocks.BLOCKS.getEntries()) {
@@ -242,8 +241,20 @@ public final class ItemGameTests {
         helper.succeed();
     }
 
-    private static JsonObject readJson(GameTestHelper helper, String path) {
-        try (InputStream stream = ForbiddenMagic.class.getResourceAsStream(path)) {
+    private static void lustShardSwitchesToTheDespairModel(GameTestHelper helper) {
+        JsonObject definition = readJson(helper, "/assets/forbiddenmagic/items/lust_shard.json");
+        JsonObject model = definition.getAsJsonObject("model");
+        helper.assertValueEqual(model.get("type").getAsString(), "minecraft:condition", "the lust shard model is conditional");
+        helper.assertValueEqual(model.get("property").getAsString(), "forbiddenmagic:no_lust", "condition reads the no_lust config");
+        helper.assertValueEqual(model.getAsJsonObject("on_true").get("model").getAsString(), "forbiddenmagic:item/lust_shard_despair", "on_true is the despair shard");
+        helper.assertValueEqual(model.getAsJsonObject("on_false").get("model").getAsString(), "forbiddenmagic:item/lust_shard", "on_false is the lust shard");
+        JsonObject despair = readJson(helper, "/assets/forbiddenmagic/models/item/lust_shard_despair.json");
+        helper.assertValueEqual(despair.getAsJsonObject("textures").get("layer0").getAsString(), "forbiddenmagic:item/despair_shard", "despair model uses the despair texture");
+        helper.assertTrue(ForbiddenMagic.class.getResourceAsStream("/assets/forbiddenmagic/textures/item/despair_shard.png") != null, "despair texture ships with the mod");
+        helper.succeed();
+    }
+
+    private static JsonObject readJson(GameTestHelper helper, String path) {        try (InputStream stream = ForbiddenMagic.class.getResourceAsStream(path)) {
             if (stream == null) {
                 helper.fail("missing resource " + path);
             }

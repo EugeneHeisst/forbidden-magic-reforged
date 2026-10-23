@@ -29,18 +29,10 @@ public final class FmCreativeTab {
         TABS.register(modEventBus);
     }
 
-    public static boolean visible(String vice) {
-        return !vice.equals("lust") || !FmConfig.lustDisabled();
-    }
-
     public static List<ItemStack> stacks() {
         List<ItemStack> stacks = new ArrayList<>();
-        Item lustShard = FmItems.DEADLY_SHARDS.get("lust").get();
         for (DeferredHolder<Item, ? extends Item> holder : FmItems.ITEMS.getEntries()) {
             if (holder.get() == FmItems.MOB_CRYSTAL.get()) {
-                continue;
-            }
-            if (holder.get() == lustShard && !visible("lust")) {
                 continue;
             }
             stacks.add(new ItemStack(holder.get()));

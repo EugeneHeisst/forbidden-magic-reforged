@@ -52,7 +52,9 @@ public final class FmItems {
 
     static {
         for (String vice : new String[]{"wrath", "envy", "taint", "pride", "lust", "sloth", "greed"}) {
-            DEADLY_SHARDS.put(vice, ITEMS.registerSimpleItem(vice + "_shard"));
+            DEADLY_SHARDS.put(vice, vice.equals("lust")
+                ? ITEMS.registerItem("lust_shard", LustShardItem::new)
+                : ITEMS.registerSimpleItem(vice + "_shard"));
         }
         GLUTTONY_SHARD = ITEMS.registerSimpleItem("gluttony_shard", properties -> Registration.food(properties, 2, 0.1F));
         SKULL_AXE = ITEMS.registerItem("skull_axe", SkullAxeItem::new,

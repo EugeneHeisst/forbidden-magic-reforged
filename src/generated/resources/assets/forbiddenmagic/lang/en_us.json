@@ -74,6 +74,7 @@
   "forbiddenmagic.research_page.WRATHCAGE.1": "Sometimes, it is not enough to kill something only once. You have reconstructed the monster spawners found in ancient ruins, but made yours answer to redstone instead of requiring a nearby player. The Wrath Cage reacts to a redstone signal: powered it stops, unpowered it continues its cycle. It also works much faster than the ancient analogues.",
   "forbiddenmagic.research_page.WRATHCAGE.2": "However, you could not recreate the original method of infinite creature spawning. For each creature the cage requires some essentia, which must be piped in. The device accepts different types of essentia depending on the imprinted creature. Ira can also serve as fuel. The cage also accepts Desidia, but it adds a substantial delay to the next cycle.",
   "forbiddenmagic.research_page.WRATHCAGE.3": "Right-click the cage with an imprinted crystal to attune it. If it was already attuned, the previous imprint is returned directly to your hand. Breaking the cage also releases its imprint crystal. To imprint a crystal, kill a compatible mob with a blank crystal in your inventory.",
+  "item.forbiddenmagic.despair_shard": "Despair Shard",
   "item.forbiddenmagic.diabolist_fork": "Diabolist Fork",
   "item.forbiddenmagic.diabolist_fork_spork": "Diabolist Spork",
   "item.forbiddenmagic.emerald_fragment": "Emerald Fragment",

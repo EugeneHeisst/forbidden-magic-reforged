@@ -14,6 +14,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.gametest.framework.TestData;
 import net.minecraft.gametest.framework.TestEnvironmentDefinition;
 import net.minecraft.network.Connection;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.resources.Identifier;
@@ -195,9 +196,6 @@ public final class AspectGameTests {
     private static void shardsAreRegisteredWithSevenIds(GameTestHelper helper) {
         helper.assertValueEqual(FmItems.DEADLY_SHARDS.size(), 7, "the original registers seven vices");
         for (var entry : FmItems.DEADLY_SHARDS.entrySet()) {
-            if (entry.getKey().equals("lust") && FmConfig.lustDisabled()) {
-                continue;
-            }
             Item item = entry.getValue().get();
             helper.assertTrue(BuiltInRegistries.ITEM.getKey(item).getNamespace().equals(ForbiddenMagic.MODID), entry.getKey() + " must be namespaced to the port");
             AspectList tags = AspectRegistry.active().getObjectTags(item);
@@ -213,9 +211,13 @@ public final class AspectGameTests {
             return;
         }
         helper.assertTrue(FmAspects.LUST == null && Aspect.getAspect("luxuria") == null, "luxuria must be absent from the registry");
-        helper.assertFalse(FmCreativeTab.visible("lust"), "lust shard must not be offered to the creative tab");
-        AspectList tags = AspectRegistry.active().getObjectTags(FmItems.DEADLY_SHARDS.get("lust").get());
-        helper.assertTrue(tags == null || tags.size() == 0, "lust shard must carry no aspect tag");
+        ItemStack shard = new ItemStack(FmItems.DEADLY_SHARDS.get("lust").get());
+        helper.assertValueEqual(shard.getHoverName(), Component.translatable("item.forbiddenmagic.despair_shard"), "no_lust renames the fourth shard to despair");
+        AspectList tags = AspectRegistry.active().getObjectTags(shard.getItem());
+        helper.assertTrue(tags != null, "the despair shard must carry an aspect tag");
+        helper.assertValueEqual(tags.getAmount(Aspect.VOID), 1, "the despair shard carries one void");
+        helper.assertValueEqual(tags.size(), 1, "the despair shard carries only void");
+        helper.assertTrue(FmCreativeTab.stacks().stream().anyMatch(stack -> stack.getItem() == shard.getItem()), "the despair shard stays in the creative tab");
         helper.succeed();
     }
 

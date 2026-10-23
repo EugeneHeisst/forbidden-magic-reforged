@@ -21,5 +21,6 @@ public final class FmClientEvents {
     @SubscribeEvent
     public static void registerItemModelProperties(RegisterConditionalItemModelPropertyEvent event) {
         event.register(ForbiddenMagic.id("spork"), SporkCondition.MAP_CODEC);
+        event.register(ForbiddenMagic.id("no_lust"), NoLustCondition.MAP_CODEC);
     }
 }

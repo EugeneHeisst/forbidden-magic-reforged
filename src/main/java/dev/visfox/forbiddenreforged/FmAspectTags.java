@@ -67,6 +67,8 @@ public final class FmAspectTags {
             addShard("pride", tags().add(FmAspects.NETHER, 1).add(FmAspects.PRIDE, 2).add(Aspect.CRYSTAL, 1));
             if (!FmConfig.lustDisabled()) {
                 addShard("lust", tags().add(FmAspects.NETHER, 1).add(FmAspects.LUST, 2).add(Aspect.CRYSTAL, 1));
+            } else {
+                addShard("lust", tags().add(Aspect.VOID, 1));
             }
             addShard("sloth", tags().add(FmAspects.NETHER, 1).add(FmAspects.SLOTH, 2).add(Aspect.CRYSTAL, 1));
             addShard("greed", tags().add(FmAspects.NETHER, 1).add(Aspect.GREED, 2).add(Aspect.CRYSTAL, 1));
