@@ -1,8 +1,8 @@
 package dev.visfox.forbiddenreforged.test;
 
 import io.netty.channel.embedded.EmbeddedChannel;
-import java.util.List;
 import net.minecraft.util.RandomSource;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
@@ -23,6 +23,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -31,11 +32,13 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.level.GameType;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.block.Blocks;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.RegisterGameTestsEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import dev.visfox.forbiddenreforged.ForbiddenMagic;
 import dev.visfox.forbiddenreforged.FmAspects;
@@ -240,11 +243,24 @@ public final class EnchantmentGameTests {
     }
 
     private static void impactCoversAThreeByThreePlane(GameTestHelper helper) {
-        List<BlockPos> area = MorphToolItem.impactArea(Direction.UP, BlockPos.ZERO);
-        helper.assertValueEqual(area.size(), 9, "impact covers nine blocks");
-        helper.assertTrue(area.contains(new BlockPos(-1, 0, 1)) && area.contains(new BlockPos(1, 0, -1)), "impact stays in the horizontal plane");
-        helper.assertTrue(MorphToolItem.impactArea(Direction.EAST, BlockPos.ZERO).contains(new BlockPos(0, 1, 1)), "east impact uses the vertical plane");
-        helper.assertValueEqual(MorphToolItem.dominantDirection(new Vec3(0.2, -3.0, 0.1)), Direction.DOWN, "look direction maps to a face");
+        ServerPlayer player = mockPlayer(helper);
+        BlockPos center = helper.absolutePos(new BlockPos(3, 3, 3));
+        player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(FmItems.MORPH_PICKAXE.get()));
+        ItemStack stack = player.getMainHandItem();
+        stack.enchant(helper.getLevel().registryAccess().lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(FmEnchantments.IMPACT), 1);
+        for (int x = -1; x <= 1; x++) {
+            for (int y = -1; y <= 1; y++) {
+                for (int z = -1; z <= 1; z++) {
+                    helper.getLevel().setBlockAndUpdate(center.offset(x, y, z), Blocks.STONE.defaultBlockState());
+                }
+            }
+        }
+        NeoForge.EVENT_BUS.post(new PlayerInteractEvent.LeftClickBlock(player, center, Direction.UP, PlayerInteractEvent.LeftClickBlock.Action.START));
+        player.gameMode.destroyBlock(center);
+        helper.assertTrue(helper.getLevel().getBlockState(center.offset(1, 0, 0)).isAir(), "impact breaks the horizontal plane around the struck block");
+        helper.assertTrue(helper.getLevel().getBlockState(center.offset(1, 0, -1)).isAir(), "impact breaks the whole three by three plane");
+        helper.assertFalse(helper.getLevel().getBlockState(center.above()).isAir(), "impact stays below the struck face");
+        helper.assertFalse(helper.getLevel().getBlockState(center.offset(0, 1, 0)).isAir(), "impact stays out of the vertical plane");
         helper.succeed();
     }
 

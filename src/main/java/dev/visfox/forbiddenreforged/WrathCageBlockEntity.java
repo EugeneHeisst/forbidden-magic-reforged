@@ -54,6 +54,11 @@ public class WrathCageBlockEntity extends TcBlockEntity implements AspectSource,
         return mobId;
     }
 
+    public void cycleMode() {
+        mode = mode >= 2 ? 0 : mode + 1;
+        sync();
+    }
+
     public void setMobId(@Nullable String mobId) {
         if (!Objects.equals(this.mobId, mobId)) {
             special = 0;

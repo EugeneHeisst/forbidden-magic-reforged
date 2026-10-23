@@ -35,6 +35,9 @@ public final class FmWands {
         WandRegistry.registerRod("profaned", 50, Identifier.withDefaultNamespace("bedrock"), 1000,
             null, false, false, false,
             ForbiddenMagic.id("textures/model/wand_rod_profaned.png"));
+        WandRegistry.registerCap("orichalcum", 0.0F, List.of(), 0.0F,
+            Identifier.withDefaultNamespace("command_block"), 1000, null,
+            ForbiddenMagic.id("textures/model/wand_cap_orichalcum.png"));
     }
 
     // Refills any primal below a tenth of capacity while standing in a tainted area (original TaintedWandUpdate).
