@@ -29,6 +29,9 @@ docs/upstream/
 *.key
 *.p12
 
+# Machine-local agent rules (paths, shell, toolchain quirks)
+AGENTS.local.md
+
 # Nested clone of this repository
 forbidden-magic-reforged/
 
