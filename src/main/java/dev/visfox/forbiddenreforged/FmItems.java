@@ -45,7 +45,7 @@ public final class FmItems {
             DEADLY_SHARDS.put(vice, ITEMS.registerSimpleItem(vice + "_shard"));
         }
         GLUTTONY_SHARD = ITEMS.registerSimpleItem("gluttony_shard", properties -> Registration.food(properties, 2, 0.1F));
-        SKULL_AXE = ITEMS.registerItem("skull_axe", Item::new,
+        SKULL_AXE = ITEMS.registerItem("skull_axe", SkullAxeItem::new,
             properties -> Registration.sword(properties.rarity(Rarity.UNCOMMON), TcMaterials.ELEMENTAL_TOOL, 3.0F, -2.4F)
                 .repairable(ModItems.THAUMIUM_INGOT.get()));
         EMERALD_FRAGMENT = ITEMS.registerSimpleItem("emerald_fragment");
