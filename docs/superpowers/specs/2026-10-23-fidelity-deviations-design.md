@@ -46,9 +46,10 @@ items that do not exist in the original. Everything below was checked against `.
 
 ## C. Fix inside the in-flight work
 
-- **`SkullAxeItem extends Item` is a regression.** The original is `ItemSkullAxe extends ItemSword` and overrides
-  only `getDigSpeed`. Keep `getDestroySpeed() == 1.0F`, but inherit the sword class, or the axe loses sword
-  behaviour (sweep, attack semantics) while also being a 1.0-speed tool.
+- **`SkullAxeItem extends Item` is correct — do not "fix" it.** MC 26.3 has no `SwordItem` class; sword behaviour
+  comes from `Item.Properties.sword(...)` → `ToolMaterial.applySwordProperties` (tool actions, weapon component,
+  damage/speed attributes). The original's `extends ItemSword` is the 1.7.10 idiom, not a requirement. The only
+  thing that matters is the `getDestroySpeed() == 1.0F` override, which is already there.
 - **Phase gate is fine as written.** `hasTags(stack)` (morph state / enchantments / custom name) is equivalent in
   practice to the original `itemstack.hasTagCompound()`: a fresh tool has neither, an enchanted one has both.
   Keep the check before the phase write; no further change.
