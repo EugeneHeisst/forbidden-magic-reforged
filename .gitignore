@@ -35,3 +35,6 @@ forbidden-magic-reforged/
 # Local scratch and diagnostic output
 .api-check/
 .superpowers/
+
+# Local tool config
+opencode.jsonc*
