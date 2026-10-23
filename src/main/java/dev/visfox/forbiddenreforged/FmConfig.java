@@ -24,7 +24,7 @@ public final class FmConfig {
         wrathCost = BUILDER.comment("Essentia cost per spawn round.").defineInRange("general.wrath_cost", 5, 0, 64);
         wrathEff = BUILDER.comment("Spawns granted per essentia cost.").defineInRange("general.wrath_eff", 4, 1, 64);
         wrathCrazy = BUILDER.comment("Let the cage imprint on any non-boss mob.").define("general.wrath_crazy", false);
-        spork = BUILDER.comment("Rename the Diabolist Fork to 'Diabolist Spork'.").define("general.spork", false);
+        spork = BUILDER.comment("Rename the Diabolist Fork to 'Diabolist Spork' and use the spork texture.").define("general.spork", false);
         SPEC = BUILDER.build();
     }
 

@@ -1,7 +1,17 @@
 package dev.visfox.forbiddenreforged.test;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import io.netty.channel.embedded.EmbeddedChannel;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import net.minecraft.util.RandomSource;
 import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
@@ -51,7 +61,8 @@ public final class BlockGameTests {
         "blocks_drop_themselves",
         "taint_sapling_grows_a_tree",
         "umbral_plants_are_registered",
-        "arcane_cake_feeds_and_keeps_slices"
+        "arcane_cake_feeds_and_keeps_slices",
+        "taint_log_uses_weighted_gross_side_models"
     };
 
     static {
@@ -61,6 +72,7 @@ public final class BlockGameTests {
         FUNCTIONS.register(TESTS[3], () -> BlockGameTests::taintSaplingGrowsATree);
         FUNCTIONS.register(TESTS[4], () -> BlockGameTests::umbralPlantsAreRegistered);
         FUNCTIONS.register(TESTS[5], () -> BlockGameTests::arcaneCakeFeedsAndKeepsSlices);
+        FUNCTIONS.register(TESTS[6], () -> BlockGameTests::taintLogUsesWeightedGrossSideModels);
     }
 
     private BlockGameTests() {}
@@ -168,5 +180,29 @@ public final class BlockGameTests {
         helper.assertValueEqual(level.getBlockState(pos).getValue(ArcaneCakeBlock.SLICE), 1, "one slice eaten");
         helper.assertValueEqual(player.getFoodData().getFoodLevel(), 12, "cake restores two hunger");
         helper.succeed();
+    }
+
+    private static void taintLogUsesWeightedGrossSideModels(GameTestHelper helper) {
+        try (InputStream stream = ForbiddenMagic.class.getResourceAsStream("/assets/forbiddenmagic/blockstates/taint_log.json")) {
+            helper.assertTrue(stream != null, "taint log blockstate must ship with the mod");
+            JsonObject root = JsonParser.parseReader(new InputStreamReader(stream, StandardCharsets.UTF_8)).getAsJsonObject();
+            for (String axis : List.of("axis=x", "axis=y", "axis=z")) {
+                JsonArray variants = root.getAsJsonObject("variants").get(axis).getAsJsonArray();
+                helper.assertValueEqual(variants.size(), 3, axis + " must offer one normal and two gross models");
+                Set<String> models = new HashSet<>();
+                int totalWeight = 0;
+                for (JsonElement element : variants) {
+                    JsonObject entry = element.getAsJsonObject();
+                    models.add(entry.get("model").getAsString());
+                    totalWeight += entry.has("weight") ? entry.get("weight").getAsInt() : 1;
+                }
+                helper.assertValueEqual(totalWeight, 8, axis + " weights must be 6+1+1");
+                helper.assertTrue(models.stream().anyMatch(model -> model.contains("taint_log_gross")), axis + " must include a gross side");
+                helper.assertTrue(models.stream().anyMatch(model -> model.contains("taint_log_gross2")), axis + " must include the second gross side");
+            }
+            helper.succeed();
+        } catch (IOException e) {
+            helper.fail("could not read the taint log blockstate: " + e);
+        }
     }
 }

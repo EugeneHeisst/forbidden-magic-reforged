@@ -1,11 +1,21 @@
 package dev.visfox.forbiddenreforged.test;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.gametest.framework.FunctionGameTestInstance;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.gametest.framework.TestData;
@@ -16,6 +26,10 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.CookingFuel;
+import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.RegisterGameTestsEvent;
@@ -43,24 +57,28 @@ public final class ItemGameTests {
         "skull_axe_infusion_recipe_matches_original",
         "diabolist_fork_research_and_recipe",
         "taint_coal_is_registered_and_is_fuel",
+        "taint_coal_burn_time_varies_within_original_range",
         "emerald_fragment_is_registered",
         "riding_crop_is_registered_as_sword",
         "wand_rods_register_as_functional_cores",
         "creative_tab_is_registered_with_fork_icon",
         "creative_tab_lists_every_registered_item",
-        "orichalcum_cap_is_registered"
+        "orichalcum_cap_is_registered",
+        "diabolist_fork_switches_to_the_spork_model"
     };
 
     static {
         FUNCTIONS.register(TESTS[0], () -> ItemGameTests::skullAxeInfusionRecipeMatchesOriginal);
         FUNCTIONS.register(TESTS[1], () -> ItemGameTests::diabolistForkResearchAndRecipe);
         FUNCTIONS.register(TESTS[2], () -> ItemGameTests::taintCoalIsRegisteredAndIsFuel);
-        FUNCTIONS.register(TESTS[3], () -> ItemGameTests::emeraldFragmentIsRegistered);
-        FUNCTIONS.register(TESTS[4], () -> ItemGameTests::ridingCropIsRegisteredAsSword);
-        FUNCTIONS.register(TESTS[5], () -> ItemGameTests::wandRodsRegisterAsFunctionalCores);
-        FUNCTIONS.register(TESTS[6], () -> ItemGameTests::creativeTabIsRegisteredWithForkIcon);
-        FUNCTIONS.register(TESTS[7], () -> ItemGameTests::creativeTabListsEveryRegisteredItem);
-        FUNCTIONS.register(TESTS[8], () -> ItemGameTests::orichalcumCapIsRegistered);
+        FUNCTIONS.register(TESTS[3], () -> ItemGameTests::taintCoalBurnTimeVariesWithinOriginalRange);
+        FUNCTIONS.register(TESTS[4], () -> ItemGameTests::emeraldFragmentIsRegistered);
+        FUNCTIONS.register(TESTS[5], () -> ItemGameTests::ridingCropIsRegisteredAsSword);
+        FUNCTIONS.register(TESTS[6], () -> ItemGameTests::wandRodsRegisterAsFunctionalCores);
+        FUNCTIONS.register(TESTS[7], () -> ItemGameTests::creativeTabIsRegisteredWithForkIcon);
+        FUNCTIONS.register(TESTS[8], () -> ItemGameTests::creativeTabListsEveryRegisteredItem);
+        FUNCTIONS.register(TESTS[9], () -> ItemGameTests::orichalcumCapIsRegistered);
+        FUNCTIONS.register(TESTS[10], () -> ItemGameTests::diabolistForkSwitchesToTheSporkModel);
     }
 
     private ItemGameTests() {}
@@ -112,6 +130,24 @@ public final class ItemGameTests {
         helper.assertFalse(stack.isEmpty(), "taint coal must exist");
         helper.assertValueEqual(BuiltInRegistries.ITEM.getKey(stack.getItem()), Identifier.parse("forbiddenmagic:taint_coal"), "taint coal id");
         helper.assertTrue(stack.has(DataComponents.COOKING_FUEL), "taint coal is a fuel");
+        helper.succeed();
+    }
+
+    private static void taintCoalBurnTimeVariesWithinOriginalRange(GameTestHelper helper) {
+        ItemStack stack = new ItemStack(FmItems.TAINT_COAL.get());
+        CookingFuel fuel = stack.get(DataComponents.COOKING_FUEL);
+        helper.assertTrue(fuel != null, "taint coal carries a cooking fuel component");
+        LootContext context = new LootContext.Builder(
+            new LootParams.Builder(helper.getLevel()).create(LootContextParamSets.EMPTY)
+        ).create(Optional.empty());
+        Set<Integer> drawn = new HashSet<>();
+        for (int i = 0; i < 40; i++) {
+            int burn = fuel.burnTime().get(context, 0);
+            helper.assertTrue(burn >= 1 && burn <= 2400, "burn time " + burn + " must stay within 1..2400");
+            drawn.add(burn);
+        }
+        helper.assertTrue(drawn.size() > 1, "burn time must be drawn per use, not a constant");
+        helper.assertTrue(ItemStack.CODEC.encodeStart(NbtOps.INSTANCE, stack).result().isPresent(), "taint coal must serialize its fuel component");
         helper.succeed();
     }
 
@@ -191,5 +227,30 @@ public final class ItemGameTests {
         helper.assertValueEqual(cap.craftCost(), 1000, "orichalcum craft cost is 1000");
         helper.assertTrue(cap.specialAspects().isEmpty(), "orichalcum has no special aspects");
         helper.succeed();
+    }
+
+    private static void diabolistForkSwitchesToTheSporkModel(GameTestHelper helper) {
+        JsonObject definition = readJson(helper, "/assets/forbiddenmagic/items/diabolist_fork.json");
+        JsonObject model = definition.getAsJsonObject("model");
+        helper.assertValueEqual(model.get("type").getAsString(), "minecraft:condition", "the fork model is conditional");
+        helper.assertValueEqual(model.get("property").getAsString(), "forbiddenmagic:spork", "condition reads the spork config");
+        helper.assertValueEqual(model.getAsJsonObject("on_true").get("model").getAsString(), "forbiddenmagic:item/diabolist_fork_spork", "on_true is the spork");
+        helper.assertValueEqual(model.getAsJsonObject("on_false").get("model").getAsString(), "forbiddenmagic:item/diabolist_fork", "on_false is the ordinary fork");
+        JsonObject spork = readJson(helper, "/assets/forbiddenmagic/models/item/diabolist_fork_spork.json");
+        helper.assertValueEqual(spork.getAsJsonObject("textures").get("layer0").getAsString(), "forbiddenmagic:item/spork", "spork model uses the spork texture");
+        helper.assertTrue(ForbiddenMagic.class.getResourceAsStream("/assets/forbiddenmagic/textures/item/spork.png") != null, "spork texture ships with the mod");
+        helper.succeed();
+    }
+
+    private static JsonObject readJson(GameTestHelper helper, String path) {
+        try (InputStream stream = ForbiddenMagic.class.getResourceAsStream(path)) {
+            if (stream == null) {
+                helper.fail("missing resource " + path);
+            }
+            return JsonParser.parseReader(new InputStreamReader(stream, StandardCharsets.UTF_8)).getAsJsonObject();
+        } catch (IOException e) {
+            helper.fail("could not read " + path + ": " + e);
+            return new JsonObject();
+        }
     }
 }

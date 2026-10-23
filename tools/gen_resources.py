@@ -42,6 +42,16 @@ MORPH_TEXTURES = {
     "morph_axe": ("chameleonaxe", "eyeaxe"),
 }
 
+# Extra layer0 models referenced from conditional item definitions (model name -> texture name).
+EXTRA_ITEM_MODELS = {
+    "diabolist_fork_spork": "spork",
+}
+
+# Items whose definition picks a model with a condition (item -> (property, on_true model)).
+ITEM_CONDITIONS = {
+    "diabolist_fork": ("forbiddenmagic:spork", "diabolist_fork_spork"),
+}
+
 # Two-layer items: base texture + ornament overlay (id == layer0 texture name).
 TWO_LAYER_TEXTURES = {
     "blink_focus": "blink_focus_ornament",
@@ -72,6 +82,7 @@ def generate_lang() -> None:
 
 def generate_items() -> None:
     missing = [name for name in ITEM_TEXTURES if not (TEXTURES / f"{name}.png").is_file()]
+    missing += [texture for texture in EXTRA_ITEM_MODELS.values() if not (TEXTURES / f"{texture}.png").is_file()]
     if missing:
         raise SystemExit(f"no texture for {missing}")
     for name in sorted(ITEM_TEXTURES):
@@ -79,10 +90,24 @@ def generate_items() -> None:
             "parent": "minecraft:item/generated",
             "textures": {"layer0": f"forbiddenmagic:item/{name}"},
         })
-        write_json(ASSETS / "items" / f"{name}.json", {
-            "model": {"type": "minecraft:model", "model": f"forbiddenmagic:item/{name}"},
+        condition = ITEM_CONDITIONS.get(name)
+        if condition is None:
+            definition = {"model": {"type": "minecraft:model", "model": f"forbiddenmagic:item/{name}"}}
+        else:
+            property_id, on_true = condition
+            definition = {"model": {
+                "type": "minecraft:condition",
+                "property": property_id,
+                "on_true": {"type": "minecraft:model", "model": f"forbiddenmagic:item/{on_true}"},
+                "on_false": {"type": "minecraft:model", "model": f"forbiddenmagic:item/{name}"},
+            }}
+        write_json(ASSETS / "items" / f"{name}.json", definition)
+    for name, texture in sorted(EXTRA_ITEM_MODELS.items()):
+        write_json(ASSETS / "models" / "item" / f"{name}.json", {
+            "parent": "minecraft:item/generated",
+            "textures": {"layer0": f"forbiddenmagic:item/{texture}"},
         })
-    print(f"items: {len(ITEM_TEXTURES)} models and definitions")
+    print(f"items: {len(ITEM_TEXTURES)} models and definitions, {len(EXTRA_ITEM_MODELS)} extra models")
 
 
 def generate_morph_items() -> None:
@@ -158,9 +183,21 @@ def generate_blocks() -> None:
         })
     write_json(ASSETS / "blockstates" / "taint_log.json", {
         "variants": {
-            "axis=x": {"model": "forbiddenmagic:block/taint_log_horizontal", "x": 90, "y": 90},
-            "axis=y": {"model": "forbiddenmagic:block/taint_log"},
-            "axis=z": {"model": "forbiddenmagic:block/taint_log_horizontal", "x": 90},
+            "axis=x": [
+                {"model": "forbiddenmagic:block/taint_log_horizontal", "x": 90, "y": 90, "weight": 6},
+                {"model": "forbiddenmagic:block/taint_log_gross_horizontal", "x": 90, "y": 90},
+                {"model": "forbiddenmagic:block/taint_log_gross2_horizontal", "x": 90, "y": 90},
+            ],
+            "axis=y": [
+                {"model": "forbiddenmagic:block/taint_log", "weight": 6},
+                {"model": "forbiddenmagic:block/taint_log_gross"},
+                {"model": "forbiddenmagic:block/taint_log_gross2"},
+            ],
+            "axis=z": [
+                {"model": "forbiddenmagic:block/taint_log_horizontal", "x": 90, "weight": 6},
+                {"model": "forbiddenmagic:block/taint_log_gross_horizontal", "x": 90},
+                {"model": "forbiddenmagic:block/taint_log_gross2_horizontal", "x": 90},
+            ],
         }
     })
     write_json(ASSETS / "models" / "block" / "taint_log.json", {
@@ -171,6 +208,15 @@ def generate_blocks() -> None:
         "parent": "minecraft:block/cube_column_horizontal",
         "textures": {"end": "forbiddenmagic:block/taint_log_bottom", "side": "forbiddenmagic:block/taint_log_side"},
     })
+    for gross in ("gross", "gross2"):
+        write_json(ASSETS / "models" / "block" / f"taint_log_{gross}.json", {
+            "parent": "minecraft:block/cube_column",
+            "textures": {"end": "forbiddenmagic:block/taint_log_bottom", "side": f"forbiddenmagic:block/taint_log_side_{gross}"},
+        })
+        write_json(ASSETS / "models" / "block" / f"taint_log_{gross}_horizontal.json", {
+            "parent": "minecraft:block/cube_column_horizontal",
+            "textures": {"end": "forbiddenmagic:block/taint_log_bottom", "side": f"forbiddenmagic:block/taint_log_side_{gross}"},
+        })
     write_json(ASSETS / "models" / "item" / "taint_log.json", {"parent": "forbiddenmagic:block/taint_log"})
     write_json(ASSETS / "items" / "taint_log.json", {
         "model": {"type": "minecraft:model", "model": "forbiddenmagic:block/taint_log"},

@@ -6,6 +6,7 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.client.event.RegisterConditionalItemModelPropertyEvent;
 
 @EventBusSubscriber(modid = ForbiddenMagic.MODID, value = Dist.CLIENT)
 public final class FmClientEvents {
@@ -15,5 +16,10 @@ public final class FmClientEvents {
     @SubscribeEvent
     public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerBlockEntityRenderer(FmBlockEntities.WRATH_CAGE.get(), WrathCageRenderer::new);
+    }
+
+    @SubscribeEvent
+    public static void registerItemModelProperties(RegisterConditionalItemModelPropertyEvent event) {
+        event.register(ForbiddenMagic.id("spork"), SporkCondition.MAP_CODEC);
     }
 }
