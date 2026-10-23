@@ -150,7 +150,7 @@ public final class FmRecipes {
             3, 3,
             List.of(
                 TcIngredient.item("minecraft:stone"), TcIngredient.item("minecraft:stone"), TcIngredient.item("minecraft:stone"),
-                TcIngredient.item("minecraft:stone"), TcIngredient.item(FmItems.id("taint").toString()), TcIngredient.item("minecraft:stone"),
+                TcIngredient.item("minecraft:stone"), TcIngredient.tag("forbiddenmagic:taint_shards"), TcIngredient.item("minecraft:stone"),
                 TcIngredient.item("minecraft:stone"), TcIngredient.item("minecraft:stone"), TcIngredient.item("minecraft:stone")
             )));
         TcRecipes.register(new CraftingRecipeRef("TaintBrick", "TAINTSTONE",

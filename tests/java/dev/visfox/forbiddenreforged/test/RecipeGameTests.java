@@ -20,6 +20,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
@@ -63,7 +64,8 @@ public final class RecipeGameTests {
         "materials_have_crafting_recipes",
         "plant_research_and_recipes",
         "wand_rod_recipes_registered",
-        "taintstone_research_and_arcane_recipe"
+        "taintstone_research_and_arcane_recipe",
+        "ore_dictionary_entries_became_tags"
     };
 
     static {
@@ -75,6 +77,7 @@ public final class RecipeGameTests {
         FUNCTIONS.register(TESTS[5], () -> RecipeGameTests::plantResearchAndRecipes);
         FUNCTIONS.register(TESTS[6], () -> RecipeGameTests::wandRodRecipesRegistered);
         FUNCTIONS.register(TESTS[7], () -> RecipeGameTests::taintstoneResearchAndArcaneRecipe);
+        FUNCTIONS.register(TESTS[8], () -> RecipeGameTests::oreDictionaryEntriesBecameTags);
     }
 
     private RecipeGameTests() {}
@@ -241,6 +244,19 @@ public final class RecipeGameTests {
         TcRecipe brick = TcRecipes.get("TaintBrick");
         helper.assertTrue(brick instanceof CraftingRecipeRef ref, "brick recipe is registered as a reference");
         helper.assertValueEqual(((CraftingRecipeRef) brick).recipe(), ForbiddenMagic.id("taint_stone_brick"), "brick recipe id");
+        helper.succeed();
+    }
+
+    private static void oreDictionaryEntriesBecameTags(GameTestHelper helper) {
+        TagKey<Item> netherStars = TagKey.create(Registries.ITEM, Identifier.parse("c:nether_stars"));
+        helper.assertTrue(new ItemStack(FmBlocks.STAR_BLOCK.get().asItem()).is(netherStars), "the star block joins c:nether_stars like the blockNetherStar ore entry");
+
+        TagKey<Item> taintShards = TagKey.create(Registries.ITEM, Identifier.parse("forbiddenmagic:taint_shards"));
+        helper.assertTrue(new ItemStack(FmItems.DEADLY_SHARDS.get("taint").get()).is(taintShards), "the taint shard joins forbiddenmagic:taint_shards like the resourceTaint ore entry");
+
+        ShapedArcaneRecipe recipe = (ShapedArcaneRecipe) TcRecipes.get("TaintStone");
+        helper.assertTrue(recipe != null, "taint stone recipe exists");
+        helper.assertTrue(recipe.grid().get(4).test(new ItemStack(FmItems.DEADLY_SHARDS.get("taint").get())), "the arcane centre accepts the taint shard tag");
         helper.succeed();
     }
 }
