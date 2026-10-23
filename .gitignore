@@ -31,3 +31,7 @@ docs/upstream/
 
 # Nested clone of this repository
 forbidden-magic-reforged/
+
+# Local scratch and diagnostic output
+.api-check/
+.superpowers/
