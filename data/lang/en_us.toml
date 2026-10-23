@@ -38,6 +38,7 @@ CLUSTER = "Enchantment: Fiery Core"
 IMPACT = "Enchantment: Impact"
 VOIDTOUCHED = "Enchantment: Voidtouched"
 TAINTTREE = "Tainted Tree"
+TAINTSTONE = "Tainted Stone"
 BLACKFLOWER = "Umbral Rose"
 ARCANECAKE = "Thaumic Cake"
 WRATHCAGE = "Wrath Cage"
@@ -51,6 +52,7 @@ CLUSTER = "Chameleon of the Core"
 IMPACT = "Someday that wall is gonna fall."
 VOIDTOUCHED = "Colour Out of Space"
 TAINTTREE = "The root of flux bears gross fruit"
+TAINTSTONE = "The Taint rocks on"
 BLACKFLOWER = "Save the squid!"
 ARCANECAKE = "Let them eat cake."
 WRATHCAGE = "Neverending battle"
@@ -127,6 +129,9 @@ wrath_cage = "Wrath Cage"
 
 [forbiddenmagic.research_page.TAINTTREE]
 1 = "The sick, twisted runoff of magical experiments can take on a strange life of its own. Most plants are unable to survive in Tainted Lands, but you've found a way to grow one that can. By steeping a sapling in taint, you create a tree that can thrive in Tainted Lands.<BR><BR>Its wood can also be turned into planks which are resistant to fibrous taint, allowing you to build structures safe from spreading taint.<BR><BR>The tree also seems to bear fruit, but eating them is not recommended..."
+
+[forbiddenmagic.research_page.TAINTSTONE]
+1 = "Tainted Lands aren't very safe places to be. Fibrous Taint hungrily spreads and crawls over most surfaces, eventually enveloping them and making them unsafe to walk on. The fibers don't appear to be harmful to tainted creatures or materials, however.<BR><BR>By mixing taint in with regular stone, you've created a magical material which is structurally stable, but resistant to the spread of fibrous taint. Tainted Stone can be used to build surfaces in Tainted Lands which are safe to walk on.<BR><BR>Not that building in a Tainted Land is advised..."
 
 [forbiddenmagic.research_page.BLACKFLOWER]
 1 = "There's no sight more pathetic than a soggy Thaumaturge.  For all your great and miraculous powers, you still have to go jump in the nearest lake and hunt for squids every time you want to refill your inkwell.<BR><BR>You're done squid hunting.  By infusing a rose with tenebrae and victus, you create a flower that spreads like a weed and whose petals can be crushed for ink."

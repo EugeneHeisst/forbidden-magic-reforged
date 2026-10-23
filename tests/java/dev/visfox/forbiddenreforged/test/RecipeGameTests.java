@@ -37,9 +37,11 @@ import dev.visfox.forbiddenreforged.FmRecipes;
 import thaumcraft.aspect.Aspect;
 import thaumcraft.aspect.AspectList;
 import thaumcraft.aspect.AspectRegistry;
+import thaumcraft.crafting.CraftingRecipeRef;
 import thaumcraft.crafting.CrucibleRecipe;
 import thaumcraft.crafting.InfusionEnchantmentRecipe;
 import thaumcraft.crafting.InfusionRecipe;
+import thaumcraft.crafting.ShapedArcaneRecipe;
 import thaumcraft.crafting.TcIngredient;
 import thaumcraft.crafting.TcRecipe;
 import thaumcraft.crafting.TcRecipes;
@@ -60,7 +62,8 @@ public final class RecipeGameTests {
         "morph_recipes_match_the_original",
         "materials_have_crafting_recipes",
         "plant_research_and_recipes",
-        "wand_rod_recipes_registered"
+        "wand_rod_recipes_registered",
+        "taintstone_research_and_arcane_recipe"
     };
 
     static {
@@ -71,6 +74,7 @@ public final class RecipeGameTests {
         FUNCTIONS.register(TESTS[4], () -> RecipeGameTests::materialsHaveCraftingRecipes);
         FUNCTIONS.register(TESTS[5], () -> RecipeGameTests::plantResearchAndRecipes);
         FUNCTIONS.register(TESTS[6], () -> RecipeGameTests::wandRodRecipesRegistered);
+        FUNCTIONS.register(TESTS[7], () -> RecipeGameTests::taintstoneResearchAndArcaneRecipe);
     }
 
     private RecipeGameTests() {}
@@ -210,6 +214,33 @@ public final class RecipeGameTests {
         helper.assertTrue(infernalRod != null, "infernal rod recipe must exist");
         helper.assertValueEqual(infernalRod.instability(), 5, "infernal rod instability");
         helper.assertValueEqual(infernalRod.aspects().getAmount(FmAspects.NETHER), 32, "infernal rod nether cost");
+        helper.succeed();
+    }
+
+    private static void taintstoneResearchAndArcaneRecipe(GameTestHelper helper) {
+        ResearchItem research = ResearchCategories.getResearch("TAINTSTONE");
+        helper.assertTrue(research != null, "taint stone research must exist");
+        helper.assertTrue(research.isConcealed(), "taint stone research is concealed");
+        helper.assertValueEqual(research.pages().size(), 3, "taint stone has text, arcane and brick pages");
+        helper.assertValueEqual(research.parents(), List.of("THAUMIUM", "INFUSION", "ETHEREALBLOOM"), "taint stone parents");
+
+        ShapedArcaneRecipe recipe = (ShapedArcaneRecipe) TcRecipes.get("TaintStone");
+        helper.assertTrue(recipe != null, "taint stone arcane recipe exists");
+        helper.assertValueEqual(recipe.width(), 3, "taint stone grid width");
+        helper.assertValueEqual(recipe.height(), 3, "taint stone grid height");
+        ItemStack result = recipe.result().create();
+        helper.assertTrue(result.is(FmBlocks.TAINT_STONE_SMOOTH.get().asItem()), "arcane recipe yields tainted stone");
+        helper.assertValueEqual(result.getCount(), 9, "arcane recipe yields nine blocks");
+        helper.assertValueEqual(recipe.aspects().getAmount(Aspect.ENTROPY), 2, "taint stone entropy cost");
+        helper.assertValueEqual(recipe.aspects().getAmount(Aspect.ORDER), 1, "taint stone order cost");
+        helper.assertTrue(recipe.grid().get(4).test(new ItemStack(FmItems.DEADLY_SHARDS.get("taint").get())), "centre slot takes a taint shard");
+        for (int slot : new int[]{0, 1, 2, 3, 5, 6, 7, 8}) {
+            helper.assertTrue(recipe.grid().get(slot).test(new ItemStack(Items.STONE)), "slot " + slot + " takes plain stone");
+        }
+
+        TcRecipe brick = TcRecipes.get("TaintBrick");
+        helper.assertTrue(brick instanceof CraftingRecipeRef ref, "brick recipe is registered as a reference");
+        helper.assertValueEqual(((CraftingRecipeRef) brick).recipe(), ForbiddenMagic.id("taint_stone_brick"), "brick recipe id");
         helper.succeed();
     }
 }

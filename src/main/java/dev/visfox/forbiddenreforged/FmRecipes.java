@@ -4,9 +4,11 @@ import java.util.List;
 import java.util.Set;
 import thaumcraft.aspect.Aspect;
 import thaumcraft.aspect.AspectList;
+import thaumcraft.crafting.CraftingRecipeRef;
 import thaumcraft.crafting.CrucibleRecipe;
 import thaumcraft.crafting.InfusionEnchantmentRecipe;
 import thaumcraft.crafting.InfusionRecipe;
+import thaumcraft.crafting.ShapedArcaneRecipe;
 import thaumcraft.crafting.ShapelessArcaneRecipe;
 import thaumcraft.crafting.TcIngredient;
 import thaumcraft.crafting.TcRecipes;
@@ -15,7 +17,8 @@ import thaumcraft.crafting.TcStack;
 public final class FmRecipes {
     public static final Set<String> OWN_KEYS = Set.of("SKULLAXE", "FORK", "WRATH", "GREEDY", "CONSUMING", "EDUCATIONAL", "CORRUPTING",
         "MORPHPICK", "MORPHSWORD", "MORPHSHOVEL", "MORPHAXE", "CLUSTER", "IMPACT", "VOIDTOUCHED", "TAINTTREE", "BLACKFLOWER", "ARCANECAKE",
-        "WRATHCAGE", "MOBCRYSTAL", "ROD_TAINTED", "ROD_INFERNAL", "TAINTSHOVEL", "TAINTPICK", "CRYSTALWELL", "PRIMEWELL", "FOCUSBLINK", "RINGFOOD");
+        "WRATHCAGE", "MOBCRYSTAL", "ROD_TAINTED", "ROD_INFERNAL", "TAINTSHOVEL", "TAINTPICK", "CRYSTALWELL", "PRIMEWELL", "FOCUSBLINK", "RINGFOOD",
+        "TaintStone", "TaintBrick");
 
     private FmRecipes() {
     }
@@ -141,6 +144,17 @@ public final class FmRecipes {
             TcIngredient.item("minecraft:oak_sapling"), new AspectList().add(Aspect.TAINT, 10).add(Aspect.POISON, 4)));
         TcRecipes.register(new CrucibleRecipe("BLACKFLOWER", "BLACKFLOWER", TcStack.of("forbiddenmagic:umbral_rose_bush", 1),
             TcIngredient.item("minecraft:rose_bush"), new AspectList().add(Aspect.DARKNESS, 8).add(Aspect.LIFE, 5)));
+        TcRecipes.register(new ShapedArcaneRecipe("TaintStone", "TAINTSTONE",
+            TcStack.of("forbiddenmagic:taint_stone_smooth", 9),
+            new AspectList().add(Aspect.ENTROPY, 2).add(Aspect.ORDER, 1),
+            3, 3,
+            List.of(
+                TcIngredient.item("minecraft:stone"), TcIngredient.item("minecraft:stone"), TcIngredient.item("minecraft:stone"),
+                TcIngredient.item("minecraft:stone"), TcIngredient.item(FmItems.id("taint").toString()), TcIngredient.item("minecraft:stone"),
+                TcIngredient.item("minecraft:stone"), TcIngredient.item("minecraft:stone"), TcIngredient.item("minecraft:stone")
+            )));
+        TcRecipes.register(new CraftingRecipeRef("TaintBrick", "TAINTSTONE",
+            ForbiddenMagic.id("taint_stone_brick"), TcStack.of("forbiddenmagic:taint_stone_brick", 4)));
         TcRecipes.register(new InfusionRecipe(
             "WRATHCAGE",
             "WRATHCAGE",

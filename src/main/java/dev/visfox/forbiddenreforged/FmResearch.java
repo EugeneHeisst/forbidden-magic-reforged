@@ -124,6 +124,15 @@ public final class FmResearch {
             .setParents("THAUMIUM", "INFUSION", "ETHEREALBLOOM")
             .setConcealed()
             .registerResearchItem();
+        new ResearchItem("TAINTSTONE", "FORBIDDEN", new AspectList().add(Aspect.EARTH, 4).add(Aspect.TAINT, 6).add(Aspect.ORDER, 2), -10, 3, 2, TcStack.of("forbiddenmagic:taint_stone_brick", 1))
+            .setPages(
+                ResearchPage.text("forbiddenmagic.research_page.TAINTSTONE.1"),
+                ResearchPage.arcane("TaintStone"),
+                ResearchPage.crafting("TaintBrick")
+            )
+            .setParents("THAUMIUM", "INFUSION", "ETHEREALBLOOM")
+            .setConcealed()
+            .registerResearchItem();
         new ResearchItem("BLACKFLOWER", "FORBIDDEN", new AspectList().add(Aspect.PLANT, 3).add(Aspect.SENSES, 2).add(Aspect.DARKNESS, 4), -2, -6, 1, TcStack.of("forbiddenmagic:umbral_rose", 1))
             .setPages(ResearchPage.text("forbiddenmagic.research_page.BLACKFLOWER.1"), ResearchPage.crucible("BLACKFLOWER"))
             .setAspectTriggers(Aspect.SENSES)
