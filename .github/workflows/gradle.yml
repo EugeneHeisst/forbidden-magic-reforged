@@ -38,7 +38,10 @@ jobs:
           cache-read-only: ${{ github.event_name == 'pull_request' }}
 
       - name: Prepare host (pin + patches)
-        run: python3 tools/prepare_host.py
+        run: |
+          git config --global user.email "ci@github-actions.local"
+          git config --global user.name "GitHub Actions"
+          python3 tools/prepare_host.py
 
       - name: Build and publish host to local maven/
         working-directory: host
