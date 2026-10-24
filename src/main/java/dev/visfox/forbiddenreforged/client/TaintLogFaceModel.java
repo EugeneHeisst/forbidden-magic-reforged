@@ -36,6 +36,11 @@ public record TaintLogFaceModel(BlockStateModelPart[][] models) implements Dynam
             ForbiddenMagic.id("block/taint_log_horizontal"),
             ForbiddenMagic.id("block/taint_log_gross_horizontal"),
             ForbiddenMagic.id("block/taint_log_gross2_horizontal")
+        },
+        {
+            ForbiddenMagic.id("block/taint_log_horizontal"),
+            ForbiddenMagic.id("block/taint_log_gross_horizontal"),
+            ForbiddenMagic.id("block/taint_log_gross2_horizontal")
         }
     };
 
