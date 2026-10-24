@@ -193,6 +193,17 @@ public final class FmResearch {
             .setParents("ROD_silverwood", "INFUSION", "NETHERSHARDS")
             .setConcealed()
             .registerResearchItem();
+        if (!FmConfig.lustDisabled()) {
+            new FmResearchItem("SUBCOLLAR", "FORBIDDEN", new AspectList().add(Aspect.AURA, 3).add(FmAspects.LUST, 8).add(Aspect.MAGIC, 3).add(Aspect.TRAP, 6).add(Aspect.FLESH, 4), -11, -5, 2, TcStack.of("forbiddenmagic:sub_collar", 1))
+                .setPages(
+                    ResearchPage.text("forbiddenmagic.research_page.SUBCOLLAR.1"),
+                    ResearchPage.infusion("SUBCOLLAR")
+                )
+                .setParents("NETHERSHARDS", "VISAMULET", "INFUSION")
+                .setAspectTriggers(FmAspects.LUST)
+                .setHidden()
+                .registerResearchItem();
+        }
         new FmResearchItem("ROD_witchwood", "FORBIDDEN", new AspectList().add(Aspect.TREE, 3).add(Aspect.MAGIC, 2), -10, -5, 2, TcStack.of(FmItems.WITCHWOOD_ROD.getId().toString(), 1))
             .setPages(ResearchPage.text("forbiddenmagic.research_page.ROD_witchwood.1"))
             .setParents("NETHERSHARDS")

@@ -33,6 +33,7 @@ ITEM_TEXTURES = {
     "taint_pickaxe": "taint_pickaxe",
     "crystalwell": "crystalwell",
     "primewell": "primewell",
+    "sub_collar": "collar",
 }
 
 MORPH_TEXTURES = {

@@ -51,6 +51,7 @@ import thaumcraft.crafting.TcStack;
 import thaumcraft.research.ResearchCategories;
 import thaumcraft.research.ResearchItem;
 import thaumcraft.research.ResearchManager;
+import thaumcraft.registry.ModItems;
 
 @EventBusSubscriber(modid = ForbiddenMagic.MODID)
 public final class RecipeGameTests {
@@ -68,7 +69,8 @@ public final class RecipeGameTests {
         "taintstone_research_and_arcane_recipe",
         "ore_dictionary_entries_became_tags",
         "emerald_transmutation_matches_original",
-        "ring_food_recipe_matches_original"
+        "ring_food_recipe_matches_original",
+        "subcollar_matches_original"
     };
 
     static {
@@ -83,6 +85,7 @@ public final class RecipeGameTests {
         FUNCTIONS.register(TESTS[8], () -> RecipeGameTests::oreDictionaryEntriesBecameTags);
         FUNCTIONS.register(TESTS[9], () -> RecipeGameTests::emeraldTransmutationMatchesOriginal);
         FUNCTIONS.register(TESTS[10], () -> RecipeGameTests::ringFoodRecipeMatchesOriginal);
+        FUNCTIONS.register(TESTS[11], () -> RecipeGameTests::subcollarMatchesOriginal);
     }
 
     private RecipeGameTests() {}
@@ -313,6 +316,41 @@ public final class RecipeGameTests {
         helper.assertValueEqual(recipe.aspects().getAmount(Aspect.EARTH), 20, "RingFood earth cost");
         helper.assertValueEqual(recipe.grid().size(), 9, "RingFood has a 3x3 ingredient grid");
         helper.assertTrue(recipe.grid().get(4).exists(), "mundane ring is the center ingredient");
+        helper.succeed();
+    }
+
+    private static void subcollarMatchesOriginal(GameTestHelper helper) {
+        if (FmConfig.lustDisabled()) {
+            helper.assertTrue(BuiltInRegistries.ITEM.getOptional(ForbiddenMagic.id("sub_collar")).isEmpty(), "no_lust leaves out the collar item");
+            helper.assertTrue(TcRecipes.get("SUBCOLLAR") == null, "no_lust leaves out the collar recipe");
+            helper.assertTrue(ResearchCategories.getResearch("SUBCOLLAR") == null, "no_lust leaves out the collar research");
+            helper.succeed();
+            return;
+        }
+        helper.assertTrue(BuiltInRegistries.ITEM.getOptional(ForbiddenMagic.id("sub_collar")).isPresent(), "lust mode registers the collar item");
+        TcRecipe raw = TcRecipes.get("SUBCOLLAR");
+        helper.assertTrue(raw instanceof InfusionRecipe, "the collar is an infusion recipe");
+        InfusionRecipe recipe = (InfusionRecipe) raw;
+        helper.assertValueEqual(recipe.instability(), 1, "collar instability");
+        helper.assertValueEqual(recipe.aspects().getAmount(FmAspects.LUST), 8, "collar lust cost");
+        helper.assertValueEqual(recipe.aspects().getAmount(Aspect.TRAP), 8, "collar trap cost");
+        helper.assertValueEqual(recipe.aspects().getAmount(FmAspects.NETHER), 4, "collar nether cost");
+        helper.assertValueEqual(recipe.aspects().getAmount(Aspect.FLESH), 4, "collar flesh cost");
+        helper.assertTrue(recipe.central().test(new ItemStack(ModItems.VIS_AMULET.get())), "the centre is an amulet of vis storage");
+        helper.assertValueEqual(recipe.components().size(), 5, "three lust shards, lead and a mundane belt");
+        long lustShards = recipe.components().stream()
+            .filter(ingredient -> ingredient.test(new ItemStack(FmItems.DEADLY_SHARDS.get("lust").get())))
+            .count();
+        helper.assertValueEqual((int) lustShards, 3, "three lust shards");
+        helper.assertTrue(recipe.components().stream().anyMatch(ingredient -> ingredient.test(new ItemStack(Items.LEAD))), "lead is a component");
+        helper.assertTrue(recipe.components().stream().anyMatch(ingredient -> ingredient.test(new ItemStack(ModItems.MUNDANE_BELT.get()))), "a mundane belt is a component");
+
+        ResearchItem research = ResearchCategories.getResearch("SUBCOLLAR");
+        helper.assertTrue(research != null, "collar research exists");
+        helper.assertValueEqual(research.pages().size(), 2, "collar has text and infusion pages");
+        helper.assertValueEqual(research.parents(), List.of("NETHERSHARDS", "VISAMULET", "INFUSION"), "collar parents");
+        helper.assertTrue(research.isHidden(), "collar research is hidden");
+        helper.assertTrue(research.aspectTriggers().contains(FmAspects.LUST), "lust triggers the collar research");
         helper.succeed();
     }
 

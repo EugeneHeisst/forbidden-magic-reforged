@@ -10,6 +10,7 @@ import thaumcraft.registry.ModBlocks;
 import thaumcraft.registry.ModItems;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import io.netty.channel.embedded.EmbeddedChannel;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -28,14 +29,22 @@ import net.minecraft.gametest.framework.FunctionGameTestInstance;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.gametest.framework.TestData;
 import net.minecraft.gametest.framework.TestEnvironmentDefinition;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.CommonListenerCookie;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.CookingFuel;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootParams;
@@ -46,6 +55,7 @@ import net.neoforged.neoforge.event.RegisterGameTestsEvent;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import dev.visfox.forbiddenreforged.ForbiddenMagic;
 import dev.visfox.forbiddenreforged.FmAspects;
+import dev.visfox.forbiddenreforged.FmComponents;
 import dev.visfox.forbiddenreforged.FmItems;
 import dev.visfox.forbiddenreforged.FmConfig;
 import dev.visfox.forbiddenreforged.FmResearchItem;
@@ -61,6 +71,8 @@ import thaumcraft.Config;
 import thaumcraft.research.ResearchCategories;
 import thaumcraft.research.ResearchItem;
 import thaumcraft.research.ResearchPage;
+import thaumcraft.platform.Baubles;
+import thaumcraft.wand.VisStorage;
 import thaumcraft.wand.WandRegistry;
 import thaumcraft.wand.WandRod;
 import thaumcraft.wand.Wands;
@@ -97,7 +109,8 @@ public final class ItemGameTests {
         "research_translation_keys_are_complete",
         "crystalwell_research_page_matches_difficulty",
         "infernal_and_tainted_wand_damage_behaviors_match_original",
-        "hellfire_trigger_targets_netherrack_and_obsidian"
+        "hellfire_trigger_targets_netherrack_and_obsidian",
+        "subcollar_places_on_another_player_and_stores_damage_vis"
     };
 
     static {
@@ -127,6 +140,7 @@ public final class ItemGameTests {
         FUNCTIONS.register(TESTS[23], () -> ItemGameTests::crystalwellResearchPageMatchesDifficulty);
         FUNCTIONS.register(TESTS[24], () -> ItemGameTests::infernalAndTaintedWandDamageBehaviorsMatchOriginal);
         FUNCTIONS.register(TESTS[25], () -> ItemGameTests::hellfireTriggerTargetsNetherrackAndObsidian);
+        FUNCTIONS.register(TESTS[26], () -> ItemGameTests::subcollarPlacesOnAnotherPlayerAndStoresDamageVis);
     }
 
     private ItemGameTests() {}
@@ -665,6 +679,46 @@ public final class ItemGameTests {
             : "tc.research_text.TEST";
         helper.assertValueEqual(item.textKey(), expected, "research text key follows tagResearch config");
         helper.succeed();
+    }
+
+    private static void subcollarPlacesOnAnotherPlayerAndStoresDamageVis(GameTestHelper helper) {
+        if (FmConfig.lustDisabled()) {
+            helper.succeed();
+            return;
+        }
+        Item item = BuiltInRegistries.ITEM.getValue(ForbiddenMagic.id("sub_collar"));
+        helper.assertTrue(item != Items.AIR, "the collar item exists");
+        ServerPlayer owner = mockConnectedPlayer(helper);
+        ServerPlayer target = mockConnectedPlayer(helper);
+        ItemStack collar = new ItemStack(item);
+        helper.assertTrue(item.interactLivingEntity(collar, owner, target, InteractionHand.MAIN_HAND).consumesAction(), "the collar can be placed on another player");
+        ItemStack worn = Baubles.get(target, 0);
+        helper.assertTrue(worn.is(item), "the target wears the collar in the amulet slot");
+        helper.assertValueEqual(worn.get(FmComponents.COLLAR_OWNER.get()), owner.getDisplayName().getString(), "the collar records its owner");
+        helper.assertTrue(collar.isEmpty(), "placing consumes the collar");
+
+        FmToolEvents.collarDamage(target, 2.0F, null);
+        helper.assertValueEqual(VisStorage.getAllVis(worn).visSize(), 6, "two damage stores six vis");
+
+        ServerPlayer attacker = mockConnectedPlayer(helper);
+        attacker.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(FmItems.RIDING_CROP.get()));
+        FmToolEvents.collarDamage(target, 2.0F, attacker);
+        helper.assertValueEqual(VisStorage.getAllVis(worn).visSize(), 15, "a crop attacker adds three more doses");
+        helper.succeed();
+    }
+
+    private static ServerPlayer mockConnectedPlayer(GameTestHelper helper) {
+        ServerPlayer player = (ServerPlayer) helper.makeMockServerPlayer(GameType.SURVIVAL);
+        CommonListenerCookie cookie = CommonListenerCookie.createInitial(player.getGameProfile(), false);
+        Connection connection = new Connection(PacketFlow.SERVERBOUND);
+        new EmbeddedChannel(connection);
+        new ServerGamePacketListenerImpl(helper.getLevel().getServer(), connection, player, cookie) {
+            @Override
+            public void send(Packet<?> packet) {
+            }
+        };
+        player.connection.markClientLoaded();
+        return player;
     }
 
 }

@@ -15,6 +15,7 @@ import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntPr
 import net.minecraft.world.level.storage.loot.providers.number.ints.ResolvableInt;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
+import org.jspecify.annotations.Nullable;
 import thaumcraft.item.gear.TcMaterials;
 import thaumcraft.platform.Registration;
 import thaumcraft.registry.ModItems;
@@ -49,6 +50,7 @@ public final class FmItems {
     public static final DeferredItem<Item> CRYSTALWELL;
     public static final DeferredItem<Item> PRIMEWELL;
     public static final DeferredItem<Item> BLINK_FOCUS;
+    public static final @Nullable DeferredItem<Item> SUB_COLLAR;
 
     static {
         for (String vice : new String[]{"wrath", "envy", "taint", "pride", "lust", "sloth", "greed"}) {
@@ -105,6 +107,8 @@ public final class FmItems {
         PRIMEWELL = ITEMS.registerItem("primewell", PrimewellItem::new, properties -> properties.stacksTo(1).rarity(Rarity.EPIC));
         BLINK_FOCUS = ITEMS.registerItem("blink_focus", BlinkFocusItem::new,
             properties -> FocusItem.properties(properties));
+        SUB_COLLAR = FmConfig.lustDisabled() ? null
+            : ITEMS.registerItem("sub_collar", SubCollarItem::new, properties -> properties.stacksTo(1).rarity(Rarity.RARE));
     }
 
     private FmItems() {
