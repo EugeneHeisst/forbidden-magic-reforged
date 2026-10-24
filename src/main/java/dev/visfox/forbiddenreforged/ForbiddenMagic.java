@@ -15,6 +15,7 @@ public final class ForbiddenMagic {
 
     public ForbiddenMagic(IEventBus modEventBus, ModContainer modContainer) {
         FmConfig.register(modContainer);
+        FmBlocks.register(modEventBus);
         FmItems.ITEMS.register(modEventBus);
         FmCreativeTab.register(modEventBus);
         FmAspectTags.register();

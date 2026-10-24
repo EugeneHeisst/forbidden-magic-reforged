@@ -6,6 +6,7 @@ import dev.visfox.forbiddenreforged.FmConfig;
 import dev.visfox.forbiddenreforged.FmItems;
 import dev.visfox.forbiddenreforged.FmItemEvents;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.neoforged.neoforge.gametest.GameTestHolder;
@@ -50,6 +51,17 @@ public final class FmGameTests {
         helper.succeed();
     }
 
+
+    @GameTest(template = "empty", templateNamespace = "minecraft")
+    public static void taintAndUmbralBlocksAreRegistered(GameTestHelper helper) {
+        helper.assertTrue(BuiltInRegistries.BLOCK.get(ForbiddenMagic.id("taint_log")) != Blocks.AIR,
+            "taint log must be registered");
+        helper.assertTrue(BuiltInRegistries.BLOCK.get(ForbiddenMagic.id("taint_sapling")) != Blocks.AIR,
+            "taint sapling must be registered");
+        helper.assertTrue(BuiltInRegistries.BLOCK.get(ForbiddenMagic.id("umbral_rose")) != Blocks.AIR,
+            "umbral rose must be registered");
+        helper.succeed();
+    }
 
     @GameTest(template = "empty", templateNamespace = "minecraft")
     public static void itemAspectTagsExist(GameTestHelper helper) {
