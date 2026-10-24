@@ -384,19 +384,16 @@ public final class ItemGameTests {
     }
 
     private static void wandTooltipKindsPreserveOriginalHints(GameTestHelper helper) {
-        WandRod neutronium = WandRegistry.findRod("neutronium");
-        WandRod neutroniumStaff = WandRegistry.findRod("neutronium_staff");
-        WandRod profane = WandRegistry.findRod("profane");
-        helper.assertTrue(neutronium != null, "neutronium rod is registered");
-        helper.assertTrue(neutroniumStaff != null, "neutronium staff rod is registered");
-        helper.assertTrue(profane != null, "profane rod is registered");
-
-        helper.assertValueEqual(FmToolEvents.wandTooltipKind(Wands.create(WandRegistry.CAP_IRON, neutronium, false)),
-            "creativeonly", "neutronium wand exposes the creative-only tooltip");
-        helper.assertValueEqual(FmToolEvents.wandTooltipKind(Wands.create(WandRegistry.CAP_IRON, neutroniumStaff, false)),
-            "creativeonly", "neutronium staff exposes the creative-only tooltip");
-        helper.assertValueEqual(FmToolEvents.wandTooltipKind(Wands.create(WandRegistry.CAP_IRON, profane, false)),
-            "profane_contract", "profane wand exposes its contract tooltip");
+        helper.assertValueEqual(FmToolEvents.wandTooltipKind("neutronium"), "creativeonly",
+            "neutronium wand exposes the creative-only tooltip");
+        helper.assertValueEqual(FmToolEvents.wandTooltipKind("neutronium_staff"), "creativeonly",
+            "neutronium staff exposes the creative-only tooltip");
+        helper.assertValueEqual(FmToolEvents.wandTooltipKind("profane"), "profane_contract",
+            "profane wand exposes its contract tooltip");
+        helper.assertValueEqual(FmToolEvents.wandTooltipKind("profaned"), "profane_contract",
+            "profaned wand exposes the contract tooltip");
+        helper.assertValueEqual(FmToolEvents.wandTooltipKind("greatwood"), "",
+            "ordinary rods do not receive special wand tooltips");
         helper.assertValueEqual(FmToolEvents.wandTooltipKind(new ItemStack(Items.STICK)), "",
             "non-wand items do not receive wand-specific tooltips");
         helper.succeed();
