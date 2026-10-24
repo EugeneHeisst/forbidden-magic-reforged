@@ -15,7 +15,6 @@ public final class ForbiddenMagic {
 
     public ForbiddenMagic(IEventBus modEventBus, ModContainer modContainer) {
         FmAspects.init();
-        FmGameTests.register(modEventBus);
     }
 
     public static ResourceLocation id(String path) {
