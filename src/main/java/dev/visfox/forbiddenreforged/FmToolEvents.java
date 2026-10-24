@@ -82,7 +82,7 @@ public final class FmToolEvents {
             return;
         }
         BlockPos pos = event.getPos();
-        ItemEntity drop = new ItemEntity(event.getLevel(), pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
+        ItemEntity drop = new ItemEntity(player.level(), pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
             new ItemStack(FmItems.DEADLY_SHARDS.get("taint").get()));
         drop.setPickUpDelay(10);
         event.getDrops().add(drop);
