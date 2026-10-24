@@ -17,11 +17,10 @@ import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.level.BlockDropsEvent;
 import thaumcraft.platform.Baubles;
+import thaumcraft.wand.Wands;
 import thaumcraft.registry.ModBlocks;
 import thaumcraft.taint.TaintBlock;
 import thaumcraft.taint.TaintFibresBlock;
-import thaumcraft.wand.Wands;
-import thaumcraft.wand.Wands;
 
 public final class FmToolEvents {
     private FmToolEvents() {
