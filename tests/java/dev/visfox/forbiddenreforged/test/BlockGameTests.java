@@ -208,6 +208,18 @@ public final class BlockGameTests {
             for (int variant = 0; variant < counts.length; variant++) {
                 helper.assertTrue(counts[variant] > 0, "coordinate sample must exercise side-texture variant " + variant);
             }
+
+            helper.assertValueEqual(TaintLogTextureVariant.select(3, 3, 7, 5), TaintLogTextureVariant.GROSS,
+                "selection must use the original side + y + x*z seed");
+            helper.assertValueEqual(TaintLogTextureVariant.variantForDirection(net.minecraft.core.Direction.Axis.Y,
+                net.minecraft.core.Direction.DOWN, 3, 7, 5), TaintLogTextureVariant.STANDARD,
+                "vertical log ends keep the end texture");
+            helper.assertValueEqual(TaintLogTextureVariant.variantForDirection(net.minecraft.core.Direction.Axis.Y,
+                net.minecraft.core.Direction.SOUTH, 3, 7, 5), TaintLogTextureVariant.GROSS,
+                "vertical log sides use the coordinate-selected variant");
+            helper.assertValueEqual(TaintLogTextureVariant.variantForDirection(net.minecraft.core.Direction.Axis.X,
+                net.minecraft.core.Direction.EAST, 3, 7, 5), TaintLogTextureVariant.STANDARD,
+                "horizontal log ends keep the end texture");
             helper.succeed();
         } catch (IOException e) {
             helper.fail("could not read the taint log blockstate: " + e);

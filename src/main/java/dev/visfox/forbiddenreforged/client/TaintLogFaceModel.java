@@ -86,11 +86,16 @@ public record TaintLogFaceModel(BlockStateModelPart[][] models) implements Dynam
         @Override
         public List<BakedQuad> getQuads(@Nullable Direction direction) {
             BlockStateModelPart[] axisModels = models[axisIndex(axis)];
-            if (direction == null || direction.getAxis() == axis) {
-                return axisModels[TaintLogTextureVariant.STANDARD].getQuads(direction);
+            if (direction != null) {
+                int variant = TaintLogTextureVariant.variantForDirection(axis, direction, x, y, z);
+                return axisModels[variant].getQuads(direction);
             }
-            int variant = TaintLogTextureVariant.select(direction.get3DDataValue(), x, y, z);
-            return axisModels[variant].getQuads(direction);
+            List<BakedQuad> quads = new java.util.ArrayList<>();
+            for (Direction face : Direction.values()) {
+                int variant = TaintLogTextureVariant.variantForDirection(axis, face, x, y, z);
+                quads.addAll(axisModels[variant].getQuads(face));
+            }
+            return quads;
         }
 
         @Override

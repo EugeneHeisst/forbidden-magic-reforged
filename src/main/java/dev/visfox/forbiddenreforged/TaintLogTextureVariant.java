@@ -1,6 +1,7 @@
 package dev.visfox.forbiddenreforged;
 
 import java.util.Random;
+import net.minecraft.core.Direction;
 
 public final class TaintLogTextureVariant {
     public static final int STANDARD = 0;
@@ -16,5 +17,12 @@ public final class TaintLogTextureVariant {
             return STANDARD;
         }
         return random.nextBoolean() ? GROSS : GROSS_2;
+    }
+
+    public static int variantForDirection(Direction.Axis axis, Direction direction, int x, int y, int z) {
+        if (direction.getAxis() == axis) {
+            return STANDARD;
+        }
+        return select(direction.get3DDataValue(), x, y, z);
     }
 }
