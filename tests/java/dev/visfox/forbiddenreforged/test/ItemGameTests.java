@@ -286,6 +286,22 @@ public final class ItemGameTests {
         helper.assertTrue(stacks.stream().anyMatch(stack -> Wands.isWand(stack)
             && Wands.getCap(stack).tag().equals("orichalcum") && Wands.getRod(stack).tag().equals("neutronium_staff")), "creative neutronium staff is in the tab");
 
+        ItemStack neutroniumWand = stacks.stream().filter(stack -> Wands.isWand(stack)
+            && Wands.getCap(stack).tag().equals("orichalcum") && Wands.getRod(stack).tag().equals("neutronium"))
+            .findFirst().orElse(ItemStack.EMPTY);
+        ItemStack staffWand = stacks.stream().filter(stack -> Wands.isWand(stack)
+            && Wands.getCap(stack).tag().equals("orichalcum") && Wands.getRod(stack).tag().equals("neutronium_staff"))
+            .findFirst().orElse(ItemStack.EMPTY);
+        helper.assertFalse(neutroniumWand.isEmpty(), "creative neutronium wand can be located");
+        helper.assertFalse(staffWand.isEmpty(), "creative neutronium staff can be located");
+        var creativePlayer = helper.makeMockServerPlayer(net.minecraft.world.level.GameType.CREATIVE);
+        Wands.getRod(neutroniumWand).onUpdate().onUpdate(neutroniumWand, creativePlayer);
+        Wands.getRod(staffWand).onUpdate().onUpdate(staffWand, creativePlayer);
+        for (Aspect aspect : Aspect.getPrimalAspects()) {
+            helper.assertValueEqual(Wands.getVis(neutroniumWand, aspect), Wands.getMaxVis(neutroniumWand), "neutronium rod fills " + aspect);
+            helper.assertValueEqual(Wands.getVis(staffWand, aspect), Wands.getMaxVis(staffWand), "neutronium staff fills " + aspect);
+        }
+
         ItemStack profaneWand = stacks.stream().filter(stack -> Wands.isWand(stack)
             && Wands.getCap(stack).tag().equals("iron") && Wands.getRod(stack).tag().equals("profane"))
             .findFirst().orElse(ItemStack.EMPTY);
