@@ -14,6 +14,7 @@ import net.neoforged.fml.ModList;
 import thaumcraft.aspect.Aspect;
 import thaumcraft.aspect.AspectList;
 import thaumcraft.aspect.AspectRegistry;
+import thaumcraft.crafting.TcRecipes;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.neoforged.neoforge.event.furnace.FurnaceFuelBurnTimeEvent;
@@ -62,6 +63,15 @@ public final class FmGameTests {
             "umbral rose must be registered");
         helper.assertTrue(BuiltInRegistries.BLOCK.get(ForbiddenMagic.id("arcane_cake")) != Blocks.AIR,
             "arcane cake must be registered");
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty", templateNamespace = "minecraft")
+    public static void forbiddenMagicThaumcraftRecipesAreRegistered(GameTestHelper helper) {
+        helper.assertTrue(TcRecipes.get("FM_TAINTTREE") != null, "taint sapling crucible recipe must exist");
+        helper.assertTrue(TcRecipes.get("FM_BLACKFLOWER") != null, "umbral rose crucible recipe must exist");
+        helper.assertTrue(TcRecipes.get("FM_TAINTSTONE") != null, "tainted stone arcane recipe must exist");
+        helper.assertTrue(TcRecipes.get("FM_ARCANECAKE") != null, "Thaumic Cake infusion recipe must exist");
         helper.succeed();
     }
 

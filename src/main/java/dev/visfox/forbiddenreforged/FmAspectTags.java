@@ -38,6 +38,18 @@ public final class FmAspectTags {
             register("forbiddenmagic:black_dye", tags().add(Aspect.DARKNESS, 1));
             register("forbiddenmagic:taint_coal", tags().add(Aspect.TAINT, 2).add(Aspect.ENTROPY, 2));
             register("forbiddenmagic:taint_fruit", tags().add(Aspect.TAINT, 2).add(Aspect.POISON, 1));
+
+            // Blocks are tagged through their BlockItem identifiers in Thaumcraft's item-aspect registry.
+            register("forbiddenmagic:taint_log", tags().add(Aspect.TREE, 4).add(Aspect.TAINT, 2));
+            register("forbiddenmagic:taint_planks", tags().add(Aspect.TREE, 1).add(Aspect.TAINT, 1));
+            register("forbiddenmagic:taint_stone_smooth", tags().add(Aspect.EARTH, 2).add(Aspect.TAINT, 2));
+            register("forbiddenmagic:taint_stone_brick", tags().add(Aspect.EARTH, 2).add(Aspect.TAINT, 2));
+            register("forbiddenmagic:star_block", tags().add(Aspect.MAGIC, 8).add(Aspect.CRYSTAL, 8));
+            register("forbiddenmagic:taint_leaves", tags().add(Aspect.PLANT, 2).add(Aspect.TAINT, 2));
+            register("forbiddenmagic:taint_sapling", tags().add(Aspect.PLANT, 2).add(Aspect.TREE, 1).add(Aspect.TAINT, 2));
+            register("forbiddenmagic:umbral_rose", tags().add(Aspect.PLANT, 2).add(Aspect.DARKNESS, 2));
+            register("forbiddenmagic:umbral_rose_bush", tags().add(Aspect.PLANT, 3).add(Aspect.DARKNESS, 3));
+            register("forbiddenmagic:arcane_cake", tags().add(Aspect.HUNGER, 4).add(FmAspects.GLUTTONY, 4).add(Aspect.CRAFT, 2));
         }
 
         private void registerShard(String vice, AspectList aspects) {

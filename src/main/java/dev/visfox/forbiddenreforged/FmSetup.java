@@ -11,6 +11,9 @@ public final class FmSetup {
 
     @SubscribeEvent
     static void commonSetup(FMLCommonSetupEvent event) {
-        event.enqueueWork(FmAspects::init);
+        event.enqueueWork(() -> {
+            FmAspects.init();
+            FmRecipes.register();
+        });
     }
 }

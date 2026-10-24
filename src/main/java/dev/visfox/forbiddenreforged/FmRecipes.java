@@ -1,0 +1,69 @@
+package dev.visfox.forbiddenreforged;
+
+import java.util.List;
+import thaumcraft.aspect.Aspect;
+import thaumcraft.aspect.AspectList;
+import thaumcraft.crafting.CrucibleRecipe;
+import thaumcraft.crafting.InfusionRecipe;
+import thaumcraft.crafting.ShapedArcaneRecipe;
+import thaumcraft.crafting.TcIngredient;
+import thaumcraft.crafting.TcRecipes;
+import thaumcraft.crafting.TcStack;
+
+public final class FmRecipes {
+    private FmRecipes() {
+    }
+
+    public static void register() {
+        // Original Forbidden Magic crucible conversion: oak sapling -> taint sapling.
+        TcRecipes.register(new CrucibleRecipe(
+            "FM_TAINTTREE",
+            "TAINTTREE",
+            TcStack.of("forbiddenmagic:taint_sapling"),
+            TcIngredient.item("minecraft:oak_sapling"),
+            new AspectList().add(Aspect.TAINT, 10).add(Aspect.POISON, 4)
+        ));
+
+        // Original black-flower research converts a vanilla rose bush into the umbral rose bush.
+        TcRecipes.register(new CrucibleRecipe(
+            "FM_BLACKFLOWER",
+            "BLACKFLOWER",
+            TcStack.of("forbiddenmagic:umbral_rose_bush"),
+            TcIngredient.item("minecraft:rose_bush"),
+            new AspectList().add(Aspect.DARKNESS, 8).add(Aspect.LIFE, 5)
+        ));
+
+        // Tainted stone recipe uses the Thaumcraft arcane crafting station, not a vanilla crafting grid.
+        TcRecipes.register(new ShapedArcaneRecipe(
+            "FM_TAINTSTONE",
+            "TAINTSTONE",
+            TcStack.of("forbiddenmagic:taint_stone_smooth", 9),
+            new AspectList().add(Aspect.ENTROPY, 2).add(Aspect.ORDER, 1),
+            3,
+            3,
+            List.of(
+                TcIngredient.item("minecraft:stone"), TcIngredient.item("minecraft:stone"), TcIngredient.item("minecraft:stone"),
+                TcIngredient.item("minecraft:stone"), TcIngredient.item("forbiddenmagic:taint_shard"), TcIngredient.item("minecraft:stone"),
+                TcIngredient.item("minecraft:stone"), TcIngredient.item("minecraft:stone"), TcIngredient.item("minecraft:stone")
+            )
+        ));
+
+        // Preserve the standard Thaumic Cake infusion recipe from the 1.7.10-era design.
+        TcRecipes.register(new InfusionRecipe(
+            "FM_ARCANECAKE",
+            "ARCANECAKE",
+            TcStack.of("forbiddenmagic:arcane_cake"),
+            3,
+            new AspectList().add(FmAspects.GLUTTONY, 12).add(Aspect.HUNGER, 24).add(Aspect.CRAFT, 24),
+            TcIngredient.item("minecraft:cake"),
+            List.of(
+                TcIngredient.item("thaumcraft:salis_mundus"),
+                TcIngredient.item("minecraft:egg"),
+                TcIngredient.item("minecraft:milk_bucket"),
+                TcIngredient.item("minecraft:egg"),
+                TcIngredient.item("forbiddenmagic:gluttony_shard"),
+                TcIngredient.item("forbiddenmagic:gluttony_shard")
+            )
+        ));
+    }
+}
