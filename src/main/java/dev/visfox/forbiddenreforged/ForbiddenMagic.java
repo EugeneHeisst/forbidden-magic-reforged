@@ -28,6 +28,7 @@ public final class ForbiddenMagic {
         FmItems.ITEMS.register(modEventBus);
         FmCreativeTab.register(modEventBus);
         FmVillagers.register(modEventBus);
+        ScribeWellEvents.register();
         FmDrops.register();
         FmEnchantmentEffects.register();
         AspectGameTests.FUNCTIONS.register(modEventBus);

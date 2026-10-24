@@ -35,11 +35,15 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.RegisterGameTestsEvent;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import dev.visfox.forbiddenreforged.ForbiddenMagic;
+import dev.visfox.forbiddenreforged.CrystalwellItem;
+import dev.visfox.forbiddenreforged.PrimewellItem;
 import dev.visfox.forbiddenreforged.FmAspects;
 import dev.visfox.forbiddenreforged.FmItems;
 import dev.visfox.forbiddenreforged.RidingCropItem;
 import thaumcraft.aspect.Aspect;
 import thaumcraft.aspect.AspectList;
+import thaumcraft.item.ScribingToolsItem;
+import net.minecraft.world.item.Rarity;
 import thaumcraft.crafting.InfusionRecipe;
 import thaumcraft.crafting.TcRecipes;
 import thaumcraft.research.ResearchCategories;
@@ -65,7 +69,10 @@ public final class ItemGameTests {
         "creative_tab_lists_every_registered_item",
         "orichalcum_cap_is_registered",
         "diabolist_fork_switches_to_the_spork_model",
-        "lust_shard_switches_to_the_despair_model"
+        "lust_shard_switches_to_the_despair_model",
+        "crystalwell_is_a_scribing_tool_with_original_durability",
+        "primewell_is_a_permanent_epic_scribing_tool",
+        "scribe_wells_keep_original_recipes_and_research"
     };
 
     static {
@@ -81,6 +88,9 @@ public final class ItemGameTests {
         FUNCTIONS.register(TESTS[9], () -> ItemGameTests::orichalcumCapIsRegistered);
         FUNCTIONS.register(TESTS[10], () -> ItemGameTests::diabolistForkSwitchesToTheSporkModel);
         FUNCTIONS.register(TESTS[11], () -> ItemGameTests::lustShardSwitchesToTheDespairModel);
+        FUNCTIONS.register(TESTS[12], () -> ItemGameTests::crystalwellIsAScribingToolWithOriginalDurability);
+        FUNCTIONS.register(TESTS[13], () -> ItemGameTests::primewellIsAPermanentEpicScribingTool);
+        FUNCTIONS.register(TESTS[14], () -> ItemGameTests::scribeWellsKeepOriginalRecipesAndResearch);
     }
 
     private ItemGameTests() {}
@@ -264,4 +274,35 @@ public final class ItemGameTests {
             return new JsonObject();
         }
     }
+
+    private static void crystalwellIsAScribingToolWithOriginalDurability(GameTestHelper helper) {
+        ItemStack stack = new ItemStack(FmItems.CRYSTALWELL.get());
+        helper.assertTrue(stack.getItem() instanceof CrystalwellItem, "crystalwell uses its behavior item");
+        helper.assertTrue(stack.getItem() instanceof ScribingToolsItem, "crystalwell can occupy the research table scribe slot");
+        int expectedMaxDamage = thaumcraft.Config.researchDifficulty() == -1 ? 50 : 100;
+        helper.assertValueEqual(stack.getMaxDamage(), expectedMaxDamage, "crystalwell durability follows research difficulty");
+        helper.assertValueEqual(stack.getCount(), 1, "crystalwell is unstackable");
+        helper.succeed();
+    }
+
+    private static void primewellIsAPermanentEpicScribingTool(GameTestHelper helper) {
+        ItemStack stack = new ItemStack(FmItems.PRIMEWELL.get());
+        helper.assertTrue(stack.getItem() instanceof PrimewellItem, "primewell uses its behavior item");
+        helper.assertTrue(stack.getItem() instanceof ScribingToolsItem, "primewell can occupy the research table scribe slot");
+        helper.assertValueEqual(stack.getItem().getRarity(stack), Rarity.EPIC, "primewell retains epic rarity");
+        helper.assertTrue(stack.getMaxDamage() > 1_000_000_000, "primewell does not wear out during research");
+        stack.setDamageValue(1000);
+        helper.assertFalse(stack.getItem().isBarVisible(stack), "primewell does not display a misleading durability bar");
+        helper.assertTrue(stack.getDamageValue() < stack.getMaxDamage(), "primewell remains usable after repeated scribe operations");
+        helper.succeed();
+    }
+
+    private static void scribeWellsKeepOriginalRecipesAndResearch(GameTestHelper helper) {
+        helper.assertTrue(TcRecipes.get("CRYSTALWELL") != null, "crystalwell arcane recipe is registered");
+        helper.assertTrue(TcRecipes.get("PRIMEWELL") != null, "primewell arcane recipe is registered");
+        helper.assertTrue(ResearchCategories.getResearch("CRYSTALWELL") != null, "crystalwell research is registered");
+        helper.assertTrue(ResearchCategories.getResearch("PRIMEWELL") != null, "primewell research is registered");
+        helper.succeed();
+    }
+
 }
