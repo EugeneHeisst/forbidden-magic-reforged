@@ -46,15 +46,14 @@ emerald fragments / transmutation, подсказки жезлов, warp и ко
    Это осознанное приближение, а не точное равенство старой карте биомов.
 5. **Миграция Mob Crystal.** Компонент хранит namespaced entity ID; старые сохранённые данные не
    мигрируются. Миграция нужна, если проект будет заявлять совместимость с уже существующими мирами.
-6. **Taint Coal fuel duration — закрыто в коде.** Ресурс `context_int_provider/taint_coal_burn.json`
-   использует `minecraft:uniform` с диапазоном 1–2400; GameTest `taint_coal_burn_time_varies_within_original_range`
-   проверяет границы, вариативность и сериализацию компонента топлива. Не считать это открытым расхождением.
 7. **Witchwood / внешние интеграции.** Blood Magic, Botania, Ars Magica 2 и CoFH не портированы под
    26.3; соответствующий контент остаётся вне scope до появления совместимых зависимостей.
 
 Событие урона `thaumcraft:taint` для Tainted Wand **уже реализовано** и описано в fidelity.md:
 три случайных примальных vis по 1 при удержании жезла со скверным стержнем. Это больше не открытая
-задача roadmap.
+задача roadmap. Случайный диапазон горения Taint Coal (1–2400) также уже реализован через
+`minecraft:uniform` в `context_int_provider/taint_coal_burn.json` и покрыт GameTest
+`taint_coal_burn_time_varies_within_original_range`.
 
 ## Визуальный гейт — требует реального клиента
 
