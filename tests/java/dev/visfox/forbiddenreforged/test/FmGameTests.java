@@ -3,6 +3,7 @@ package dev.visfox.forbiddenreforged.test;
 import dev.visfox.forbiddenreforged.ForbiddenMagic;
 import dev.visfox.forbiddenreforged.FmAspects;
 import dev.visfox.forbiddenreforged.FmConfig;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.neoforged.neoforge.gametest.GameTestHolder;
@@ -18,6 +19,17 @@ public final class FmGameTests {
     @GameTest(template = "empty", templateNamespace = "minecraft")
     public static void modLoadsAndHostIsPresent(GameTestHelper helper) {
         helper.assertTrue(ModList.get().isLoaded("thaumcraft"), "thaumcraft must be loaded");
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty", templateNamespace = "minecraft")
+    public static void itemRegistryContainsPortedBaseItems(GameTestHelper helper) {
+        helper.assertTrue(BuiltInRegistries.ITEM.get(ForbiddenMagic.id("taint_fruit")) != net.minecraft.world.item.Items.AIR,
+            "taint fruit must be registered");
+        helper.assertTrue(BuiltInRegistries.ITEM.get(ForbiddenMagic.id("black_dye")) != net.minecraft.world.item.Items.AIR,
+            "black dye must be registered");
+        helper.assertTrue(BuiltInRegistries.ITEM.get(ForbiddenMagic.id("lust_shard")) != net.minecraft.world.item.Items.AIR,
+            "lust shard must be registered");
         helper.succeed();
     }
 
@@ -54,5 +66,4 @@ public final class FmGameTests {
         buffer.release();
         helper.succeed();
     }
-
 }
