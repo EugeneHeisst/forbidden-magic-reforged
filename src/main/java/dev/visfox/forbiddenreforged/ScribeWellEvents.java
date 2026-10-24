@@ -1,6 +1,7 @@
 package dev.visfox.forbiddenreforged;
 
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.Container;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Prediction;
@@ -69,6 +70,21 @@ public final class ScribeWellEvents {
             ForbiddenMagic.LOGGER.warn("Could not refund Primewell's primordial pearl: {} is not registered", PRIMORDIAL_PEARL_ID);
             return;
         }
+
+        // Match the original crafting hook: restore the pearl in the crafting matrix
+        // so it is not consumed by the Primewell recipe.
+        var matrix = event.getInventory();
+        for (int slot = 0; slot < matrix.getContainerSize(); slot++) {
+            ItemStack ingredient = matrix.getItem(slot);
+            if (ingredient.is(pearl)) {
+                ingredient.grow(1);
+                matrix.setItem(slot, ingredient);
+                return;
+            }
+        }
+
+        // Some modern crafting paths may have already removed the matrix entry;
+        // retain the item for the player in that case.
         ItemStack returnedPearl = new ItemStack(pearl);
         player.getInventory().add(returnedPearl);
         if (!returnedPearl.isEmpty()) {
