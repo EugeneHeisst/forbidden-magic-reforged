@@ -210,8 +210,8 @@ public final class FmEnchantmentEffects {
         if (!FmEnchantments.enabled()) {
             return;
         }
-        Entity direct = event.getSource().getDirectEntity();
-        if (!(direct instanceof ServerPlayer player) || direct instanceof FakePlayer) {
+        Entity attacker = event.getSource().getEntity();
+        if (!(attacker instanceof ServerPlayer player) || attacker instanceof FakePlayer) {
             return;
         }
         int level = FmEnchantments.level(player.level().registryAccess(), player.getMainHandItem(), FmEnchantments.WRATH);
