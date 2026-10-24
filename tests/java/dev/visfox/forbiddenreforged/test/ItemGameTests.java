@@ -87,7 +87,8 @@ public final class ItemGameTests {
         "crystalwell_is_a_scribing_tool_with_original_durability",
         "primewell_is_a_permanent_epic_scribing_tool",
         "scribe_wells_keep_original_recipes_and_research",
-        "research_prefix_respects_tag_research"
+        "research_prefix_respects_tag_research",
+        "item_translation_keys_are_not_nested_under_research_pages"
     };
 
     static {
@@ -112,6 +113,7 @@ public final class ItemGameTests {
         FUNCTIONS.register(TESTS[18], () -> ItemGameTests::primewellIsAPermanentEpicScribingTool);
         FUNCTIONS.register(TESTS[19], () -> ItemGameTests::scribeWellsKeepOriginalRecipesAndResearch);
         FUNCTIONS.register(TESTS[20], () -> ItemGameTests::researchPrefixRespectsTagResearch);
+        FUNCTIONS.register(TESTS[21], () -> ItemGameTests::itemTranslationKeysAreNotNestedUnderResearchPages);
     }
 
     private ItemGameTests() {}
@@ -465,6 +467,57 @@ public final class ItemGameTests {
         }
         helper.succeed();
     }
+
+    private static void itemTranslationKeysAreNotNestedUnderResearchPages(GameTestHelper helper) {
+            JsonObject english = readJson(helper, "/assets/forbiddenmagic/lang/en_us.json");
+            JsonObject russian = readJson(helper, "/assets/forbiddenmagic/lang/ru_ru.json");
+            List<String> expected = List.of(
+                "item.forbiddenmagic.taint_coal",
+                "item.forbiddenmagic.riding_crop",
+                "item.forbiddenmagic.black_dye",
+                "item.forbiddenmagic.taint_fruit",
+                "item.forbiddenmagic.ring_nutrition",
+                "item.forbiddenmagic.tainted_rod",
+                "item.forbiddenmagic.infernal_rod",
+                "item.forbiddenmagic.witchwood_rod",
+                "item.forbiddenmagic.profane_rod",
+                "item.forbiddenmagic.witchwood_staff_rod",
+                "item.Wand.tainted.rod",
+                "item.Wand.infernal.rod",
+                "item.Wand.profane.rod",
+                "item.Wand.profaned.rod",
+                "item.forbiddenmagic.taint_shovel",
+                "item.forbiddenmagic.taint_pickaxe",
+                "item.forbiddenmagic.crystalwell",
+                "item.forbiddenmagic.primewell",
+                "item.forbiddenmagic.blink_focus",
+                "entity.forbiddenmagic.villager.heretic",
+                "tooltip.creativeonly",
+                "tooltip.profane_contract"
+            );
+            List<String> pages = List.of(
+                "RIDINGCROP", "RINGFOOD", "ROD_tainted", "ROD_infernal", "ROD_witchwood",
+                "ROD_profane", "ROD_witchwood_staff", "TRANSEMERALD", "CRYSTALWELL",
+                "PRIMEWELL", "TAINTSHOVEL", "TAINTPICK", "FOCUSBLINK"
+            );
+            for (JsonObject translations : List.of(english, russian)) {
+                for (String key : expected) {
+                    helper.assertTrue(translations.has(key), "missing translation key " + key);
+                }
+                for (String page : pages) {
+                    helper.assertTrue(translations.has("forbiddenmagic.research_page." + page + ".1"),
+                        "missing research page key " + page);
+                }
+                for (String key : translations.keySet()) {
+                    helper.assertFalse(key.contains(".research_page.ARCANECAKE.item.")
+                            || key.contains(".research_page.ARCANECAKE.entity.")
+                            || key.contains(".research_page.ARCANECAKE.forbiddenmagic.")
+                            || key.startsWith("itemGroup.tooltip."),
+                        "translation key has an invalid nested prefix " + key);
+                }
+            }
+            helper.succeed();
+        }
 
     private static JsonObject readJson(GameTestHelper helper, String path) {        try (InputStream stream = ForbiddenMagic.class.getResourceAsStream(path)) {
             if (stream == null) {
