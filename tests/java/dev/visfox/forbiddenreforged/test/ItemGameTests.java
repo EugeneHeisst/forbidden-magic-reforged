@@ -355,6 +355,14 @@ public final class ItemGameTests {
         helper.assertTrue(FmEnchantmentEffects.skullAxeRoll(4, 1, 2, 2), "Looting II raises zombie threshold by four");
         helper.assertTrue(FmEnchantmentEffects.skullAxeRoll(1, 0, 1, 1), "player head threshold includes roll one");
         helper.assertFalse(FmEnchantmentEffects.skullAxeRoll(3, 1, 1, 1), "player head threshold excludes roll three at Looting I");
+
+        WandRod infernalRod = WandRegistry.findRod("infernal");
+        helper.assertTrue(infernalRod != null, "infernal rod must be registered");
+        ItemStack infernalWand = Wands.create(WandRegistry.CAP_IRON, infernalRod, false);
+        helper.assertFalse(FmToolEvents.cancelsInfernalDamage(infernalWand, true),
+            "infernal wand must not cancel incoming fire or wither damage");
+        helper.assertFalse(FmToolEvents.cancelsInfernalDamage(infernalWand, false),
+            "infernal wand must not cancel unrelated incoming damage");
         helper.succeed();
     }
 

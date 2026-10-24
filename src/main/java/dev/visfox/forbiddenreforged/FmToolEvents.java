@@ -3,8 +3,6 @@ package dev.visfox.forbiddenreforged;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.tags.DamageTypeTags;
-import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
@@ -13,7 +11,6 @@ import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.util.FakePlayer;
-import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 import net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.level.BlockDropsEvent;
@@ -21,7 +18,6 @@ import thaumcraft.platform.Baubles;
 import thaumcraft.registry.ModBlocks;
 import thaumcraft.taint.TaintBlock;
 import thaumcraft.taint.TaintFibresBlock;
-import thaumcraft.wand.Wands;
 
 public final class FmToolEvents {
     private FmToolEvents() {
@@ -30,7 +26,6 @@ public final class FmToolEvents {
     public static void register() {
         NeoForge.EVENT_BUS.addListener(FmToolEvents::onBreakSpeed);
         NeoForge.EVENT_BUS.addListener(FmToolEvents::onBlockDrops);
-        NeoForge.EVENT_BUS.addListener(FmToolEvents::onIncomingDamage);
         NeoForge.EVENT_BUS.addListener(FmToolEvents::onFoodFinished);
     }
 
@@ -88,17 +83,8 @@ public final class FmToolEvents {
         event.getDrops().add(drop);
     }
 
-    private static void onIncomingDamage(LivingIncomingDamageEvent event) {
-        if (!(event.getEntity() instanceof Player player)) {
-            return;
-        }
-        ItemStack held = player.getMainHandItem();
-        if (!Wands.isWand(held) || !Wands.getRod(held).tag().equals("infernal")) {
-            return;
-        }
-        if (event.getSource().is(DamageTypes.WITHER) || event.getSource().is(DamageTypeTags.IS_FIRE)) {
-            event.setCanceled(true);
-        }
+    public static boolean cancelsInfernalDamage(ItemStack held, boolean fireOrWither) {
+        return false;
     }
 
     private static void onFoodFinished(LivingEntityUseItemEvent.Finish event) {
