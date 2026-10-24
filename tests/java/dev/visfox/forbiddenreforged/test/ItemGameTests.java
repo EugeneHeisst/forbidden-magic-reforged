@@ -74,7 +74,8 @@ public final class ItemGameTests {
         "morph_phase_tints_match_original",
         "tool_and_skull_axe_chance_rules_preserve_original_boundaries",
         "silverfish_emerald_drop_thresholds_match_original",
-        "wand_tooltip_kinds_preserve_original_hints"
+        "wand_tooltip_kinds_preserve_original_hints",
+        "item_translation_keys_are_not_nested_under_research_pages"
     };
 
     static {
@@ -95,6 +96,7 @@ public final class ItemGameTests {
         FUNCTIONS.register(TESTS[14], () -> ItemGameTests::toolAndSkullAxeChanceRulesPreserveOriginalBoundaries);
         FUNCTIONS.register(TESTS[15], () -> ItemGameTests::silverfishEmeraldDropThresholdsMatchOriginal);
         FUNCTIONS.register(TESTS[16], () -> ItemGameTests::wandTooltipKindsPreserveOriginalHints);
+        FUNCTIONS.register(TESTS[17], () -> ItemGameTests::itemTranslationKeysAreNotNestedUnderResearchPages);
     }
 
     private ItemGameTests() {}
@@ -396,6 +398,57 @@ public final class ItemGameTests {
             "ordinary rods do not receive special wand tooltips");
         helper.assertValueEqual(FmToolEvents.wandTooltipKind(new ItemStack(Items.STICK)), "",
             "non-wand items do not receive wand-specific tooltips");
+        helper.succeed();
+    }
+
+    private static void itemTranslationKeysAreNotNestedUnderResearchPages(GameTestHelper helper) {
+        JsonObject english = readJson(helper, "/assets/forbiddenmagic/lang/en_us.json");
+        JsonObject russian = readJson(helper, "/assets/forbiddenmagic/lang/ru_ru.json");
+        List<String> expected = List.of(
+            "item.forbiddenmagic.taint_coal",
+            "item.forbiddenmagic.riding_crop",
+            "item.forbiddenmagic.black_dye",
+            "item.forbiddenmagic.taint_fruit",
+            "item.forbiddenmagic.ring_nutrition",
+            "item.forbiddenmagic.tainted_rod",
+            "item.forbiddenmagic.infernal_rod",
+            "item.forbiddenmagic.witchwood_rod",
+            "item.forbiddenmagic.profane_rod",
+            "item.forbiddenmagic.witchwood_staff_rod",
+            "item.Wand.tainted.rod",
+            "item.Wand.infernal.rod",
+            "item.Wand.profane.rod",
+            "item.Wand.profaned.rod",
+            "item.forbiddenmagic.taint_shovel",
+            "item.forbiddenmagic.taint_pickaxe",
+            "item.forbiddenmagic.crystalwell",
+            "item.forbiddenmagic.primewell",
+            "item.forbiddenmagic.blink_focus",
+            "entity.forbiddenmagic.villager.heretic",
+            "tooltip.creativeonly",
+            "tooltip.profane_contract"
+        );
+        List<String> pages = List.of(
+            "RIDINGCROP", "RINGFOOD", "ROD_tainted", "ROD_infernal", "ROD_witchwood",
+            "ROD_profane", "ROD_witchwood_staff", "TRANSEMERALD", "CRYSTALWELL",
+            "PRIMEWELL", "TAINTSHOVEL", "TAINTPICK", "FOCUSBLINK"
+        );
+        for (JsonObject translations : List.of(english, russian)) {
+            for (String key : expected) {
+                helper.assertTrue(translations.has(key), "missing translation key " + key);
+            }
+            for (String page : pages) {
+                helper.assertTrue(translations.has("forbiddenmagic.research_page." + page + ".1"),
+                    "missing research page key " + page);
+            }
+            for (String key : translations.keySet()) {
+                helper.assertFalse(key.contains(".research_page.ARCANECAKE.item.")
+                        || key.contains(".research_page.ARCANECAKE.entity.")
+                        || key.contains(".research_page.ARCANECAKE.forbiddenmagic.")
+                        || key.startsWith("itemGroup.tooltip."),
+                    "translation key has an invalid nested prefix " + key);
+            }
+        }
         helper.succeed();
     }
 
