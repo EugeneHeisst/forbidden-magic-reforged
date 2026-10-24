@@ -32,7 +32,7 @@ index 0000000..7915098
 +    }
 +
 +    public interface Addon {
-+        Aspect register(String tag, int color, Aspect @Nullable [] components, int blend, @Nullable ResourceLocation texture);
++        Aspect register(String tag, int color, @Nullable Aspect[] components, int blend, @Nullable ResourceLocation texture);
 +    }
 +
 +    public static void addRegistrar(Consumer<Addon> registrar) {

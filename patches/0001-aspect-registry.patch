@@ -154,7 +154,7 @@ index 859be01..78e2b88 100644
 -    }
 -
 -    Aspect(String tag, int color, @Nullable String chatcolor, @Nullable Aspect[] components, int blend) {
-+    private Aspect(String tag, int color, @Nullable String chatcolor, Aspect @Nullable [] components, int blend, @Nullable ResourceLocation image) {
++    private Aspect(String tag, int color, @Nullable String chatcolor, @Nullable Aspect[] components, int blend, @Nullable ResourceLocation image) {
          this.tag = tag;
          this.color = color;
          this.chatcolor = chatcolor;
@@ -176,7 +176,7 @@ index 859be01..78e2b88 100644
 +        return aspect;
 +    }
 +
-+    public static Aspect register(String tag, int color, Aspect @Nullable [] components, int blend, @Nullable ResourceLocation image) {
++    public static Aspect register(String tag, int color, @Nullable Aspect[] components, int blend, @Nullable ResourceLocation image) {
 +        Aspect existing = BY_TAG.get(tag);
 +        if (existing != null) {
 +            return existing;
