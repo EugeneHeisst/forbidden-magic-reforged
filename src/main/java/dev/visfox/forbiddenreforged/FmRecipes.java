@@ -119,6 +119,15 @@ public final class FmRecipes {
                 )));
         }
         registerMorphTools();
+        if (FmConfig.emeraldTrans()) {
+            TcRecipes.register(new CrucibleRecipe(
+                "TRANSEMERALD",
+                "TRANSEMERALD",
+                TcStack.of(FmItems.EMERALD_FRAGMENT.getId().toString(), 4),
+                TcIngredient.tag("c:nuggets/emerald"),
+                new AspectList().add(Aspect.CRYSTAL, 2).add(Aspect.GREED, 2)
+            ));
+        }
         if (FmConfig.gluttonyMode() != 1) {
             List<TcIngredient> cakeParts = FmConfig.gluttonyMode() == 2
                 ? List.of(
