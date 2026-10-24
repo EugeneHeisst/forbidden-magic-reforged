@@ -15,6 +15,8 @@ public final class ForbiddenMagic {
     public ForbiddenMagic(IEventBus modEventBus, ModContainer modContainer) {
         FmConfig.register(modContainer);
         FmItems.ITEMS.register(modEventBus);
+        FmCreativeTab.register(modEventBus);
+        FmAspectTags.register();
     }
 
     public static ResourceLocation id(String path) {
