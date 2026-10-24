@@ -353,7 +353,7 @@ public final class ItemGameTests {
         helper.assertTrue(FmEnchantmentEffects.skullAxeRoll(2, 0, 2, 2), "zombie threshold includes roll two");
         helper.assertFalse(FmEnchantmentEffects.skullAxeRoll(3, 0, 2, 2), "zombie threshold excludes roll three");
         helper.assertTrue(FmEnchantmentEffects.skullAxeRoll(4, 1, 2, 2), "Looting II raises zombie threshold by four");
-        helper.assertTrue(FmEnchantmentEffects.skullAxeRoll(2, 0, 1, 1), "player head threshold includes roll one");
+        helper.assertTrue(FmEnchantmentEffects.skullAxeRoll(1, 0, 1, 1), "player head threshold includes roll one");
         helper.assertFalse(FmEnchantmentEffects.skullAxeRoll(3, 1, 1, 1), "player head threshold excludes roll three at Looting I");
         helper.succeed();
     }
