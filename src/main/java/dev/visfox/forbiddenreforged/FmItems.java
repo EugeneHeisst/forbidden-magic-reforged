@@ -6,8 +6,10 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Rarity;
+import net.minecraft.world.item.ToolMaterial;
 import net.minecraft.world.item.component.CookingFuel;
 import net.minecraft.world.level.storage.loot.providers.number.floats.ContextFloatProviders;
 import net.minecraft.world.level.storage.loot.providers.number.floats.ResolvableFloat;
@@ -84,8 +86,8 @@ public final class FmItems {
             )
         ));
         RIDING_CROP = ITEMS.registerItem("riding_crop", RidingCropItem::new,
-            properties -> Registration.sword(properties.rarity(Rarity.UNCOMMON), TcMaterials.THAUMIUM_TOOL, 1.0F, -2.8F)
-                .repairable(net.minecraft.world.item.Items.LEATHER));
+            properties -> properties.sword(ToolMaterial.WOOD, 3.0F, -2.4F)
+                .repairable(TagKey.create(Registries.ITEM, ForbiddenMagic.id("riding_crop_repair"))));
         BLACK_DYE = ITEMS.registerItem("black_dye", BlackDyeItem::new,
             properties -> properties.stacksTo(64));
         TAINT_FRUIT = ITEMS.registerItem("taint_fruit", TaintFruitItem::new,
