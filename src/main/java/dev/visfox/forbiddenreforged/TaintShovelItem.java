@@ -70,6 +70,7 @@ public final class TaintShovelItem extends Item {
         return state.getBlock() instanceof TaintBlock
             || state.getBlock() instanceof TaintFibresBlock
             || state.is(ModBlocks.FLUX_GOO.get())
-            || state.is(ModBlocks.FLUX_GAS.get());
+            || state.is(ModBlocks.FLUX_GAS.get())
+            || state.is(FmBlocks.TAINT_LEAVES.get());
     }
 }
