@@ -7,9 +7,10 @@
 ## Upstream
 
 ```
-decision: continue (аддон идёт своим ходом, запрос на аспектовый API отправляется отдельно)
-date: 2026-10-22
-author reply: нет — в трекере хоста он не отвечает; текст запроса готов, не отправлен
+decision: continue (аддон развивается параллельно; API запрошен отдельным PR)
+date: 2026-10-24
+host PR: https://github.com/notlikethiss/thaumcraft-4-reforged/pull/37 (open, Draft)
+author reply/review: нет; PR пока без review threads
 ```
 
 Если автор ответит, что портирует Forbidden Magic сам, работа останавливается на аспектовом слое: патчи
