@@ -117,11 +117,37 @@ public final class FmEnchantmentEffects {
         }
     }
 
+    public static boolean silverfishEmeraldRoll(boolean windsweptHills, int roll, int looting) {
+        return roll <= (windsweptHills ? 2 + looting * 2 : 1 + looting * 3);
+    }
+
     public static boolean skullAxeRoll(int roll, int looting, int baseChance, int lootingMultiplier) {
         return roll <= baseChance + looting * lootingMultiplier;
     }
 
     private static void onLivingDrops(LivingDropsEvent event) {
+        LivingEntity victim = event.getEntity();
+        Identifier victimType = BuiltInRegistries.ENTITY_TYPE.getKey(victim.getType());
+        if (FmConfig.silverfishEmeralds()
+            && event.isRecentlyHit()
+            && victimType.equals(Identifier.withDefaultNamespace("silverfish"))) {
+            Entity killer = event.getSource().getEntity();
+            if (killer instanceof ServerPlayer player) {
+                Identifier biomeId = BuiltInRegistries.BIOME.getKey(
+                    victim.level().getBiome(victim.blockPosition()).value());
+                boolean windsweptHills = Identifier.withDefaultNamespace("windswept_hills").equals(biomeId);
+                if (windsweptHills || !(killer instanceof FakePlayer)) {
+                    int looting = FmEnchantments.level(
+                        player.level().registryAccess(), player.getMainHandItem(), Enchantments.LOOTING);
+                    int bound = windsweptHills ? 30 : 70;
+                    int roll = victim.getRandom().nextInt(bound);
+                    if (silverfishEmeraldRoll(windsweptHills, roll, looting)) {
+                        addDrop(event, new ItemStack(FmItems.EMERALD_FRAGMENT.get()));
+                    }
+                }
+            }
+        }
+
         Entity attacker = event.getSource().getEntity();
         if (!(attacker instanceof ServerPlayer player) || attacker instanceof FakePlayer || !event.isRecentlyHit()) {
             return;
