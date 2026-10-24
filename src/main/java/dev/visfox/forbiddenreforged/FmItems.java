@@ -95,12 +95,12 @@ public final class FmItems {
         WITCHWOOD_ROD = ITEMS.registerSimpleItem("witchwood_rod");
         PROFANE_ROD = ITEMS.registerSimpleItem("profane_rod");
         WITCHWOOD_STAFF_ROD = ITEMS.registerSimpleItem("witchwood_staff_rod");
-        TAINT_SHOVEL = ITEMS.registerItem("taint_shovel", Item::new,
+        TAINT_SHOVEL = ITEMS.registerItem("taint_shovel", TaintShovelItem::new,
             properties -> Registration.shovel(properties.rarity(Rarity.UNCOMMON), TcMaterials.ELEMENTAL_TOOL, 1.0F, -3.0F)
-                .repairable(DEADLY_SHARDS.get("taint").get()));
+                .repairable(ModItems.THAUMIUM_INGOT.get()));
         TAINT_PICKAXE = ITEMS.registerItem("taint_pickaxe", Item::new,
             properties -> Registration.pickaxe(properties.rarity(Rarity.UNCOMMON), TcMaterials.ELEMENTAL_TOOL, 1.0F, -2.8F)
-                .repairable(DEADLY_SHARDS.get("taint").get()));
+                .repairable(ModItems.THAUMIUM_INGOT.get()));
         CRYSTALWELL = ITEMS.registerSimpleItem("crystalwell", properties -> properties.stacksTo(1));
         PRIMEWELL = ITEMS.registerSimpleItem("primewell", properties -> properties.stacksTo(1).durability(100));
         BLINK_FOCUS = ITEMS.registerItem("blink_focus", BlinkFocusItem::new,
