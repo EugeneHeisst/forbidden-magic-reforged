@@ -45,6 +45,9 @@ import thaumcraft.aspect.AspectList;
 import thaumcraft.item.ScribingToolsItem;
 import net.minecraft.world.item.Rarity;
 import thaumcraft.crafting.InfusionRecipe;
+import thaumcraft.crafting.ShapelessArcaneRecipe;
+import thaumcraft.registry.ModBlocks;
+import thaumcraft.registry.ModItems;
 import thaumcraft.crafting.TcRecipes;
 import thaumcraft.research.ResearchCategories;
 import thaumcraft.research.ResearchItem;
@@ -298,10 +301,24 @@ public final class ItemGameTests {
     }
 
     private static void scribeWellsKeepOriginalRecipesAndResearch(GameTestHelper helper) {
-        helper.assertTrue(TcRecipes.get("CRYSTALWELL") != null, "crystalwell arcane recipe is registered");
+        ShapelessArcaneRecipe crystalwell = (ShapelessArcaneRecipe) TcRecipes.get("CRYSTALWELL");
+        helper.assertTrue(crystalwell != null, "crystalwell arcane recipe is registered");
         helper.assertTrue(TcRecipes.get("PRIMEWELL") != null, "primewell arcane recipe is registered");
         helper.assertTrue(ResearchCategories.getResearch("CRYSTALWELL") != null, "crystalwell research is registered");
         helper.assertTrue(ResearchCategories.getResearch("PRIMEWELL") != null, "primewell research is registered");
+        helper.assertTrue(crystalwell.ingredients().get(0).test(new ItemStack(ModItems.SCRIBING_TOOLS.get())),
+            "crystalwell recipe uses the registered scribing tools item");
+        if (thaumcraft.Config.researchDifficulty() == -1) {
+            helper.assertValueEqual(crystalwell.ingredients().size(), 4, "easy research uses two arbitrary Thaumcraft shards");
+            helper.assertTrue(crystalwell.ingredients().get(2).test(new ItemStack(ModItems.BALANCED_SHARD.get())),
+                "the easy recipe accepts any shard through the shard tag");
+        } else {
+            helper.assertValueEqual(crystalwell.ingredients().size(), 6, "normal research uses a mixed crystal and three balanced shards");
+            helper.assertTrue(crystalwell.ingredients().get(2).test(new ItemStack(ModBlocks.MIXED_CRYSTAL_CLUSTER.get().asItem())),
+                "the hard recipe uses the mixed crystal cluster");
+            helper.assertTrue(crystalwell.ingredients().get(3).test(new ItemStack(ModItems.BALANCED_SHARD.get())),
+                "the hard recipe uses balanced shards");
+        }
         helper.succeed();
     }
 
