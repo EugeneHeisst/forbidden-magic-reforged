@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -39,6 +40,11 @@ import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.animal.equine.Horse;
+import net.minecraft.world.entity.animal.pig.Pig;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -50,6 +56,7 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.RegisterGameTestsEvent;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -110,7 +117,10 @@ public final class ItemGameTests {
         "crystalwell_research_page_matches_difficulty",
         "infernal_and_tainted_wand_damage_behaviors_match_original",
         "hellfire_trigger_targets_netherrack_and_obsidian",
-        "subcollar_places_on_another_player_and_stores_damage_vis"
+        "subcollar_places_on_another_player_and_stores_damage_vis",
+        "riding_crop_effects_match_original",
+        "heretic_trades_match_original_listing",
+        "witchwood_requires_ars_magica"
     };
 
     static {
@@ -141,6 +151,9 @@ public final class ItemGameTests {
         FUNCTIONS.register(TESTS[24], () -> ItemGameTests::infernalAndTaintedWandDamageBehaviorsMatchOriginal);
         FUNCTIONS.register(TESTS[25], () -> ItemGameTests::hellfireTriggerTargetsNetherrackAndObsidian);
         FUNCTIONS.register(TESTS[26], () -> ItemGameTests::subcollarPlacesOnAnotherPlayerAndStoresDamageVis);
+        FUNCTIONS.register(TESTS[27], () -> ItemGameTests::ridingCropEffectsMatchOriginal);
+        FUNCTIONS.register(TESTS[28], () -> ItemGameTests::hereticTradesMatchOriginalListing);
+        FUNCTIONS.register(TESTS[29], () -> ItemGameTests::witchwoodRequiresArsMagica);
     }
 
     private ItemGameTests() {}
@@ -184,6 +197,8 @@ public final class ItemGameTests {
         helper.assertValueEqual(recipe.aspects().getAmount(Aspect.MECHANISM), 8, "FORK mechanism cost");
         helper.assertValueEqual(recipe.aspects().getAmount(Aspect.ENERGY), 8, "FORK energy cost");
         helper.assertValueEqual(recipe.components().size(), 4, "FORK has 4 components");
+        ItemStack forkStack = new ItemStack(FmItems.DIABOLIST_FORK.get());
+        helper.assertValueEqual(forkStack.getItem().getDestroySpeed(forkStack, Blocks.COBWEB.defaultBlockState()), 1.0F, "the fork always digs at speed 1");
         helper.succeed();
     }
 
@@ -707,8 +722,96 @@ public final class ItemGameTests {
         helper.succeed();
     }
 
-    private static ServerPlayer mockConnectedPlayer(GameTestHelper helper) {
-        ServerPlayer player = (ServerPlayer) helper.makeMockServerPlayer(GameType.SURVIVAL);
+    private static void ridingCropEffectsMatchOriginal(GameTestHelper helper) {
+        ItemStack crop = new ItemStack(FmItems.RIDING_CROP.get());
+        ServerPlayer attacker = mockConnectedPlayer(helper);
+
+        Horse horse = helper.spawn(EntityTypes.HORSE, new BlockPos(2, 4, 2));
+        crop.getItem().hurtEnemy(crop, horse, attacker);
+        MobEffectInstance horseSpeed = horse.getEffect(MobEffects.SPEED);
+        helper.assertTrue(horseSpeed != null && horseSpeed.getDuration() == 200 && horseSpeed.getAmplifier() == 5, "a horse gets speed 200 at amplifier 5");
+
+        Pig pig = helper.spawn(EntityTypes.PIG, new BlockPos(4, 4, 4));
+        crop.getItem().hurtEnemy(crop, pig, attacker);
+        MobEffectInstance pigSpeed = pig.getEffect(MobEffects.SPEED);
+        helper.assertTrue(pigSpeed != null && pigSpeed.getDuration() == 200 && pigSpeed.getAmplifier() == 5, "a pig gets speed 200 at amplifier 5");
+
+        ServerPlayer victim = mockConnectedPlayer(helper);
+        crop.getItem().hurtEnemy(crop, victim, attacker);
+        helper.assertTrue(victim.hasEffect(MobEffects.SPEED) && victim.hasEffect(MobEffects.HASTE) && victim.hasEffect(MobEffects.STRENGTH), "players get speed, haste and strength");
+
+        helper.assertTrue(RidingCropItem.dropsLustShard(1), "roll 1 drops a shard");
+        helper.assertFalse(RidingCropItem.dropsLustShard(0) || RidingCropItem.dropsLustShard(2) || RidingCropItem.dropsLustShard(14), "only roll 1 of 15 drops a shard");
+
+        helper.assertValueEqual(crop.getMaxDamage(), 59, "the crop uses the wooden sword durability");
+        net.minecraft.tags.TagKey<Item> repair = net.minecraft.tags.TagKey.create(Registries.ITEM, ForbiddenMagic.id("riding_crop_repair"));
+        helper.assertTrue(new ItemStack(Items.LEATHER).is(repair), "leather repairs the crop");
+        helper.assertTrue(new ItemStack(Items.OAK_PLANKS).is(repair), "wooden planks repair the crop");
+        helper.assertValueEqual(crop.getRarity(), Rarity.COMMON, "the crop keeps the original common rarity");
+        helper.assertValueEqual(crop.getItem().getDestroySpeed(crop, Blocks.STONE.defaultBlockState()), 1.0F, "the crop always digs at speed 1");
+
+        Horse mount = helper.spawn(EntityTypes.HORSE, new BlockPos(6, 4, 6));
+        float health = mount.getHealth();
+        attacker.startRiding(mount);
+        crop.getItem().use(helper.getLevel(), attacker, InteractionHand.MAIN_HAND);
+        MobEffectInstance mountSpeed = mount.getEffect(MobEffects.SPEED);
+        helper.assertTrue(mountSpeed != null && mountSpeed.getDuration() == 200 && mountSpeed.getAmplifier() == 5, "right-click while riding gives the mount speed 200 at amplifier 5");
+        helper.assertValueEqual(mount.getHealth(), health - 1.0F, "right-click while riding deals one damage to the mount");
+        helper.succeed();
+    }
+
+    private static void hereticTradesMatchOriginalListing(GameTestHelper helper) {
+        JsonObject level1 = readJson(helper, "/data/forbiddenmagic/trade_set/heretic/level_1.json");
+        helper.assertValueEqual(level1.get("amount").getAsInt(), 9, "all nine heretic offers are available from the first level");
+        for (int level = 2; level <= 5; level++) {
+            JsonObject set = readJson(helper, "/data/forbiddenmagic/trade_set/heretic/level_" + level + ".json");
+            helper.assertValueEqual(set.get("amount").getAsInt(), 0, "level " + level + " adds no extra offers");
+        }
+
+        JsonArray pool = readJson(helper, "/data/forbiddenmagic/tags/villager_trade/heretic/pool.json").getAsJsonArray("values");
+        helper.assertValueEqual(pool.size(), 9, "the lust pool lists nine offers");
+        Set<String> unique = new HashSet<>();
+        for (var value : pool) {
+            unique.add(value.getAsString());
+        }
+        helper.assertValueEqual(unique.size(), 9, "the lust pool has no duplicate offers");
+        JsonArray noLustPool = readJson(helper, "/data/forbiddenmagic/tags/villager_trade/heretic/no_lust_pool.json").getAsJsonArray("values");
+        helper.assertValueEqual(noLustPool.size(), 8, "the no_lust pool lists eight offers");
+        JsonObject noLustLevel1 = readJson(helper, "/data/forbiddenmagic/trade_set/heretic/no_lust/level_1.json");
+        helper.assertValueEqual(noLustLevel1.get("amount").getAsInt(), 9, "the no_lust profession also offers everything at once");
+        for (int level = 2; level <= 5; level++) {
+            JsonObject set = readJson(helper, "/data/forbiddenmagic/trade_set/heretic/no_lust/level_" + level + ".json");
+            helper.assertValueEqual(set.get("amount").getAsInt(), 0, "no_lust level " + level + " adds no extra offers");
+        }
+
+        String[] normal = {
+            "emerald_greed_shard", "lust_shard_emerald", "wrath_shard_emerald", "gluttony_shard_emerald",
+            "emerald_skull", "emerald_ghast_tear", "emerald_glowstone"
+        };
+        for (String name : normal) {
+            JsonObject trade = readJson(helper, "/data/forbiddenmagic/villager_trade/heretic/" + name + ".json");
+            helper.assertValueEqual(trade.get("max_uses").getAsInt(), 7, name + " keeps the original seven uses");
+            helper.assertValueEqual(trade.get("xp").getAsInt(), 0, name + " grants no trade xp");
+            helper.assertValueEqual(trade.get("reputation_discount").getAsDouble(), 0.0, name + " has no reputation discount");
+        }
+        for (String name : new String[]{"emerald_profane_wand", "emerald_fire_focus"}) {
+            JsonObject trade = readJson(helper, "/data/forbiddenmagic/villager_trade/heretic/" + name + ".json");
+            helper.assertValueEqual(trade.get("max_uses").getAsInt(), 1, name + " keeps the original single use");
+            helper.assertValueEqual(trade.get("xp").getAsInt(), 0, name + " grants no trade xp");
+        }
+        helper.succeed();
+    }
+
+    private static void witchwoodRequiresArsMagica(GameTestHelper helper) {
+        boolean am2 = ModList.get().isLoaded("arsmagica2");
+        helper.assertValueEqual(BuiltInRegistries.ITEM.getOptional(ForbiddenMagic.id("witchwood_rod")).isPresent(), am2, "the witchwood rod exists only with Ars Magica 2");
+        helper.assertValueEqual(BuiltInRegistries.ITEM.getOptional(ForbiddenMagic.id("witchwood_staff_rod")).isPresent(), am2, "the witchwood staff rod exists only with Ars Magica 2");
+        helper.assertValueEqual(ResearchCategories.getResearch("ROD_witchwood") != null, am2, "the witchwood research exists only with Ars Magica 2");
+        helper.assertValueEqual(ResearchCategories.getResearch("ROD_witchwood_staff") != null, am2, "the witchwood staff research exists only with Ars Magica 2");
+        helper.succeed();
+    }
+
+    private static ServerPlayer mockConnectedPlayer(GameTestHelper helper) {        ServerPlayer player = (ServerPlayer) helper.makeMockServerPlayer(GameType.SURVIVAL);
         CommonListenerCookie cookie = CommonListenerCookie.createInitial(player.getGameProfile(), false);
         Connection connection = new Connection(PacketFlow.SERVERBOUND);
         new EmbeddedChannel(connection);

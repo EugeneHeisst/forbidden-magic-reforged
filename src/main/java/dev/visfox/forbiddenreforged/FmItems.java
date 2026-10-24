@@ -6,13 +6,16 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Rarity;
+import net.minecraft.world.item.ToolMaterial;
 import net.minecraft.world.item.component.CookingFuel;
 import net.minecraft.world.level.storage.loot.providers.number.floats.ContextFloatProviders;
 import net.minecraft.world.level.storage.loot.providers.number.floats.ResolvableFloat;
 import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProvider;
 import net.minecraft.world.level.storage.loot.providers.number.ints.ResolvableInt;
+import net.neoforged.fml.ModList;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import org.jspecify.annotations.Nullable;
@@ -42,9 +45,9 @@ public final class FmItems {
     public static final DeferredItem<Item> RING_NUTRITION;
     public static final DeferredItem<Item> TAINTED_ROD;
     public static final DeferredItem<Item> INFERNAL_ROD;
-    public static final DeferredItem<Item> WITCHWOOD_ROD;
+    public static final @Nullable DeferredItem<Item> WITCHWOOD_ROD;
     public static final DeferredItem<Item> PROFANE_ROD;
-    public static final DeferredItem<Item> WITCHWOOD_STAFF_ROD;
+    public static final @Nullable DeferredItem<Item> WITCHWOOD_STAFF_ROD;
     public static final DeferredItem<Item> TAINT_SHOVEL;
     public static final DeferredItem<Item> TAINT_PICKAXE;
     public static final DeferredItem<Item> CRYSTALWELL;
@@ -84,8 +87,8 @@ public final class FmItems {
             )
         ));
         RIDING_CROP = ITEMS.registerItem("riding_crop", RidingCropItem::new,
-            properties -> Registration.sword(properties.rarity(Rarity.UNCOMMON), TcMaterials.THAUMIUM_TOOL, 1.0F, -2.8F)
-                .repairable(net.minecraft.world.item.Items.LEATHER));
+            properties -> properties.sword(ToolMaterial.WOOD, 3.0F, -2.4F)
+                .repairable(TagKey.create(Registries.ITEM, ForbiddenMagic.id("riding_crop_repair"))));
         BLACK_DYE = ITEMS.registerItem("black_dye", BlackDyeItem::new,
             properties -> properties.stacksTo(64));
         TAINT_FRUIT = ITEMS.registerItem("taint_fruit", TaintFruitItem::new,
@@ -94,9 +97,14 @@ public final class FmItems {
             properties -> properties.stacksTo(1));
         TAINTED_ROD = ITEMS.registerSimpleItem("tainted_rod");
         INFERNAL_ROD = ITEMS.registerSimpleItem("infernal_rod");
-        WITCHWOOD_ROD = ITEMS.registerSimpleItem("witchwood_rod");
+        if (ModList.get().isLoaded("arsmagica2")) {
+            WITCHWOOD_ROD = ITEMS.registerSimpleItem("witchwood_rod");
+            WITCHWOOD_STAFF_ROD = ITEMS.registerSimpleItem("witchwood_staff_rod");
+        } else {
+            WITCHWOOD_ROD = null;
+            WITCHWOOD_STAFF_ROD = null;
+        }
         PROFANE_ROD = ITEMS.registerSimpleItem("profane_rod");
-        WITCHWOOD_STAFF_ROD = ITEMS.registerSimpleItem("witchwood_staff_rod");
         TAINT_SHOVEL = ITEMS.registerItem("taint_shovel", TaintShovelItem::new,
             properties -> Registration.shovel(properties.rarity(Rarity.UNCOMMON), TcMaterials.ELEMENTAL_TOOL, 1.0F, -3.0F)
                 .repairable(ModItems.THAUMIUM_INGOT.get()));

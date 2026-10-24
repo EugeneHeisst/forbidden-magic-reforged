@@ -10,7 +10,7 @@
   "gives": {
     "id": "minecraft:emerald"
   },
-  "max_uses": 8,
-  "xp": 5,
-  "reputation_discount": 0.05
+  "max_uses": 7,
+  "xp": 0,
+  "reputation_discount": 0
 }
