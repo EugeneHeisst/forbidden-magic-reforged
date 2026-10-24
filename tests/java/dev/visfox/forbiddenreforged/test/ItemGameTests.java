@@ -1,5 +1,6 @@
 package dev.visfox.forbiddenreforged.test;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import java.io.IOException;
@@ -37,6 +38,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import dev.visfox.forbiddenreforged.ForbiddenMagic;
 import dev.visfox.forbiddenreforged.FmAspects;
 import dev.visfox.forbiddenreforged.FmItems;
+import dev.visfox.forbiddenreforged.MorphState;
 import dev.visfox.forbiddenreforged.RidingCropItem;
 import thaumcraft.aspect.Aspect;
 import thaumcraft.aspect.AspectList;
@@ -65,7 +67,9 @@ public final class ItemGameTests {
         "creative_tab_lists_every_registered_item",
         "orichalcum_cap_is_registered",
         "diabolist_fork_switches_to_the_spork_model",
-        "lust_shard_switches_to_the_despair_model"
+        "lust_shard_switches_to_the_despair_model",
+        "creative_wand_family_matches_original",
+        "morph_phase_tints_match_original"
     };
 
     static {
@@ -81,6 +85,8 @@ public final class ItemGameTests {
         FUNCTIONS.register(TESTS[9], () -> ItemGameTests::orichalcumCapIsRegistered);
         FUNCTIONS.register(TESTS[10], () -> ItemGameTests::diabolistForkSwitchesToTheSporkModel);
         FUNCTIONS.register(TESTS[11], () -> ItemGameTests::lustShardSwitchesToTheDespairModel);
+        FUNCTIONS.register(TESTS[12], () -> ItemGameTests::creativeWandFamilyMatchesOriginal);
+        FUNCTIONS.register(TESTS[13], () -> ItemGameTests::morphPhaseTintsMatchOriginal);
     }
 
     private ItemGameTests() {}
@@ -251,6 +257,61 @@ public final class ItemGameTests {
         JsonObject despair = readJson(helper, "/assets/forbiddenmagic/models/item/lust_shard_despair.json");
         helper.assertValueEqual(despair.getAsJsonObject("textures").get("layer0").getAsString(), "forbiddenmagic:item/despair_shard", "despair model uses the despair texture");
         helper.assertTrue(ForbiddenMagic.class.getResourceAsStream("/assets/forbiddenmagic/textures/item/despair_shard.png") != null, "despair texture ships with the mod");
+        helper.succeed();
+    }
+
+    private static void creativeWandFamilyMatchesOriginal(GameTestHelper helper) {
+        WandRod neutronium = WandRegistry.findRod("neutronium");
+        WandRod staff = WandRegistry.findRod("neutronium_staff");
+        helper.assertTrue(neutronium != null, "neutronium rod is registered");
+        helper.assertTrue(staff != null, "neutronium staff is registered");
+        helper.assertValueEqual(neutronium.capacity(), 9001, "neutronium rod capacity");
+        helper.assertValueEqual(staff.capacity(), 9002, "neutronium staff capacity");
+        helper.assertTrue(neutronium.glowing() && staff.glowing(), "neutronium rod and staff glow");
+        helper.assertTrue(!neutronium.staff() && staff.staff(), "only the second neutronium rod is a staff");
+        helper.assertValueEqual(neutronium.craftCost(), 1000, "neutronium rod craft cost");
+        helper.assertValueEqual(staff.craftCost(), 1000, "neutronium staff craft cost");
+        helper.assertTrue(neutronium.onUpdate() != null && staff.onUpdate() != null, "creative rods refill vis on update");
+        helper.assertValueEqual(neutronium.item(), Identifier.withDefaultNamespace("bedrock"), "creative rod uses bedrock");
+        helper.assertValueEqual(staff.item(), Identifier.withDefaultNamespace("bedrock"), "creative staff uses bedrock");
+        helper.assertTrue(ForbiddenMagic.class.getResourceAsStream("/assets/forbiddenmagic/textures/model/wand_rod_neutronium.png") != null, "neutronium rod texture ships with the mod");
+
+        List<ItemStack> stacks = dev.visfox.forbiddenreforged.FmCreativeTab.stacks();
+        helper.assertTrue(stacks.stream().anyMatch(stack -> Wands.isWand(stack)
+            && Wands.getCap(stack).tag().equals("thaumium") && Wands.getRod(stack).tag().equals("tainted")), "tainted wand is in the creative tab");
+        helper.assertTrue(stacks.stream().anyMatch(stack -> Wands.isWand(stack)
+            && Wands.getCap(stack).tag().equals("thaumium") && Wands.getRod(stack).tag().equals("infernal")), "infernal wand is in the creative tab");
+        helper.assertTrue(stacks.stream().anyMatch(stack -> Wands.isWand(stack)
+            && Wands.getCap(stack).tag().equals("orichalcum") && Wands.getRod(stack).tag().equals("neutronium")), "creative neutronium wand is in the tab");
+        helper.assertTrue(stacks.stream().anyMatch(stack -> Wands.isWand(stack)
+            && Wands.getCap(stack).tag().equals("orichalcum") && Wands.getRod(stack).tag().equals("neutronium_staff")), "creative neutronium staff is in the tab");
+
+        ItemStack profaneWand = stacks.stream().filter(stack -> Wands.isWand(stack)
+            && Wands.getCap(stack).tag().equals("iron") && Wands.getRod(stack).tag().equals("profane"))
+            .findFirst().orElse(ItemStack.EMPTY);
+        helper.assertFalse(profaneWand.isEmpty(), "pre-filled profane wand is in the creative tab");
+        for (Aspect aspect : Aspect.getPrimalAspects()) {
+            helper.assertValueEqual(Wands.getVis(profaneWand, aspect), 5000, "profane creative wand starts with 5000 " + aspect);
+        }
+        helper.succeed();
+    }
+
+    private static void morphPhaseTintsMatchOriginal(GameTestHelper helper) {
+        MorphState state = MorphState.EMPTY;
+        int[] colors = {0xFF980000, 0xFF0010CC, 0xFFE5DA00};
+        for (int i = 0; i < colors.length; i++) {
+            helper.assertValueEqual(state.tintColor(), colors[i], "morph phase " + i + " tint");
+            state = state.advance();
+        }
+        for (String name : List.of("morph_pickaxe", "morph_sword", "morph_shovel", "morph_axe")) {
+            JsonObject definition = readJson(helper, "/assets/forbiddenmagic/items/" + name + ".json");
+            JsonObject model = definition.getAsJsonObject("model");
+            JsonArray tints = model.getAsJsonArray("tints");
+            helper.assertValueEqual(tints.size(), 2, name + " has a base tint and a phase tint");
+            helper.assertValueEqual(tints.get(0).getAsJsonObject().get("type").getAsString(), "minecraft:constant", name + " keeps the base layer white");
+            helper.assertValueEqual(tints.get(0).getAsJsonObject().get("value").getAsInt(), 16777215, name + " base layer remains untinted");
+            helper.assertValueEqual(tints.get(1).getAsJsonObject().get("type").getAsString(), "forbiddenmagic:morph_phase", name + " overlay tint uses the phase source");
+        }
         helper.succeed();
     }
 
