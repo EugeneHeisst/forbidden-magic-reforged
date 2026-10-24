@@ -14,11 +14,13 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.gametest.framework.TestData;
 import net.minecraft.gametest.framework.TestEnvironmentDefinition;
 import net.minecraft.network.Connection;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.permissions.PermissionSet;
 import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.tags.TagKey;
@@ -35,11 +37,13 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.RegisterGameTestsEvent;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import dev.visfox.forbiddenreforged.ForbiddenMagic;
+import dev.visfox.forbiddenreforged.FmAspectDiagnostics;
 import dev.visfox.forbiddenreforged.FmAspects;
 import dev.visfox.forbiddenreforged.FmAspectTags;
 import dev.visfox.forbiddenreforged.FmConfig;
 import dev.visfox.forbiddenreforged.FmCreativeTab;
 import dev.visfox.forbiddenreforged.FmDrops;
+import dev.visfox.forbiddenreforged.FmBlocks;
 import dev.visfox.forbiddenreforged.FmItems;
 import thaumcraft.aspect.Aspect;
 import thaumcraft.aspect.AspectList;
@@ -65,7 +69,11 @@ public final class AspectGameTests {
         "mob_killed_by_player_drops_wrath_shard",
         "boss_drops_pride_shards",
         "unattended_death_drops_sloth_shard",
-        "forbidden_category_and_shard_entries_resolve"
+        "forbidden_category_and_shard_entries_resolve",
+        "nether_shard_drop_rules_match_original_boundaries",
+        "aspect_diagnostics_expose_stable_registry_table",
+        "forbiddenmagic_aspects_command_is_registered",
+        "addon_item_aspects_match_original_assignments"
     };
 
     static {
@@ -82,6 +90,10 @@ public final class AspectGameTests {
         FUNCTIONS.register(TESTS[10], () -> AspectGameTests::bossDropsPrideShards);
         FUNCTIONS.register(TESTS[11], () -> AspectGameTests::unattendedDeathDropsSlothShard);
         FUNCTIONS.register(TESTS[12], () -> AspectGameTests::forbiddenCategoryAndShardEntriesResolve);
+        FUNCTIONS.register(TESTS[13], () -> AspectGameTests::netherShardDropRulesMatchOriginalBoundaries);
+        FUNCTIONS.register(TESTS[14], () -> AspectGameTests::aspectDiagnosticsExposeStableRegistryTable);
+        FUNCTIONS.register(TESTS[15], () -> AspectGameTests::forbiddenmagicAspectsCommandIsRegistered);
+        FUNCTIONS.register(TESTS[16], () -> AspectGameTests::addonItemAspectsMatchOriginalAssignments);
     }
 
     private AspectGameTests() {}
@@ -195,9 +207,6 @@ public final class AspectGameTests {
     private static void shardsAreRegisteredWithSevenIds(GameTestHelper helper) {
         helper.assertValueEqual(FmItems.DEADLY_SHARDS.size(), 7, "the original registers seven vices");
         for (var entry : FmItems.DEADLY_SHARDS.entrySet()) {
-            if (entry.getKey().equals("lust") && FmConfig.lustDisabled()) {
-                continue;
-            }
             Item item = entry.getValue().get();
             helper.assertTrue(BuiltInRegistries.ITEM.getKey(item).getNamespace().equals(ForbiddenMagic.MODID), entry.getKey() + " must be namespaced to the port");
             AspectList tags = AspectRegistry.active().getObjectTags(item);
@@ -213,9 +222,13 @@ public final class AspectGameTests {
             return;
         }
         helper.assertTrue(FmAspects.LUST == null && Aspect.getAspect("luxuria") == null, "luxuria must be absent from the registry");
-        helper.assertFalse(FmCreativeTab.visible("lust"), "lust shard must not be offered to the creative tab");
-        AspectList tags = AspectRegistry.active().getObjectTags(FmItems.DEADLY_SHARDS.get("lust").get());
-        helper.assertTrue(tags == null || tags.size() == 0, "lust shard must carry no aspect tag");
+        ItemStack shard = new ItemStack(FmItems.DEADLY_SHARDS.get("lust").get());
+        helper.assertValueEqual(shard.getHoverName(), Component.translatable("item.forbiddenmagic.despair_shard"), "no_lust renames the fourth shard to despair");
+        AspectList tags = AspectRegistry.active().getObjectTags(shard.getItem());
+        helper.assertTrue(tags != null, "the despair shard must carry an aspect tag");
+        helper.assertValueEqual(tags.getAmount(Aspect.VOID), 1, "the despair shard carries one void");
+        helper.assertValueEqual(tags.size(), 1, "the despair shard carries only void");
+        helper.assertTrue(FmCreativeTab.stacks().stream().anyMatch(stack -> stack.getItem() == shard.getItem()), "the despair shard stays in the creative tab");
         helper.succeed();
     }
 
@@ -223,6 +236,75 @@ public final class AspectGameTests {
         helper.assertTrue(FmDrops.rollWrath(2, 2), "chance 2 must drop at roll 2, the original uses nextInt(61) <= wrath");
         helper.assertFalse(FmDrops.rollWrath(2, 3), "chance 2 must not drop at roll 3");
         helper.assertValueEqual(FmDrops.wrathShardStack().getItem(), FmItems.DEADLY_SHARDS.get("wrath").get(), "wrath drop must be the wrath shard");
+        helper.succeed();
+    }
+
+    private static void addonItemAspectsMatchOriginalAssignments(GameTestHelper helper) {
+        AspectRegistry registry = AspectRegistry.active();
+
+        AspectList emerald = registry.getObjectTags(FmItems.EMERALD_FRAGMENT.get());
+        helper.assertTrue(emerald != null && emerald.getAmount(Aspect.CRYSTAL) == 1,
+            "emerald fragment keeps the original crystal aspect");
+        AspectList dye = registry.getObjectTags(FmItems.BLACK_DYE.get());
+        helper.assertTrue(dye != null && dye.getAmount(Aspect.DARKNESS) == 1,
+            "black dye keeps the original darkness aspect");
+
+        AspectList fruit = registry.getObjectTags(FmItems.TAINT_FRUIT.get());
+        helper.assertTrue(fruit != null && fruit.getAmount(Aspect.TAINT) == 2 && fruit.getAmount(Aspect.POISON) == 1,
+            "taint fruit keeps taint and poison");
+        AspectList coal = registry.getObjectTags(FmItems.TAINT_COAL.get());
+        helper.assertTrue(coal != null && coal.getAmount(Aspect.TAINT) == 2 && coal.getAmount(Aspect.ENTROPY) == 2,
+            "taint coal keeps taint and entropy");
+
+        AspectList leaves = registry.getObjectTags(FmBlocks.TAINT_LEAVES.get().asItem());
+        helper.assertTrue(leaves != null && leaves.getAmount(Aspect.TAINT) == 1 && leaves.getAmount(Aspect.PLANT) == 1,
+            "tainted leaves keep taint and plant");
+        AspectList log = registry.getObjectTags(FmBlocks.TAINT_LOG.get().asItem());
+        helper.assertTrue(log != null && log.getAmount(Aspect.TAINT) == 1 && log.getAmount(Aspect.TREE) == 3,
+            "tainted log keeps taint and tree");
+        AspectList planks = registry.getObjectTags(FmBlocks.TAINT_PLANKS.get().asItem());
+        helper.assertTrue(planks != null && planks.getAmount(Aspect.TREE) == 1,
+            "tainted planks keep tree");
+        AspectList brick = registry.getObjectTags(FmBlocks.TAINT_STONE_BRICK.get().asItem());
+        helper.assertTrue(brick != null && brick.getAmount(Aspect.EARTH) == 1,
+            "tainted stone bricks keep earth");
+
+        AspectList flower = registry.getObjectTags(FmBlocks.UMBRAL_ROSE.get().asItem());
+        helper.assertTrue(flower != null
+                && flower.getAmount(Aspect.PLANT) == 1
+                && flower.getAmount(Aspect.LIFE) == 1
+                && flower.getAmount(Aspect.SENSES) == 1
+                && flower.getAmount(Aspect.DARKNESS) == 1,
+            "umbral rose keeps the original black flower aspects");
+        if (!FmConfig.lustDisabled()) {
+            AspectList crop = registry.getObjectTags(FmItems.RIDING_CROP.get());
+            helper.assertTrue(crop != null
+                    && crop.getAmount(Aspect.TREE) == 2
+                    && crop.getAmount(Aspect.CLOTH) == 2
+                    && crop.getAmount(Aspect.BEAST) == 1
+                    && crop.getAmount(FmAspects.LUST) == 1
+                    && crop.getAmount(Aspect.WEAPON) == 1,
+                "riding crop keeps the original aspect list when lust is enabled");
+        }
+        helper.succeed();
+    }
+
+    private static void netherShardDropRulesMatchOriginalBoundaries(GameTestHelper helper) {
+        helper.assertTrue(FmDrops.rollGluttony(0), "gluttony shard drops at roll 0");
+        helper.assertTrue(FmDrops.rollGluttony(1), "gluttony shard drops at roll 1");
+        helper.assertFalse(FmDrops.rollGluttony(2), "gluttony shard does not drop at roll 2");
+
+        helper.assertFalse(FmDrops.rollQuartzGreed(0, 0), "quartz ore requires positive Fortune");
+        helper.assertTrue(FmDrops.rollQuartzGreed(1, 1), "Fortune 1 includes roll 1");
+        helper.assertFalse(FmDrops.rollQuartzGreed(1, 2), "Fortune 1 excludes roll 2");
+        helper.assertTrue(FmDrops.rollQuartzGreed(3, 3), "Fortune 3 includes roll 3");
+
+        helper.assertFalse(FmDrops.rollEnvy(0), "envy shard is not assigned at roll 0");
+        helper.assertTrue(FmDrops.rollEnvy(1), "envy shard is assigned at roll 1");
+        helper.assertFalse(FmDrops.rollEnvy(174), "envy shard is not assigned at roll 174");
+        helper.assertTrue(FmItems.GLUTTONY_SHARD.get() != null, "gluttony shard item exists");
+        helper.assertTrue(FmItems.DEADLY_SHARDS.get("greed").get() != null, "greed shard item exists");
+        helper.assertTrue(FmItems.DEADLY_SHARDS.get("envy").get() != null, "envy shard item exists");
         helper.succeed();
     }
 
@@ -239,6 +321,52 @@ public final class AspectGameTests {
         helper.assertValueEqual(FmDrops.slothCount(2), 3, "maximum sloth drop is three");
         helper.succeed();
     }
+
+    private static void forbiddenmagicAspectsCommandIsRegistered(GameTestHelper helper) {
+            var root = helper.getLevel().getServer().getCommands().getDispatcher().getRoot();
+            helper.assertTrue(root.getChild("forbiddenmagic") != null, "forbiddenmagic command must be registered");
+            helper.assertTrue(root.getChild("forbiddenmagic").getChild("aspects") != null, "forbiddenmagic aspects command must be registered");
+            var source = helper.getLevel().getServer().createCommandSourceStack();
+            helper.assertTrue(root.getChild("forbiddenmagic").getRequirement().test(source.withPermission(PermissionSet.ALL_PERMISSIONS)), "game masters must be allowed");
+            helper.assertFalse(root.getChild("forbiddenmagic").getRequirement().test(source.withPermission(PermissionSet.NO_PERMISSIONS)), "ordinary players must be denied");
+            helper.succeed();
+        }
+
+    private static void aspectDiagnosticsExposeStableRegistryTable(GameTestHelper helper) {
+            List<String> registryLines = FmAspectDiagnostics.registryLines();
+            helper.assertValueEqual(registryLines.size(), Aspect.count(), "diagnostics must contain every registered aspect");
+            for (int index = 0; index < Aspect.values().length; index++) {
+                Aspect aspect = Aspect.values()[index];
+                helper.assertTrue(registryLines.get(index).contains("ordinal=" + index + " "), "registry ordinals must be strict and ordered: " + aspect.getTag());
+            }
+            helper.assertValueEqual(registryLines.get(0), "ordinal=0 tag=aer name=Aer kind=builtin components=-", "first registry row must be exact");
+            helper.assertTrue(registryLines.stream().anyMatch(line -> line.contains("ordinal=47 ") && line.contains("tag=vinculum ") && line.contains("name=Vinculum ") && line.contains("kind=builtin")), "ordinal 47 vinculum must be present");
+            for (Aspect aspect : Aspect.values()) {
+                if (aspect.ordinal() < Aspect.builtinCount()) {
+                    helper.assertTrue(registryLines.stream().anyMatch(line -> line.contains("ordinal=" + aspect.ordinal() + " ") && line.contains("tag=" + aspect.getTag() + " ") && line.contains("kind=builtin")), "builtin aspect must be classified: " + aspect.getTag());
+                }
+            }
+    
+            List<String> addonLines = FmAspectDiagnostics.addonLines();
+            int expected = FmConfig.lustDisabled() ? 6 : 7;
+            helper.assertValueEqual(addonLines.size(), expected, "diagnostics must list every registered Forbidden Magic aspect");
+            helper.assertValueEqual(
+                registryLines.stream().filter(line -> line.contains("kind=addon")).toList(),
+                addonLines,
+                "Forbidden Magic rows must match the add-on section of the canonical registry"
+            );
+            int expectedOrdinal = Aspect.builtinCount();
+            for (String line : addonLines) {
+                helper.assertTrue(line.contains("ordinal=" + expectedOrdinal + " "), "add-on ordinals must be consecutive: " + line);
+                helper.assertTrue(line.contains("kind=addon"), "add-on aspect must be classified: " + line);
+                helper.assertTrue(line.contains("tag="), "add-on aspect must include its tag: " + line);
+                helper.assertTrue(line.contains("components="), "add-on aspect must include its components: " + line);
+                expectedOrdinal++;
+            }
+            helper.assertValueEqual(expectedOrdinal, Aspect.builtinCount() + expected, "all add-on ordinals must be present");
+            helper.assertTrue(addonLines.stream().anyMatch(line -> line.contains("tag=infernus ") && line.contains("name=Infernus ") && line.contains("components=ignis,praecantatio")), "infernus row must include exact name and component tags");
+            helper.succeed();
+        }
 
     private static void forbiddenCategoryAndShardEntriesResolve(GameTestHelper helper) {
         ResearchItem shards = ResearchCategories.getResearch("NETHERSHARDS");

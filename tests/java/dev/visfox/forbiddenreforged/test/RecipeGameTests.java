@@ -20,6 +20,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
@@ -31,15 +32,18 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import dev.visfox.forbiddenreforged.ForbiddenMagic;
 import dev.visfox.forbiddenreforged.FmAspects;
 import dev.visfox.forbiddenreforged.FmBlocks;
+import dev.visfox.forbiddenreforged.FmConfig;
 import dev.visfox.forbiddenreforged.FmDrops;
 import dev.visfox.forbiddenreforged.FmItems;
 import dev.visfox.forbiddenreforged.FmRecipes;
 import thaumcraft.aspect.Aspect;
 import thaumcraft.aspect.AspectList;
 import thaumcraft.aspect.AspectRegistry;
+import thaumcraft.crafting.CraftingRecipeRef;
 import thaumcraft.crafting.CrucibleRecipe;
 import thaumcraft.crafting.InfusionEnchantmentRecipe;
 import thaumcraft.crafting.InfusionRecipe;
+import thaumcraft.crafting.ShapedArcaneRecipe;
 import thaumcraft.crafting.TcIngredient;
 import thaumcraft.crafting.TcRecipe;
 import thaumcraft.crafting.TcRecipes;
@@ -60,7 +64,11 @@ public final class RecipeGameTests {
         "morph_recipes_match_the_original",
         "materials_have_crafting_recipes",
         "plant_research_and_recipes",
-        "wand_rod_recipes_registered"
+        "wand_rod_recipes_registered",
+        "taintstone_research_and_arcane_recipe",
+        "ore_dictionary_entries_became_tags",
+        "emerald_transmutation_matches_original",
+        "ring_food_recipe_matches_original"
     };
 
     static {
@@ -71,6 +79,10 @@ public final class RecipeGameTests {
         FUNCTIONS.register(TESTS[4], () -> RecipeGameTests::materialsHaveCraftingRecipes);
         FUNCTIONS.register(TESTS[5], () -> RecipeGameTests::plantResearchAndRecipes);
         FUNCTIONS.register(TESTS[6], () -> RecipeGameTests::wandRodRecipesRegistered);
+        FUNCTIONS.register(TESTS[7], () -> RecipeGameTests::taintstoneResearchAndArcaneRecipe);
+        FUNCTIONS.register(TESTS[8], () -> RecipeGameTests::oreDictionaryEntriesBecameTags);
+        FUNCTIONS.register(TESTS[9], () -> RecipeGameTests::emeraldTransmutationMatchesOriginal);
+        FUNCTIONS.register(TESTS[10], () -> RecipeGameTests::ringFoodRecipeMatchesOriginal);
     }
 
     private RecipeGameTests() {}
@@ -212,4 +224,84 @@ public final class RecipeGameTests {
         helper.assertValueEqual(infernalRod.aspects().getAmount(FmAspects.NETHER), 32, "infernal rod nether cost");
         helper.succeed();
     }
+
+    private static void taintstoneResearchAndArcaneRecipe(GameTestHelper helper) {
+        ResearchItem research = ResearchCategories.getResearch("TAINTSTONE");
+        helper.assertTrue(research != null, "taint stone research must exist");
+        helper.assertTrue(research.isConcealed(), "taint stone research is concealed");
+        helper.assertValueEqual(research.pages().size(), 3, "taint stone has text, arcane and brick pages");
+        helper.assertValueEqual(research.parents(), List.of("THAUMIUM", "INFUSION", "ETHEREALBLOOM"), "taint stone parents");
+
+        ShapedArcaneRecipe recipe = (ShapedArcaneRecipe) TcRecipes.get("TaintStone");
+        helper.assertTrue(recipe != null, "taint stone arcane recipe exists");
+        helper.assertValueEqual(recipe.width(), 3, "taint stone grid width");
+        helper.assertValueEqual(recipe.height(), 3, "taint stone grid height");
+        ItemStack result = recipe.result().create();
+        helper.assertTrue(result.is(FmBlocks.TAINT_STONE_SMOOTH.get().asItem()), "arcane recipe yields tainted stone");
+        helper.assertValueEqual(result.getCount(), 9, "arcane recipe yields nine blocks");
+        helper.assertValueEqual(recipe.aspects().getAmount(Aspect.ENTROPY), 2, "taint stone entropy cost");
+        helper.assertValueEqual(recipe.aspects().getAmount(Aspect.ORDER), 1, "taint stone order cost");
+        helper.assertTrue(recipe.grid().get(4).test(new ItemStack(FmItems.DEADLY_SHARDS.get("taint").get())), "centre slot takes a taint shard");
+        for (int slot : new int[]{0, 1, 2, 3, 5, 6, 7, 8}) {
+            helper.assertTrue(recipe.grid().get(slot).test(new ItemStack(Items.STONE)), "slot " + slot + " takes plain stone");
+        }
+
+        TcRecipe brick = TcRecipes.get("TaintBrick");
+        helper.assertTrue(brick instanceof CraftingRecipeRef ref, "brick recipe is registered as a reference");
+        helper.assertValueEqual(((CraftingRecipeRef) brick).recipe(), ForbiddenMagic.id("taint_stone_brick"), "brick recipe id");
+        helper.succeed();
+    }
+
+    private static void emeraldTransmutationMatchesOriginal(GameTestHelper helper) {
+        if (!FmConfig.emeraldTrans()) {
+            helper.assertTrue(TcRecipes.get("TRANSEMERALD") == null, "disabled emerald transmutation has no recipe");
+            helper.succeed();
+            return;
+        }
+
+        CrucibleRecipe recipe = (CrucibleRecipe) TcRecipes.get("TRANSEMERALD");
+        helper.assertTrue(recipe != null, "emerald transmutation crucible recipe exists");
+        helper.assertValueEqual(recipe.result().count(), 4, "transmutation produces four emerald nuggets");
+        helper.assertValueEqual(recipe.aspects().getAmount(Aspect.CRYSTAL), 2, "transmutation costs two crystal");
+        helper.assertValueEqual(recipe.aspects().getAmount(Aspect.GREED), 2, "transmutation costs two greed");
+        helper.assertTrue(recipe.catalyst().test(new ItemStack(FmItems.EMERALD_FRAGMENT.get())),
+            "emerald fragment is accepted as the nuggetEmerald catalyst");
+        TagKey<Item> emeraldNuggets = TagKey.create(Registries.ITEM, Identifier.parse("c:nuggets/emerald"));
+        helper.assertTrue(new ItemStack(FmItems.EMERALD_FRAGMENT.get()).is(emeraldNuggets),
+            "emerald fragment carries the common emerald nugget tag");
+
+        ResearchItem research = ResearchCategories.getResearch("TRANSEMERALD");
+        helper.assertTrue(research != null, "transmutation research exists when enabled");
+        helper.assertValueEqual(research.pages().size(), 2, "transmutation research has text and crucible pages");
+        helper.assertTrue(research.isSecondary() && research.isConcealed(), "transmutation research retains secondary/concealed status");
+        helper.succeed();
+    }
+
+    private static void oreDictionaryEntriesBecameTags(GameTestHelper helper) {
+        TagKey<Item> netherStars = TagKey.create(Registries.ITEM, Identifier.parse("c:nether_stars"));
+        helper.assertTrue(new ItemStack(FmBlocks.STAR_BLOCK.get().asItem()).is(netherStars), "the star block joins c:nether_stars like the blockNetherStar ore entry");
+
+        TagKey<Item> taintShards = TagKey.create(Registries.ITEM, Identifier.parse("forbiddenmagic:taint_shards"));
+        helper.assertTrue(new ItemStack(FmItems.DEADLY_SHARDS.get("taint").get()).is(taintShards), "the taint shard joins forbiddenmagic:taint_shards like the resourceTaint ore entry");
+
+        ShapedArcaneRecipe recipe = (ShapedArcaneRecipe) TcRecipes.get("TaintStone");
+        helper.assertTrue(recipe != null, "taint stone recipe exists");
+        helper.assertTrue(recipe.grid().get(4).test(new ItemStack(FmItems.DEADLY_SHARDS.get("taint").get())), "the arcane centre accepts the taint shard tag");
+        helper.succeed();
+    }
+    
+    private static void ringFoodRecipeMatchesOriginal(GameTestHelper helper) {
+        TcRecipe base = TcRecipes.get("RINGFOOD");
+        helper.assertTrue(base instanceof ShapedArcaneRecipe, "Ring of Nutrition is an arcane crafting recipe");
+        ShapedArcaneRecipe recipe = (ShapedArcaneRecipe) base;
+        helper.assertValueEqual(recipe.width(), 3, "RingFood recipe width");
+        helper.assertValueEqual(recipe.height(), 3, "RingFood recipe height");
+        helper.assertValueEqual(recipe.aspects().getAmount(Aspect.ENTROPY), 10, "RingFood entropy cost");
+        helper.assertValueEqual(recipe.aspects().getAmount(Aspect.WATER), 20, "RingFood water cost");
+        helper.assertValueEqual(recipe.aspects().getAmount(Aspect.EARTH), 20, "RingFood earth cost");
+        helper.assertValueEqual(recipe.grid().size(), 9, "RingFood has a 3x3 ingredient grid");
+        helper.assertTrue(recipe.grid().get(4).exists(), "mundane ring is the center ingredient");
+        helper.succeed();
+    }
+
 }

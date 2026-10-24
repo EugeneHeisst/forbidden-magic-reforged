@@ -11,6 +11,11 @@ import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
+import thaumcraft.aspect.Aspect;
+import thaumcraft.wand.WandCap;
+import thaumcraft.wand.WandRegistry;
+import thaumcraft.wand.WandRod;
+import thaumcraft.wand.Wands;
 
 public final class FmCreativeTab {
     private static final DeferredRegister<CreativeModeTab> TABS =
@@ -29,18 +34,10 @@ public final class FmCreativeTab {
         TABS.register(modEventBus);
     }
 
-    public static boolean visible(String vice) {
-        return !vice.equals("lust") || !FmConfig.lustDisabled();
-    }
-
     public static List<ItemStack> stacks() {
         List<ItemStack> stacks = new ArrayList<>();
-        Item lustShard = FmItems.DEADLY_SHARDS.get("lust").get();
         for (DeferredHolder<Item, ? extends Item> holder : FmItems.ITEMS.getEntries()) {
             if (holder.get() == FmItems.MOB_CRYSTAL.get()) {
-                continue;
-            }
-            if (holder.get() == lustShard && !visible("lust")) {
                 continue;
             }
             stacks.add(new ItemStack(holder.get()));
@@ -50,6 +47,38 @@ public final class FmCreativeTab {
             MobCrystalItem.setMob(crystal, mobId);
             stacks.add(crystal);
         }
+        addCreativeWands(stacks);
         return stacks;
+    }
+
+    private static void addCreativeWands(List<ItemStack> stacks) {
+        addWand(stacks, WandRegistry.CAP_THAUMIUM, "tainted");
+        addWand(stacks, WandRegistry.CAP_THAUMIUM, "infernal");
+
+        WandCap orichalcum = WandRegistry.findCap("orichalcum");
+        WandRod neutronium = WandRegistry.findRod("neutronium");
+        WandRod neutroniumStaff = WandRegistry.findRod("neutronium_staff");
+        if (orichalcum != null && neutronium != null) {
+            stacks.add(Wands.create(orichalcum, neutronium, false));
+        }
+        if (orichalcum != null && neutroniumStaff != null) {
+            stacks.add(Wands.create(orichalcum, neutroniumStaff, false));
+        }
+
+        WandRod profane = WandRegistry.findRod("profane");
+        if (profane != null) {
+            ItemStack filled = Wands.create(WandRegistry.CAP_IRON, profane, false);
+            for (Aspect aspect : Aspect.getPrimalAspects()) {
+                Wands.addVis(filled, aspect, 5000, true);
+            }
+            stacks.add(filled);
+        }
+    }
+
+    private static void addWand(List<ItemStack> stacks, WandCap cap, String rodTag) {
+        WandRod rod = WandRegistry.findRod(rodTag);
+        if (rod != null) {
+            stacks.add(Wands.create(cap, rod, false));
+        }
     }
 }

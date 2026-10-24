@@ -2,9 +2,17 @@ package dev.visfox.forbiddenreforged;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Rarity;
+import net.minecraft.world.item.component.CookingFuel;
+import net.minecraft.world.level.storage.loot.providers.number.floats.ContextFloatProviders;
+import net.minecraft.world.level.storage.loot.providers.number.floats.ResolvableFloat;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProvider;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ResolvableInt;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import thaumcraft.item.gear.TcMaterials;
@@ -14,6 +22,8 @@ import thaumcraft.wand.focus.FocusItem;
 
 public final class FmItems {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(ForbiddenMagic.MODID);
+    private static final ResourceKey<ContextIntProvider> TAINT_COAL_BURN =
+        ResourceKey.create(Registries.CONTEXT_INT_PROVIDER, ForbiddenMagic.id("taint_coal_burn"));
     public static final Map<String, DeferredItem<Item>> DEADLY_SHARDS = new LinkedHashMap<>();
     public static final DeferredItem<Item> GLUTTONY_SHARD;
     public static final DeferredItem<Item> SKULL_AXE;
@@ -42,7 +52,9 @@ public final class FmItems {
 
     static {
         for (String vice : new String[]{"wrath", "envy", "taint", "pride", "lust", "sloth", "greed"}) {
-            DEADLY_SHARDS.put(vice, ITEMS.registerSimpleItem(vice + "_shard"));
+            DEADLY_SHARDS.put(vice, vice.equals("lust")
+                ? ITEMS.registerItem("lust_shard", LustShardItem::new)
+                : ITEMS.registerSimpleItem(vice + "_shard"));
         }
         GLUTTONY_SHARD = ITEMS.registerSimpleItem("gluttony_shard", properties -> Registration.food(properties, 2, 0.1F));
         SKULL_AXE = ITEMS.registerItem("skull_axe", SkullAxeItem::new,
@@ -62,7 +74,13 @@ public final class FmItems {
         DIABOLIST_FORK = ITEMS.registerItem("diabolist_fork", DiabolistForkItem::new,
             properties -> Registration.sword(properties.rarity(Rarity.UNCOMMON), TcMaterials.THAUMIUM_TOOL, 3.0F, -2.4F)
                 .repairable(net.minecraft.world.item.Items.QUARTZ));
-        TAINT_COAL = ITEMS.registerSimpleItem("taint_coal", properties -> Registration.fuel(properties, 1200));
+        TAINT_COAL = ITEMS.registerSimpleItem("taint_coal", properties -> properties.component(
+            DataComponents.COOKING_FUEL,
+            new CookingFuel(
+                ResolvableInt.fromKey(TAINT_COAL_BURN),
+                ResolvableFloat.fromKey(ContextFloatProviders.COOKING_DEFAULT_SPEED_MULTIPLIER)
+            )
+        ));
         RIDING_CROP = ITEMS.registerItem("riding_crop", RidingCropItem::new,
             properties -> Registration.sword(properties.rarity(Rarity.UNCOMMON), TcMaterials.THAUMIUM_TOOL, 1.0F, -2.8F)
                 .repairable(net.minecraft.world.item.Items.LEATHER));
@@ -77,14 +95,14 @@ public final class FmItems {
         WITCHWOOD_ROD = ITEMS.registerSimpleItem("witchwood_rod");
         PROFANE_ROD = ITEMS.registerSimpleItem("profane_rod");
         WITCHWOOD_STAFF_ROD = ITEMS.registerSimpleItem("witchwood_staff_rod");
-        TAINT_SHOVEL = ITEMS.registerItem("taint_shovel", Item::new,
+        TAINT_SHOVEL = ITEMS.registerItem("taint_shovel", TaintShovelItem::new,
             properties -> Registration.shovel(properties.rarity(Rarity.UNCOMMON), TcMaterials.ELEMENTAL_TOOL, 1.0F, -3.0F)
-                .repairable(DEADLY_SHARDS.get("taint").get()));
+                .repairable(ModItems.THAUMIUM_INGOT.get()));
         TAINT_PICKAXE = ITEMS.registerItem("taint_pickaxe", Item::new,
             properties -> Registration.pickaxe(properties.rarity(Rarity.UNCOMMON), TcMaterials.ELEMENTAL_TOOL, 1.0F, -2.8F)
-                .repairable(DEADLY_SHARDS.get("taint").get()));
-        CRYSTALWELL = ITEMS.registerSimpleItem("crystalwell", properties -> properties.stacksTo(1));
-        PRIMEWELL = ITEMS.registerSimpleItem("primewell", properties -> properties.stacksTo(1).durability(100));
+                .repairable(ModItems.THAUMIUM_INGOT.get()));
+        CRYSTALWELL = ITEMS.registerItem("crystalwell", CrystalwellItem::new, properties -> properties.stacksTo(1));
+        PRIMEWELL = ITEMS.registerItem("primewell", PrimewellItem::new, properties -> properties.stacksTo(1).rarity(Rarity.EPIC));
         BLINK_FOCUS = ITEMS.registerItem("blink_focus", BlinkFocusItem::new,
             properties -> FocusItem.properties(properties));
     }

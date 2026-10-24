@@ -13,6 +13,7 @@ envy_shard = "Envy Shard"
 taint_shard = "Taint Shard"
 pride_shard = "Pride Shard"
 lust_shard = "Lust Shard"
+despair_shard = "Despair Shard"
 sloth_shard = "Sloth Shard"
 greed_shard = "Greed Shard"
 gluttony_shard = "Gluttony Shard"
@@ -38,10 +39,30 @@ CLUSTER = "Enchantment: Fiery Core"
 IMPACT = "Enchantment: Impact"
 VOIDTOUCHED = "Enchantment: Voidtouched"
 TAINTTREE = "Tainted Tree"
+TAINTSTONE = "Tainted Stone"
 BLACKFLOWER = "Umbral Rose"
 ARCANECAKE = "Thaumic Cake"
 WRATHCAGE = "Wrath Cage"
 
+FORK = "Diabolist Fork"
+WRATH = "Enchantment: Wrath"
+GREEDY = "Enchantment: Capitalist"
+CORRUPTING = "Enchantment: Corrupting"
+CONSUMING = "Enchantment: Consuming"
+EDUCATIONAL = "Enchantment: Educational"
+RIDINGCROP = "Riding Crop"
+RINGFOOD = "Ring of Nutrition"
+ROD_tainted = "Tainted Wand Core"
+ROD_infernal = "Infernal Wand Core"
+ROD_witchwood = "Witchwood Wand Core"
+ROD_profane = "Profane Wand"
+ROD_witchwood_staff = "Witchwood Staff Core"
+TRANSEMERALD = "Emerald Transmutation"
+CRYSTALWELL = "Crystal Scribing Tools"
+PRIMEWELL = "Primal Scribing Tools"
+TAINTSHOVEL = "Shovel of the Purifier"
+TAINTPICK = "Pickaxe of Distortion"
+FOCUSBLINK = "Wand Focus: Blink"
 [tc.research_text]
 NETHERSHARDS = "Aim to misbehave."
 HELLFIRE = "Never get stranded again"
@@ -51,9 +72,63 @@ CLUSTER = "Chameleon of the Core"
 IMPACT = "Someday that wall is gonna fall."
 VOIDTOUCHED = "Colour Out of Space"
 TAINTTREE = "The root of flux bears gross fruit"
+TAINTSTONE = "The Taint rocks on"
 BLACKFLOWER = "Save the squid!"
 ARCANECAKE = "Let them eat cake."
 WRATHCAGE = "Neverending battle"
+FORK = "Arcane tinkering tool"
+WRATH = "When every problem is a nail, all you want is a bigger hammer."
+GREEDY = "Unregulated enchanting"
+CORRUPTING = "A bad influence on shards"
+CONSUMING = "Garbage Disposal"
+EDUCATIONAL = "You will LEARN!"
+RIDINGCROP = "Motivating Pain"
+RINGFOOD = "Cheese puffs prevent scurvy, right?"
+ROD_tainted = "Squiggly vis storage"
+ROD_infernal = "Devilish vis storage"
+ROD_witchwood = "Mana converter"
+ROD_profane = "Sign on the dotted line"
+ROD_witchwood_staff = "Staff of the Arcanist"
+TRANSEMERALD = "Transformation of valuables into emerald"
+CRYSTALWELL = "Arcane Research Grant"
+PRIMEWELL = "Bragging Rights"
+TAINTSHOVEL = "Like a hot knife through really gross butter"
+TAINTPICK = "Obsidian Buster"
+FOCUSBLINK = "Better than a stupid Ender Pearl"
+
+
+[forbiddenmagic.research_text]
+NETHERSHARDS = "[FM] Aim to misbehave."
+HELLFIRE = "[FM] Never get stranded again"
+SKULLAXE = "[FM] Off with their heads!"
+FORK = "[FM] Arcane tinkering tool"
+MORPHTOOLS = "[FM] There's an enchantment for that..."
+CLUSTER = "[FM] Chameleon of the Core"
+IMPACT = "[FM] Someday that wall is gonna fall."
+VOIDTOUCHED = "[FM] Colour Out of Space"
+TAINTTREE = "[FM] The root of flux bears gross fruit"
+TAINTSTONE = "[FM] The Taint rocks on"
+BLACKFLOWER = "[FM] Save the squid!"
+ARCANECAKE = "[FM] Let them eat cake."
+WRATHCAGE = "[FM] Neverending battle"
+WRATH = "[FM] When every problem is a nail, all you want is a bigger hammer."
+GREEDY = "[FM] Unregulated enchanting"
+CORRUPTING = "[FM] A bad influence on shards"
+CONSUMING = "[FM] Garbage Disposal"
+EDUCATIONAL = "[FM] You will LEARN!"
+RIDINGCROP = "[FM] Motivating Pain"
+RINGFOOD = "[FM] Cheese puffs prevent scurvy, right?"
+ROD_tainted = "[FM] Squiggly vis storage"
+ROD_infernal = "[FM] Devilish vis storage"
+ROD_witchwood = "[FM] Mana converter"
+ROD_profane = "[FM] Sign on the dotted line"
+ROD_witchwood_staff = "[FM] Staff of the Arcanist"
+TRANSEMERALD = "[FM] Transformation of valuables into emerald"
+CRYSTALWELL = "[FM] Arcane Research Grant"
+PRIMEWELL = "[FM] Bragging Rights"
+TAINTSHOVEL = "[FM] Like a hot knife through really gross butter"
+TAINTPICK = "[FM] Obsidian Buster"
+FOCUSBLINK = "[FM] Better than a stupid Ender Pearl"
 
 [forbiddenmagic.research_page.NETHERSHARDS]
 1 = "Strange energies swirl through the Nether. On occasion, they have been known to solidify into crystal shards when certain sympathetic events occur."
@@ -128,45 +203,95 @@ wrath_cage = "Wrath Cage"
 [forbiddenmagic.research_page.TAINTTREE]
 1 = "The sick, twisted runoff of magical experiments can take on a strange life of its own. Most plants are unable to survive in Tainted Lands, but you've found a way to grow one that can. By steeping a sapling in taint, you create a tree that can thrive in Tainted Lands.<BR><BR>Its wood can also be turned into planks which are resistant to fibrous taint, allowing you to build structures safe from spreading taint.<BR><BR>The tree also seems to bear fruit, but eating them is not recommended..."
 
+[forbiddenmagic.research_page.TAINTSTONE]
+1 = "Tainted Lands aren't very safe places to be. Fibrous Taint hungrily spreads and crawls over most surfaces, eventually enveloping them and making them unsafe to walk on. The fibers don't appear to be harmful to tainted creatures or materials, however.<BR><BR>By mixing taint in with regular stone, you've created a magical material which is structurally stable, but resistant to the spread of fibrous taint. Tainted Stone can be used to build surfaces in Tainted Lands which are safe to walk on.<BR><BR>Not that building in a Tainted Land is advised..."
+
 [forbiddenmagic.research_page.BLACKFLOWER]
 1 = "There's no sight more pathetic than a soggy Thaumaturge.  For all your great and miraculous powers, you still have to go jump in the nearest lake and hunt for squids every time you want to refill your inkwell.<BR><BR>You're done squid hunting.  By infusing a rose with tenebrae and victus, you create a flower that spreads like a weed and whose petals can be crushed for ink."
 
 [forbiddenmagic.research_page.ARCANECAKE]
 1 = "If there's one thing you love, it's cake. You would eat its delicious goodness all day if you could, but it always runs out in the end.<BR><BR>To remedy this, you have devised a recipe to infuse a cake with longevity-enhancing magic.  The Thaumic Cake lasts significantly longer than a mundane one and will slowly repair itself as long as there's at least a sliver left.  The enchantments are unstable, however, and the cake cannot be moved again through conventional means once placed down."
 
-item.forbiddenmagic.taint_coal = "Hexcoal"
-item.forbiddenmagic.riding_crop = "Riding Crop"
-item.forbiddenmagic.black_dye = "Black Dye"
-item.forbiddenmagic.taint_fruit = "Tainted Fruit"
-item.forbiddenmagic.ring_nutrition = "Ring of Nutrition"
-item.forbiddenmagic.tainted_rod = "Tainted Wand Rod"
-item.forbiddenmagic.infernal_rod = "Infernal Wand Rod"
-item.forbiddenmagic.witchwood_rod = "Witchwood Wand Rod"
-item.forbiddenmagic.profane_rod = "Profane Wand Rod"
-item.forbiddenmagic.witchwood_staff_rod = "Witchwood Staff Rod"
-item.Wand.tainted.rod = "Tainted Core"
-item.Wand.infernal.rod = "Infernal Core"
-item.Wand.profane.rod = "Profane Core"
-item.Wand.profaned.rod = "Profaned Core"
-forbiddenmagic.research_page.RIDINGCROP.1 = "A simple crop for urging mounts forward."
-forbiddenmagic.research_page.RINGFOOD.1 = "A ring that sustains the wearer, reducing the need for food."
-forbiddenmagic.research_page.ROD_tainted.1 = "A rod infused with the essence of taint."
-forbiddenmagic.research_page.ROD_infernal.1 = "A rod forged in the fires of the Nether."
-forbiddenmagic.research_page.ROD_witchwood.1 = "A rod crafted from witchwood."
-forbiddenmagic.research_page.ROD_profane.1 = "A profane rod of dark power."
-forbiddenmagic.research_page.ROD_witchwood_staff.1 = "A staff rod of witchwood."
-forbiddenmagic.research_page.TRANSEMERALD.1 = "Transmute gold into emerald fragments."
-item.forbiddenmagic.taint_shovel = "Taint Shovel"
-item.forbiddenmagic.taint_pickaxe = "Taint Pickaxe"
-item.forbiddenmagic.crystalwell = "Crystal Inkwell"
-item.forbiddenmagic.primewell = "Primordial Inkwell"
-forbiddenmagic.research_page.CRYSTALWELL.1 = "A crystal-infused inkwell that never runs dry."
-forbiddenmagic.research_page.PRIMEWELL.1 = "An inkwell infused with primordial power."
-forbiddenmagic.research_page.TAINTSHOVEL.1 = "A shovel infused with taint, capable of mining vast areas."
-forbiddenmagic.research_page.TAINTPICK.1 = "A pickaxe infused with taint and entropy."
-item.forbiddenmagic.blink_focus = "Blink Focus"
-forbiddenmagic.research_page.FOCUSBLINK.1 = "A focus that allows instant teleportation to a targeted location. Can be upgraded with Hellfire to damage nearby entities or Pandemonium to teleport mobs to you."
-entity.forbiddenmagic.villager.heretic = "Heretic"
+[item.forbiddenmagic]
+taint_coal = "Hexcoal"
+riding_crop = "Riding Crop"
+black_dye = "Black Dye"
+taint_fruit = "Tainted Fruit"
+ring_nutrition = "Ring of Nutrition"
+tainted_rod = "Tainted Wand Rod"
+infernal_rod = "Infernal Wand Rod"
+witchwood_rod = "Witchwood Wand Rod"
+profane_rod = "Profane Wand Rod"
+witchwood_staff_rod = "Witchwood Staff Rod"
+taint_shovel = "Taint Shovel"
+taint_pickaxe = "Taint Pickaxe"
+crystalwell = "Crystal Inkwell"
+primewell = "Primordial Inkwell"
+blink_focus = "Blink Focus"
+
+[item.Wand.tainted]
+rod = "Tainted Core"
+
+[item.Wand.infernal]
+rod = "Infernal Core"
+
+[item.Wand.profane]
+rod = "Profane Core"
+
+[item.Wand.profaned]
+rod = "Profaned Core"
+
+[forbiddenmagic.research_page.RIDINGCROP]
+1 = "A simple crop for urging mounts forward."
+
+[forbiddenmagic.research_page.RINGFOOD]
+1 = "A ring that sustains the wearer, reducing the need for food."
+
+[forbiddenmagic.research_page.ROD_tainted]
+1 = "A rod infused with the essence of taint."
+
+[forbiddenmagic.research_page.ROD_infernal]
+1 = "A rod forged in the fires of the Nether."
+
+[forbiddenmagic.research_page.ROD_witchwood]
+1 = "A rod crafted from witchwood."
+
+[forbiddenmagic.research_page.ROD_profane]
+1 = "A profane rod of dark power."
+
+[forbiddenmagic.research_page.ROD_witchwood_staff]
+1 = "A staff rod of witchwood."
+
+[forbiddenmagic.research_page.TRANSEMERALD]
+1 = "Transmute gold into emerald fragments."
+
+[forbiddenmagic.research_page.CRYSTALWELL]
+1 = "A crystal-infused inkwell that never runs dry."
+
+[forbiddenmagic.research_page.PRIMEWELL]
+1 = "An inkwell infused with primordial power."
+
+[forbiddenmagic.research_page.TAINTSHOVEL]
+1 = "A shovel infused with taint, capable of mining vast areas."
+
+[forbiddenmagic.research_page.TAINTPICK]
+1 = "A pickaxe infused with taint and entropy."
+
+[forbiddenmagic.research_page.FOCUSBLINK]
+1 = "A focus that allows instant teleportation to a targeted location. Can be upgraded with Hellfire to damage nearby entities or Pandemonium to teleport mobs to you."
+
+[entity.forbiddenmagic.villager]
+heretic = "Heretic"
 
 [itemGroup]
 forbiddenmagic = "Forbidden Magic"
+
+[tooltip]
+creativeonly = "Creative Only"
+profane_contract = "Contract: %s"
+
+[item.Wand]
+tainted.rod = "Tainted Core"
+infernal.rod = "Infernal Core"
+profane.rod = "Profane Core"
+profaned.rod = "Profaned Core"

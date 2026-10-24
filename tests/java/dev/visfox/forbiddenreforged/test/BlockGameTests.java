@@ -1,7 +1,17 @@
 package dev.visfox.forbiddenreforged.test;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import io.netty.channel.embedded.EmbeddedChannel;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import net.minecraft.util.RandomSource;
 import java.util.function.Consumer;
 import net.minecraft.core.BlockPos;
@@ -33,6 +43,7 @@ import dev.visfox.forbiddenreforged.ForbiddenMagic;
 import dev.visfox.forbiddenreforged.ArcaneCakeBlock;
 import dev.visfox.forbiddenreforged.FmBlocks;
 import dev.visfox.forbiddenreforged.TaintTree;
+import dev.visfox.forbiddenreforged.TaintLogTextureVariant;
 import thaumcraft.crafting.CrucibleRecipe;
 import thaumcraft.crafting.InfusionRecipe;
 import thaumcraft.crafting.TcRecipes;
@@ -51,7 +62,8 @@ public final class BlockGameTests {
         "blocks_drop_themselves",
         "taint_sapling_grows_a_tree",
         "umbral_plants_are_registered",
-        "arcane_cake_feeds_and_keeps_slices"
+        "arcane_cake_feeds_and_keeps_slices",
+        "taint_log_selects_side_textures_deterministically"
     };
 
     static {
@@ -61,6 +73,7 @@ public final class BlockGameTests {
         FUNCTIONS.register(TESTS[3], () -> BlockGameTests::taintSaplingGrowsATree);
         FUNCTIONS.register(TESTS[4], () -> BlockGameTests::umbralPlantsAreRegistered);
         FUNCTIONS.register(TESTS[5], () -> BlockGameTests::arcaneCakeFeedsAndKeepsSlices);
+        FUNCTIONS.register(TESTS[6], () -> BlockGameTests::taintLogSelectsSideTexturesDeterministically);
     }
 
     private BlockGameTests() {}
@@ -168,5 +181,48 @@ public final class BlockGameTests {
         helper.assertValueEqual(level.getBlockState(pos).getValue(ArcaneCakeBlock.SLICE), 1, "one slice eaten");
         helper.assertValueEqual(player.getFoodData().getFoodLevel(), 12, "cake restores two hunger");
         helper.succeed();
+    }
+
+    private static void taintLogSelectsSideTexturesDeterministically(GameTestHelper helper) {
+        try (InputStream stream = ForbiddenMagic.class.getResourceAsStream("/assets/forbiddenmagic/blockstates/taint_log.json")) {
+            helper.assertTrue(stream != null, "taint log blockstate must ship with the mod");
+            JsonObject root = JsonParser.parseReader(new InputStreamReader(stream, StandardCharsets.UTF_8)).getAsJsonObject();
+            for (String axis : List.of("axis=x", "axis=y", "axis=z")) {
+                JsonObject definition = root.getAsJsonObject("variants").getAsJsonObject(axis);
+                helper.assertValueEqual(definition.get("type").getAsString(), "forbiddenmagic:taint_log_faces",
+                    axis + " must use the coordinate-aware face model");
+            }
+
+            int[] counts = new int[3];
+            for (int x = -16; x <= 16; x++) {
+                for (int z = -16; z <= 16; z++) {
+                    for (int side = 0; side < 6; side++) {
+                        int selected = TaintLogTextureVariant.select(side, x, 7, z);
+                        helper.assertTrue(selected >= 0 && selected <= 2, "face texture selector must return a known variant");
+                        helper.assertValueEqual(selected, TaintLogTextureVariant.select(side, x, 7, z),
+                            "face texture selection must be stable for a given side and position");
+                        counts[selected]++;
+                    }
+                }
+            }
+            for (int variant = 0; variant < counts.length; variant++) {
+                helper.assertTrue(counts[variant] > 0, "coordinate sample must exercise side-texture variant " + variant);
+            }
+
+            helper.assertValueEqual(TaintLogTextureVariant.select(3, 3, 7, 5), TaintLogTextureVariant.GROSS,
+                "selection must use the original side + y + x*z seed");
+            helper.assertValueEqual(TaintLogTextureVariant.variantForDirection(net.minecraft.core.Direction.Axis.Y,
+                net.minecraft.core.Direction.DOWN, 3, 7, 5), TaintLogTextureVariant.STANDARD,
+                "vertical log ends keep the end texture");
+            helper.assertValueEqual(TaintLogTextureVariant.variantForDirection(net.minecraft.core.Direction.Axis.Y,
+                net.minecraft.core.Direction.SOUTH, 3, 7, 5), TaintLogTextureVariant.GROSS,
+                "vertical log sides use the coordinate-selected variant");
+            helper.assertValueEqual(TaintLogTextureVariant.variantForDirection(net.minecraft.core.Direction.Axis.X,
+                net.minecraft.core.Direction.EAST, 3, 7, 5), TaintLogTextureVariant.STANDARD,
+                "horizontal log ends keep the end texture");
+            helper.succeed();
+        } catch (IOException e) {
+            helper.fail("could not read the taint log blockstate: " + e);
+        }
     }
 }
