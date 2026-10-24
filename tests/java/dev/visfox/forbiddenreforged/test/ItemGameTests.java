@@ -38,6 +38,8 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import dev.visfox.forbiddenreforged.ForbiddenMagic;
 import dev.visfox.forbiddenreforged.FmAspects;
 import dev.visfox.forbiddenreforged.FmItems;
+import dev.visfox.forbiddenreforged.FmConfig;
+import dev.visfox.forbiddenreforged.FmResearchItem;
 import dev.visfox.forbiddenreforged.MorphState;
 import dev.visfox.forbiddenreforged.FmEnchantmentEffects;
 import dev.visfox.forbiddenreforged.FmToolEvents;
@@ -74,7 +76,8 @@ public final class ItemGameTests {
         "morph_phase_tints_match_original",
         "tool_and_skull_axe_chance_rules_preserve_original_boundaries",
         "silverfish_emerald_drop_thresholds_match_original",
-        "wand_tooltip_kinds_preserve_original_hints"
+        "wand_tooltip_kinds_preserve_original_hints",
+        "research_prefix_respects_tag_research"
     };
 
     static {
@@ -95,6 +98,7 @@ public final class ItemGameTests {
         FUNCTIONS.register(TESTS[14], () -> ItemGameTests::toolAndSkullAxeChanceRulesPreserveOriginalBoundaries);
         FUNCTIONS.register(TESTS[15], () -> ItemGameTests::silverfishEmeraldDropThresholdsMatchOriginal);
         FUNCTIONS.register(TESTS[16], () -> ItemGameTests::wandTooltipKindsPreserveOriginalHints);
+        FUNCTIONS.register(TESTS[17], () -> ItemGameTests::researchPrefixRespectsTagResearch);
     }
 
     private ItemGameTests() {}
@@ -415,4 +419,15 @@ public final class ItemGameTests {
             return new JsonObject();
         }
     }
+    
+    private static void researchPrefixRespectsTagResearch(GameTestHelper helper) {
+        ResearchItem item = new FmResearchItem("TEST", "FORBIDDEN", new AspectList(), 0, 0, 1,
+            ForbiddenMagic.id("textures/misc/forbidden.png"));
+        String expected = FmConfig.tagResearchEnabled()
+            ? "forbiddenmagic.research_text.TEST"
+            : "tc.research_text.TEST";
+        helper.assertValueEqual(item.textKey(), expected, "research text key follows tagResearch config");
+        helper.succeed();
+    }
+
 }

@@ -8,6 +8,7 @@ public final class FmConfig {
     private static final ModConfigSpec.Builder BUILDER = new ModConfigSpec.Builder();
     public static final ModConfigSpec SPEC;
     public static ModConfigSpec.BooleanValue noLust;
+    public static ModConfigSpec.BooleanValue tagResearch;
     public static ModConfigSpec.IntValue gluttony;
     public static ModConfigSpec.BooleanValue enchanting;
     public static ModConfigSpec.BooleanValue greedyEnch;
@@ -21,6 +22,7 @@ public final class FmConfig {
 
     static {
         noLust = BUILDER.comment("Enable to remove Luxuria aspect and related items.").define("general.no_lust", false);
+        tagResearch = BUILDER.comment("Show the [FM] prefix in Forbidden Magic research titles.").define("general.tag_research", true);
         gluttony = BUILDER.comment("0 = Enabled, 1 = Disabled, 2 = Hardcore").defineInRange("general.gluttony", 0, 0, 2);
         enchanting = BUILDER.comment("Enable Forbidden Magic enchantments.").define("general.enchanting", true);
         greedyEnch = BUILDER.comment("Enable the Capitalist (Greedy) enchantment, its recipe and effects.").define("general.greedy_ench", true);
@@ -43,6 +45,10 @@ public final class FmConfig {
 
     public static boolean lustDisabled() {
         return SPEC.isLoaded() ? noLust.get() : noLust.getDefault();
+    }
+
+    public static boolean tagResearchEnabled() {
+        return SPEC.isLoaded() ? tagResearch.get() : tagResearch.getDefault();
     }
 
     public static int gluttonyMode() {
