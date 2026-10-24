@@ -1,5 +1,12 @@
 package dev.visfox.forbiddenreforged.test;
 
+import thaumcraft.registry.ModItems;
+import thaumcraft.registry.ModBlocks;
+import thaumcraft.crafting.ShapelessArcaneRecipe;
+import thaumcraft.item.ScribingToolsItem;
+import net.minecraft.world.item.Rarity;
+import dev.visfox.forbiddenreforged.PrimewellItem;
+import dev.visfox.forbiddenreforged.CrystalwellItem;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -74,7 +81,10 @@ public final class ItemGameTests {
         "morph_phase_tints_match_original",
         "tool_and_skull_axe_chance_rules_preserve_original_boundaries",
         "silverfish_emerald_drop_thresholds_match_original",
-        "wand_tooltip_kinds_preserve_original_hints"
+        "wand_tooltip_kinds_preserve_original_hints",
+        "crystalwell_is_a_scribing_tool_with_original_durability",
+        "primewell_is_a_permanent_epic_scribing_tool",
+        "scribe_wells_keep_original_recipes_and_research"
     };
 
     static {
@@ -95,6 +105,9 @@ public final class ItemGameTests {
         FUNCTIONS.register(TESTS[14], () -> ItemGameTests::toolAndSkullAxeChanceRulesPreserveOriginalBoundaries);
         FUNCTIONS.register(TESTS[15], () -> ItemGameTests::silverfishEmeraldDropThresholdsMatchOriginal);
         FUNCTIONS.register(TESTS[16], () -> ItemGameTests::wandTooltipKindsPreserveOriginalHints);
+        FUNCTIONS.register(TESTS[17], () -> ItemGameTests::crystalwellIsAScribingToolWithOriginalDurability);
+        FUNCTIONS.register(TESTS[18], () -> ItemGameTests::primewellIsAPermanentEpicScribingTool);
+        FUNCTIONS.register(TESTS[19], () -> ItemGameTests::scribeWellsKeepOriginalRecipesAndResearch);
     }
 
     private ItemGameTests() {}
@@ -396,6 +409,51 @@ public final class ItemGameTests {
             "ordinary rods do not receive special wand tooltips");
         helper.assertValueEqual(FmToolEvents.wandTooltipKind(new ItemStack(Items.STICK)), "",
             "non-wand items do not receive wand-specific tooltips");
+        helper.succeed();
+    }
+
+
+    private static void crystalwellIsAScribingToolWithOriginalDurability(GameTestHelper helper) {
+        ItemStack stack = new ItemStack(FmItems.CRYSTALWELL.get());
+        helper.assertTrue(stack.getItem() instanceof CrystalwellItem, "crystalwell uses its behavior item");
+        helper.assertTrue(stack.getItem() instanceof ScribingToolsItem, "crystalwell can occupy the research table scribe slot");
+        int expectedMaxDamage = thaumcraft.Config.researchDifficulty() == -1 ? 50 : 100;
+        helper.assertValueEqual(stack.getMaxDamage(), expectedMaxDamage, "crystalwell durability follows research difficulty");
+        helper.assertValueEqual(stack.getCount(), 1, "crystalwell is unstackable");
+        helper.succeed();
+    }
+
+    private static void primewellIsAPermanentEpicScribingTool(GameTestHelper helper) {
+        ItemStack stack = new ItemStack(FmItems.PRIMEWELL.get());
+        helper.assertTrue(stack.getItem() instanceof PrimewellItem, "primewell uses its behavior item");
+        helper.assertTrue(stack.getItem() instanceof ScribingToolsItem, "primewell can occupy the research table scribe slot");
+        helper.assertValueEqual(stack.getRarity(), Rarity.EPIC, "primewell retains epic rarity");
+        helper.assertTrue(stack.getMaxDamage() > 1_000_000_000, "primewell does not wear out during research");
+        stack.setDamageValue(1000);
+        helper.assertFalse(stack.getItem().isBarVisible(stack), "primewell does not display a misleading durability bar");
+        helper.assertTrue(stack.getDamageValue() < stack.getMaxDamage(), "primewell remains usable after repeated scribe operations");
+        helper.succeed();
+    }
+
+    private static void scribeWellsKeepOriginalRecipesAndResearch(GameTestHelper helper) {
+        ShapelessArcaneRecipe crystalwell = (ShapelessArcaneRecipe) TcRecipes.get("CRYSTALWELL");
+        helper.assertTrue(crystalwell != null, "crystalwell arcane recipe is registered");
+        helper.assertTrue(TcRecipes.get("PRIMEWELL") != null, "primewell arcane recipe is registered");
+        helper.assertTrue(ResearchCategories.getResearch("CRYSTALWELL") != null, "crystalwell research is registered");
+        helper.assertTrue(ResearchCategories.getResearch("PRIMEWELL") != null, "primewell research is registered");
+        helper.assertTrue(crystalwell.ingredients().get(0).test(new ItemStack(ModItems.SCRIBING_TOOLS.get())),
+            "crystalwell recipe uses the registered scribing tools item");
+        if (thaumcraft.Config.researchDifficulty() == -1) {
+            helper.assertValueEqual(crystalwell.ingredients().size(), 4, "easy research uses two arbitrary Thaumcraft shards");
+            helper.assertTrue(crystalwell.ingredients().get(2).test(new ItemStack(ModItems.BALANCED_SHARD.get())),
+                "the easy recipe accepts any shard through the shard tag");
+        } else {
+            helper.assertValueEqual(crystalwell.ingredients().size(), 6, "normal research uses a mixed crystal and three balanced shards");
+            helper.assertTrue(crystalwell.ingredients().get(2).test(new ItemStack(ModBlocks.MIXED_CRYSTAL_CLUSTER.get().asItem())),
+                "the hard recipe uses the mixed crystal cluster");
+            helper.assertTrue(crystalwell.ingredients().get(3).test(new ItemStack(ModItems.BALANCED_SHARD.get())),
+                "the hard recipe uses balanced shards");
+        }
         helper.succeed();
     }
 
