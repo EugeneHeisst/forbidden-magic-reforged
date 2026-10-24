@@ -2,7 +2,7 @@ package dev.visfox.forbiddenreforged;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.Container;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Prediction;
 import net.minecraft.world.item.Item;
@@ -17,7 +17,7 @@ import thaumcraft.research.ResearchManager;
 
 /** Restores player-side behavior for the two original Forbidden Magic scribing tools. */
 public final class ScribeWellEvents {
-    private static final Identifier PRIMORDIAL_PEARL_ID = Identifier.parse("thaumcraft:primordial_pearl");
+    private static final ResourceLocation PRIMORDIAL_PEARL_ID = ResourceLocation.parse("thaumcraft:primordial_pearl");
 
     private ScribeWellEvents() {
     }

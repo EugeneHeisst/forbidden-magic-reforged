@@ -4,7 +4,7 @@ import java.util.Objects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
@@ -18,7 +18,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
-import org.jspecify.annotations.Nullable;
+import javax.annotation.Nullable;
 import thaumcraft.aspect.Aspect;
 import thaumcraft.aspect.AspectList;
 import thaumcraft.aspect.AspectSource;
@@ -157,7 +157,7 @@ public class WrathCageBlockEntity extends TcBlockEntity implements AspectSource,
         if (level.getNearestPlayer(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, PLAYER_RANGE, false) == null) {
             return;
         }
-        Identifier id = mobId == null ? null : Identifier.tryParse(mobId);
+        ResourceLocation id = mobId == null ? null : ResourceLocation.tryParse(mobId);
         if (id == null || !BuiltInRegistries.ENTITY_TYPE.containsKey(id)) {
             spawnDelay = nextDelay(level.getRandom(), slothful);
             return;

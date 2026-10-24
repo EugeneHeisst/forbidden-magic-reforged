@@ -17,16 +17,16 @@ import net.minecraft.client.resources.model.SimpleModelWrapper;
 import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.client.model.DynamicBlockStateModel;
 import net.neoforged.neoforge.client.model.block.CustomUnbakedBlockStateModel;
-import org.jspecify.annotations.Nullable;
+import javax.annotation.Nullable;
 
 public record TaintLogFaceModel(BlockStateModelPart[][] models) implements DynamicBlockStateModel {
-    private static final Identifier[][] MODEL_IDS = {
+    private static final ResourceLocation[][] MODEL_IDS = {
         {
             ForbiddenMagic.id("block/taint_log"),
             ForbiddenMagic.id("block/taint_log_gross"),
@@ -116,7 +116,7 @@ public record TaintLogFaceModel(BlockStateModelPart[][] models) implements Dynam
 
     public record Unbaked() implements CustomUnbakedBlockStateModel {
         public static final MapCodec<Unbaked> CODEC = MapCodec.unit(new Unbaked());
-        public static final Identifier ID = ForbiddenMagic.id("taint_log_faces");
+        public static final ResourceLocation ID = ForbiddenMagic.id("taint_log_faces");
 
         private static final ModelState VERTICAL = BlockModelRotation.IDENTITY;
         private static final ModelState HORIZONTAL_X = BlockModelRotation.get(Quadrant.fromXYAngles(Quadrant.R90, Quadrant.R90));
@@ -129,8 +129,8 @@ public record TaintLogFaceModel(BlockStateModelPart[][] models) implements Dynam
 
         @Override
         public void resolveDependencies(ResolvableModel.Resolver resolver) {
-            for (Identifier[] row : MODEL_IDS) {
-                for (Identifier id : row) {
+            for (ResourceLocation[] row : MODEL_IDS) {
+                for (ResourceLocation id : row) {
                     resolver.markDependency(id);
                 }
             }

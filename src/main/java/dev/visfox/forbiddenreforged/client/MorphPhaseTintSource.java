@@ -7,7 +7,7 @@ import net.minecraft.client.color.item.ItemTintSource;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
-import org.jspecify.annotations.Nullable;
+import javax.annotation.Nullable;
 
 public record MorphPhaseTintSource() implements ItemTintSource {
     public static final MapCodec<MorphPhaseTintSource> MAP_CODEC = MapCodec.unit(new MorphPhaseTintSource());

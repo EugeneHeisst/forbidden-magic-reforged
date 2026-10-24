@@ -12,13 +12,13 @@ import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import org.jspecify.annotations.Nullable;
+import javax.annotation.Nullable;
 
 public class WrathCageRenderer implements BlockEntityRenderer<WrathCageBlockEntity, WrathCageRenderer.State> {
     public static class State extends BlockEntityRenderState {
@@ -46,7 +46,7 @@ public class WrathCageRenderer implements BlockEntityRenderer<WrathCageBlockEnti
         if (mobId == null || cage.getLevel() == null) {
             return;
         }
-        Identifier id = Identifier.tryParse(mobId);
+        ResourceLocation id = ResourceLocation.tryParse(mobId);
         if (id == null || !BuiltInRegistries.ENTITY_TYPE.containsKey(id)) {
             return;
         }

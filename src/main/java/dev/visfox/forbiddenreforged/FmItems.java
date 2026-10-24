@@ -4,7 +4,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Rarity;
@@ -15,7 +15,7 @@ import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntPr
 import net.minecraft.world.level.storage.loot.providers.number.ints.ResolvableInt;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
-import org.jspecify.annotations.Nullable;
+import javax.annotation.Nullable;
 import thaumcraft.item.gear.TcMaterials;
 import thaumcraft.platform.Registration;
 import thaumcraft.registry.ModItems;
@@ -118,7 +118,7 @@ public final class FmItems {
         return properties.repairable(DEADLY_SHARDS.get("envy").get());
     }
 
-    public static Identifier id(String vice) {
-        return Identifier.fromNamespaceAndPath(ForbiddenMagic.MODID, vice + "_shard");
+    public static ResourceLocation id(String vice) {
+        return ResourceLocation.fromNamespaceAndPath(ForbiddenMagic.MODID, vice + "_shard");
     }
 }

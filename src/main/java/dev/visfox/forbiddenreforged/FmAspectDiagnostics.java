@@ -2,7 +2,7 @@ package dev.visfox.forbiddenreforged;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.jspecify.annotations.Nullable;
+import javax.annotation.Nullable;
 import thaumcraft.aspect.Aspect;
 
 public final class FmAspectDiagnostics {
@@ -36,7 +36,7 @@ public final class FmAspectDiagnostics {
     }
 
     private static String line(Aspect aspect, String kind) {
-        Aspect @Nullable [] components = aspect.getComponents();
+        @Nullable Aspect[] components = aspect.getComponents();
         String componentTags = "-";
         if (components != null && components.length > 0) {
             List<String> tags = new ArrayList<>();

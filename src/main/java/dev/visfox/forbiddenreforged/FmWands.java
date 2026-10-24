@@ -2,7 +2,7 @@ package dev.visfox.forbiddenreforged;
 
 import java.util.List;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.player.Player;
@@ -32,16 +32,16 @@ public final class FmWands {
         WandRegistry.registerRod("profane", 50, ForbiddenMagic.id("profane_rod"), 12,
             new ProfaneWandUpdate(), false, false, false,
             ForbiddenMagic.id("textures/model/wand_rod_profane.png"));
-        WandRegistry.registerRod("profaned", 50, Identifier.withDefaultNamespace("bedrock"), 1000,
+        WandRegistry.registerRod("profaned", 50, ResourceLocation.withDefaultNamespace("bedrock"), 1000,
             null, false, false, false,
             ForbiddenMagic.id("textures/model/wand_rod_profaned.png"));
         WandRegistry.registerCap("orichalcum", 0.0F, List.of(), 0.0F,
-            Identifier.withDefaultNamespace("command_block"), 1000, null,
+            ResourceLocation.withDefaultNamespace("command_block"), 1000, null,
             ForbiddenMagic.id("textures/model/wand_cap_orichalcum.png"));
-        WandRegistry.registerRod("neutronium", 9001, Identifier.withDefaultNamespace("bedrock"), 1000,
+        WandRegistry.registerRod("neutronium", 9001, ResourceLocation.withDefaultNamespace("bedrock"), 1000,
             new CreativeWandUpdate(), true, false, false,
             ForbiddenMagic.id("textures/model/wand_rod_neutronium.png"));
-        WandRegistry.registerRod("neutronium", 9002, Identifier.withDefaultNamespace("bedrock"), 1000,
+        WandRegistry.registerRod("neutronium", 9002, ResourceLocation.withDefaultNamespace("bedrock"), 1000,
             new CreativeWandUpdate(), true, true, false,
             ForbiddenMagic.id("textures/model/wand_rod_neutronium.png"));
     }

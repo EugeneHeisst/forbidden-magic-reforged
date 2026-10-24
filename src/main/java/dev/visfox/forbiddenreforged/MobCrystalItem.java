@@ -2,13 +2,13 @@ package dev.visfox.forbiddenreforged;
 
 import java.util.function.Consumer;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Util;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.TooltipDisplay;
-import org.jspecify.annotations.Nullable;
+import javax.annotation.Nullable;
 import thaumcraft.aspect.Aspect;
 
 public class MobCrystalItem extends Item {
@@ -31,7 +31,7 @@ public class MobCrystalItem extends Item {
             return Component.translatable("item.forbiddenmagic.mob_crystal.empty");
         }
         return Component.translatable("item.forbiddenmagic.mob_crystal.filled",
-            Component.translatable(Util.makeDescriptionId("entity", Identifier.parse(id))));
+            Component.translatable(Util.makeDescriptionId("entity", ResourceLocation.parse(id))));
     }
 
     @Override
