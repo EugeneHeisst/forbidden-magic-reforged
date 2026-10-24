@@ -1,6 +1,7 @@
 package dev.visfox.forbiddenreforged;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -73,9 +74,9 @@ public final class ArcaneCakeBlock extends Block {
     }
 
     @Override
-    protected void randomTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
+    protected void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         int slice = state.getValue(SLICE);
-        if (slice > 0 && !level.isClientSide()) {
+        if (slice > 0) {
             level.setBlock(pos, state.setValue(SLICE, slice - 1), 3);
         }
     }
