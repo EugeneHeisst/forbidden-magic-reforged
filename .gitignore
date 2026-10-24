@@ -8,6 +8,7 @@ host/
 maven/
 reference/
 run/
+.worktrees/
 
 # Caches and temporary files
 .cache/
