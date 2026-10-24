@@ -2,6 +2,7 @@ package dev.visfox.forbiddenreforged.test;
 
 import dev.visfox.forbiddenreforged.ForbiddenMagic;
 import dev.visfox.forbiddenreforged.FmAspects;
+import dev.visfox.forbiddenreforged.FmConfig;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.neoforged.neoforge.gametest.GameTestHolder;
@@ -39,7 +40,7 @@ public final class FmGameTests {
         helper.assertValueEqual(Aspect.getAspect("infernus"), nether, "by-tag lookup must find infernus");
         helper.assertTrue(FmAspects.PRIDE != null && FmAspects.GLUTTONY != null && FmAspects.ENVY != null
             && FmAspects.SLOTH != null && FmAspects.WRATH != null, "all enabled sin aspects must be registered");
-        if (!FmConfigCheck.lustDisabled()) {
+        if (!FmConfig.lustDisabled()) {
             helper.assertTrue(FmAspects.LUST != null, "luxuria must register when no_lust is disabled");
         } else {
             helper.assertTrue(Aspect.getAspect("luxuria") == null, "luxuria must not register when no_lust is enabled");
@@ -54,14 +55,4 @@ public final class FmGameTests {
         helper.succeed();
     }
 
-    private static final class FmConfigCheck {
-        private static boolean lustDisabled() {
-            try {
-                return (boolean) Class.forName("dev.visfox.forbiddenreforged.FmConfig")
-                    .getMethod("lustDisabled").invoke(null);
-            } catch (ReflectiveOperationException failure) {
-                throw new IllegalStateException(failure);
-            }
-        }
-    }
 }
