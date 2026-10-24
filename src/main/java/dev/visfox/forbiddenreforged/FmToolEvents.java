@@ -51,10 +51,13 @@ public final class FmToolEvents {
     }
 
     public static String wandTooltipKind(ItemStack stack) {
-        if (!Wands.isWand(stack)) {
+        return Wands.isWand(stack) ? wandTooltipKind(Wands.getRod(stack).tag()) : "";
+    }
+
+    public static String wandTooltipKind(String rodTag) {
+        if (rodTag == null) {
             return "";
         }
-        String rodTag = Wands.getRod(stack).tag();
         if (rodTag.startsWith("neutronium")) {
             return "creativeonly";
         }
