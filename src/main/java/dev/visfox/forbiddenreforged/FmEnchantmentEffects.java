@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerPlayer;
@@ -117,11 +118,37 @@ public final class FmEnchantmentEffects {
         }
     }
 
+    public static boolean silverfishEmeraldRoll(boolean windsweptHills, int roll, int looting) {
+        return roll <= (windsweptHills ? 2 + looting * 2 : 1 + looting * 3);
+    }
+
     public static boolean skullAxeRoll(int roll, int looting, int baseChance, int lootingMultiplier) {
         return roll <= baseChance + looting * lootingMultiplier;
     }
 
     private static void onLivingDrops(LivingDropsEvent event) {
+        LivingEntity victim = event.getEntity();
+        Identifier victimType = BuiltInRegistries.ENTITY_TYPE.getKey(victim.getType());
+        if (FmConfig.silverfishEmeralds()
+            && event.isRecentlyHit()
+            && victimType.equals(Identifier.withDefaultNamespace("silverfish"))) {
+            Entity killer = event.getSource().getEntity();
+            if (killer instanceof ServerPlayer player) {
+                // Legacy extremeHills has no exact modern equivalent; fidelity.md records this nearest-biome mapping.
+                boolean windsweptHills = victim.level().getBiome(victim.blockPosition()).is(
+                    ResourceKey.create(Registries.BIOME, Identifier.withDefaultNamespace("windswept_hills")));
+                if (windsweptHills || !(killer instanceof FakePlayer)) {
+                    int looting = FmEnchantments.level(
+                        player.level().registryAccess(), player.getMainHandItem(), Enchantments.LOOTING);
+                    int bound = windsweptHills ? 30 : 70;
+                    int roll = victim.getRandom().nextInt(bound);
+                    if (silverfishEmeraldRoll(windsweptHills, roll, looting)) {
+                        addDrop(event, new ItemStack(FmItems.EMERALD_FRAGMENT.get()));
+                    }
+                }
+            }
+        }
+
         Entity attacker = event.getSource().getEntity();
         if (!(attacker instanceof ServerPlayer player) || attacker instanceof FakePlayer || !event.isRecentlyHit()) {
             return;

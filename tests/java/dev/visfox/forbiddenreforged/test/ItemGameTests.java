@@ -72,7 +72,8 @@ public final class ItemGameTests {
         "lust_shard_switches_to_the_despair_model",
         "creative_wand_family_matches_original",
         "morph_phase_tints_match_original",
-        "tool_and_skull_axe_chance_rules_preserve_original_boundaries"
+        "tool_and_skull_axe_chance_rules_preserve_original_boundaries",
+        "silverfish_emerald_drop_thresholds_match_original"
     };
 
     static {
@@ -91,6 +92,7 @@ public final class ItemGameTests {
         FUNCTIONS.register(TESTS[12], () -> ItemGameTests::creativeWandFamilyMatchesOriginal);
         FUNCTIONS.register(TESTS[13], () -> ItemGameTests::morphPhaseTintsMatchOriginal);
         FUNCTIONS.register(TESTS[14], () -> ItemGameTests::toolAndSkullAxeChanceRulesPreserveOriginalBoundaries);
+        FUNCTIONS.register(TESTS[15], () -> ItemGameTests::silverfishEmeraldDropThresholdsMatchOriginal);
     }
 
     private ItemGameTests() {}
@@ -363,6 +365,19 @@ public final class ItemGameTests {
             "infernal wand must not cancel incoming fire or wither damage");
         helper.assertFalse(FmToolEvents.cancelsInfernalDamage(infernalWand, false),
             "infernal wand must not cancel unrelated incoming damage");
+        helper.succeed();
+    }
+
+    private static void silverfishEmeraldDropThresholdsMatchOriginal(GameTestHelper helper) {
+        helper.assertTrue(FmEnchantmentEffects.silverfishEmeraldRoll(true, 2, 0), "Windswept Hills includes roll 2 at Looting 0");
+        helper.assertFalse(FmEnchantmentEffects.silverfishEmeraldRoll(true, 3, 0), "Windswept Hills excludes roll 3 at Looting 0");
+        helper.assertTrue(FmEnchantmentEffects.silverfishEmeraldRoll(true, 4, 1), "Windswept Hills adds two per Looting level");
+        helper.assertFalse(FmEnchantmentEffects.silverfishEmeraldRoll(true, 5, 1), "Windswept Hills excludes the next roll");
+
+        helper.assertTrue(FmEnchantmentEffects.silverfishEmeraldRoll(false, 1, 0), "other biomes include roll 1 at Looting 0");
+        helper.assertFalse(FmEnchantmentEffects.silverfishEmeraldRoll(false, 2, 0), "other biomes exclude roll 2 at Looting 0");
+        helper.assertTrue(FmEnchantmentEffects.silverfishEmeraldRoll(false, 4, 1), "other biomes add three per Looting level");
+        helper.assertFalse(FmEnchantmentEffects.silverfishEmeraldRoll(false, 5, 1), "other biomes exclude the next roll");
         helper.succeed();
     }
 

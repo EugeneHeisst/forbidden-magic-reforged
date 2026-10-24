@@ -32,6 +32,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import dev.visfox.forbiddenreforged.ForbiddenMagic;
 import dev.visfox.forbiddenreforged.FmAspects;
 import dev.visfox.forbiddenreforged.FmBlocks;
+import dev.visfox.forbiddenreforged.FmConfig;
 import dev.visfox.forbiddenreforged.FmDrops;
 import dev.visfox.forbiddenreforged.FmItems;
 import dev.visfox.forbiddenreforged.FmRecipes;
@@ -65,7 +66,8 @@ public final class RecipeGameTests {
         "plant_research_and_recipes",
         "wand_rod_recipes_registered",
         "taintstone_research_and_arcane_recipe",
-        "ore_dictionary_entries_became_tags"
+        "ore_dictionary_entries_became_tags",
+        "emerald_transmutation_matches_original"
     };
 
     static {
@@ -78,6 +80,7 @@ public final class RecipeGameTests {
         FUNCTIONS.register(TESTS[6], () -> RecipeGameTests::wandRodRecipesRegistered);
         FUNCTIONS.register(TESTS[7], () -> RecipeGameTests::taintstoneResearchAndArcaneRecipe);
         FUNCTIONS.register(TESTS[8], () -> RecipeGameTests::oreDictionaryEntriesBecameTags);
+        FUNCTIONS.register(TESTS[9], () -> RecipeGameTests::emeraldTransmutationMatchesOriginal);
     }
 
     private RecipeGameTests() {}
@@ -244,6 +247,31 @@ public final class RecipeGameTests {
         TcRecipe brick = TcRecipes.get("TaintBrick");
         helper.assertTrue(brick instanceof CraftingRecipeRef ref, "brick recipe is registered as a reference");
         helper.assertValueEqual(((CraftingRecipeRef) brick).recipe(), ForbiddenMagic.id("taint_stone_brick"), "brick recipe id");
+        helper.succeed();
+    }
+
+    private static void emeraldTransmutationMatchesOriginal(GameTestHelper helper) {
+        if (!FmConfig.emeraldTrans()) {
+            helper.assertTrue(TcRecipes.get("TRANSEMERALD") == null, "disabled emerald transmutation has no recipe");
+            helper.succeed();
+            return;
+        }
+
+        CrucibleRecipe recipe = (CrucibleRecipe) TcRecipes.get("TRANSEMERALD");
+        helper.assertTrue(recipe != null, "emerald transmutation crucible recipe exists");
+        helper.assertValueEqual(recipe.result().count(), 4, "transmutation produces four emerald nuggets");
+        helper.assertValueEqual(recipe.aspects().getAmount(Aspect.CRYSTAL), 2, "transmutation costs two crystal");
+        helper.assertValueEqual(recipe.aspects().getAmount(Aspect.GREED), 2, "transmutation costs two greed");
+        helper.assertTrue(recipe.catalyst().test(new ItemStack(FmItems.EMERALD_FRAGMENT.get())),
+            "emerald fragment is accepted as the nuggetEmerald catalyst");
+        TagKey<Item> emeraldNuggets = TagKey.create(Registries.ITEM, Identifier.parse("c:nuggets/emerald"));
+        helper.assertTrue(new ItemStack(FmItems.EMERALD_FRAGMENT.get()).is(emeraldNuggets),
+            "emerald fragment carries the common emerald nugget tag");
+
+        ResearchItem research = ResearchCategories.getResearch("TRANSEMERALD");
+        helper.assertTrue(research != null, "transmutation research exists when enabled");
+        helper.assertValueEqual(research.pages().size(), 2, "transmutation research has text and crucible pages");
+        helper.assertTrue(research.isSecondary() && research.isConcealed(), "transmutation research retains secondary/concealed status");
         helper.succeed();
     }
 

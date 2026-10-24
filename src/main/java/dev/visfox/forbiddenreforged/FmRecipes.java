@@ -17,7 +17,7 @@ import thaumcraft.crafting.TcStack;
 public final class FmRecipes {
     public static final Set<String> OWN_KEYS = Set.of("SKULLAXE", "FORK", "WRATH", "GREEDY", "CONSUMING", "EDUCATIONAL", "CORRUPTING",
         "MORPHPICK", "MORPHSWORD", "MORPHSHOVEL", "MORPHAXE", "CLUSTER", "IMPACT", "VOIDTOUCHED", "TAINTTREE", "BLACKFLOWER", "ARCANECAKE",
-        "WRATHCAGE", "MOBCRYSTAL", "ROD_TAINTED", "ROD_INFERNAL", "TAINTSHOVEL", "TAINTPICK", "CRYSTALWELL", "PRIMEWELL", "FOCUSBLINK", "RINGFOOD",
+        "WRATHCAGE", "MOBCRYSTAL", "ROD_TAINTED", "ROD_INFERNAL", "TAINTSHOVEL", "TAINTPICK", "CRYSTALWELL", "PRIMEWELL", "TRANSEMERALD", "FOCUSBLINK", "RINGFOOD",
         "TaintStone", "TaintBrick");
 
     private FmRecipes() {
@@ -119,6 +119,15 @@ public final class FmRecipes {
                 )));
         }
         registerMorphTools();
+        if (FmConfig.emeraldTrans()) {
+            TcRecipes.register(new CrucibleRecipe(
+                "TRANSEMERALD",
+                "TRANSEMERALD",
+                TcStack.of(FmItems.EMERALD_FRAGMENT.getId().toString(), 4),
+                TcIngredient.tag("c:nuggets/emerald"),
+                new AspectList().add(Aspect.CRYSTAL, 2).add(Aspect.GREED, 2)
+            ));
+        }
         if (FmConfig.gluttonyMode() != 1) {
             List<TcIngredient> cakeParts = FmConfig.gluttonyMode() == 2
                 ? List.of(
