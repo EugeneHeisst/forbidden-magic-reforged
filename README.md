@@ -30,7 +30,7 @@ python tools/prepare_host.py
 
 Артефакт: `build/libs/forbidden-magic-0.574-26.3-port.0.1.0.jar`
 
-Тесты: `./gradlew runGameTestServer`.
+Проверка перед релизом: `./gradlew build` и `./gradlew runGameTestServer`; визуальная проверка — `./gradlew runClient`.
 
 ## Использование
 
