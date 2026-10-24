@@ -73,7 +73,8 @@ public final class ItemGameTests {
         "creative_wand_family_matches_original",
         "morph_phase_tints_match_original",
         "tool_and_skull_axe_chance_rules_preserve_original_boundaries",
-        "silverfish_emerald_drop_thresholds_match_original"
+        "silverfish_emerald_drop_thresholds_match_original",
+        "wand_tooltip_kinds_preserve_original_hints"
     };
 
     static {
@@ -93,6 +94,7 @@ public final class ItemGameTests {
         FUNCTIONS.register(TESTS[13], () -> ItemGameTests::morphPhaseTintsMatchOriginal);
         FUNCTIONS.register(TESTS[14], () -> ItemGameTests::toolAndSkullAxeChanceRulesPreserveOriginalBoundaries);
         FUNCTIONS.register(TESTS[15], () -> ItemGameTests::silverfishEmeraldDropThresholdsMatchOriginal);
+        FUNCTIONS.register(TESTS[16], () -> ItemGameTests::wandTooltipKindsPreserveOriginalHints);
     }
 
     private ItemGameTests() {}
@@ -378,6 +380,22 @@ public final class ItemGameTests {
         helper.assertFalse(FmEnchantmentEffects.silverfishEmeraldRoll(false, 2, 0), "other biomes exclude roll 2 at Looting 0");
         helper.assertTrue(FmEnchantmentEffects.silverfishEmeraldRoll(false, 4, 1), "other biomes add three per Looting level");
         helper.assertFalse(FmEnchantmentEffects.silverfishEmeraldRoll(false, 5, 1), "other biomes exclude the next roll");
+        helper.succeed();
+    }
+
+    private static void wandTooltipKindsPreserveOriginalHints(GameTestHelper helper) {
+        helper.assertValueEqual(FmToolEvents.wandTooltipKind("neutronium"), "creativeonly",
+            "neutronium wand exposes the creative-only tooltip");
+        helper.assertValueEqual(FmToolEvents.wandTooltipKind("neutronium_staff"), "creativeonly",
+            "neutronium staff exposes the creative-only tooltip");
+        helper.assertValueEqual(FmToolEvents.wandTooltipKind("profane"), "profane_contract",
+            "profane wand exposes its contract tooltip");
+        helper.assertValueEqual(FmToolEvents.wandTooltipKind("profaned"), "profane_contract",
+            "profaned wand exposes the contract tooltip");
+        helper.assertValueEqual(FmToolEvents.wandTooltipKind("greatwood"), "",
+            "ordinary rods do not receive special wand tooltips");
+        helper.assertValueEqual(FmToolEvents.wandTooltipKind(new ItemStack(Items.STICK)), "",
+            "non-wand items do not receive wand-specific tooltips");
         helper.succeed();
     }
 
