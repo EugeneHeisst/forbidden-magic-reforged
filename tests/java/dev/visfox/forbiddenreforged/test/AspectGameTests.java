@@ -66,7 +66,8 @@ public final class AspectGameTests {
         "mob_killed_by_player_drops_wrath_shard",
         "boss_drops_pride_shards",
         "unattended_death_drops_sloth_shard",
-        "forbidden_category_and_shard_entries_resolve"
+        "forbidden_category_and_shard_entries_resolve",
+        "nether_shard_drop_rules_match_original_boundaries"
     };
 
     static {
@@ -83,6 +84,7 @@ public final class AspectGameTests {
         FUNCTIONS.register(TESTS[10], () -> AspectGameTests::bossDropsPrideShards);
         FUNCTIONS.register(TESTS[11], () -> AspectGameTests::unattendedDeathDropsSlothShard);
         FUNCTIONS.register(TESTS[12], () -> AspectGameTests::forbiddenCategoryAndShardEntriesResolve);
+        FUNCTIONS.register(TESTS[13], () -> AspectGameTests::netherShardDropRulesMatchOriginalBoundaries);
     }
 
     private AspectGameTests() {}
@@ -225,6 +227,25 @@ public final class AspectGameTests {
         helper.assertTrue(FmDrops.rollWrath(2, 2), "chance 2 must drop at roll 2, the original uses nextInt(61) <= wrath");
         helper.assertFalse(FmDrops.rollWrath(2, 3), "chance 2 must not drop at roll 3");
         helper.assertValueEqual(FmDrops.wrathShardStack().getItem(), FmItems.DEADLY_SHARDS.get("wrath").get(), "wrath drop must be the wrath shard");
+        helper.succeed();
+    }
+
+    private static void netherShardDropRulesMatchOriginalBoundaries(GameTestHelper helper) {
+        helper.assertTrue(FmDrops.rollGluttony(0), "gluttony shard drops at roll 0");
+        helper.assertTrue(FmDrops.rollGluttony(1), "gluttony shard drops at roll 1");
+        helper.assertFalse(FmDrops.rollGluttony(2), "gluttony shard does not drop at roll 2");
+
+        helper.assertFalse(FmDrops.rollQuartzGreed(0, 0), "quartz ore requires positive Fortune");
+        helper.assertTrue(FmDrops.rollQuartzGreed(1, 1), "Fortune 1 includes roll 1");
+        helper.assertFalse(FmDrops.rollQuartzGreed(1, 2), "Fortune 1 excludes roll 2");
+        helper.assertTrue(FmDrops.rollQuartzGreed(3, 3), "Fortune 3 includes roll 3");
+
+        helper.assertFalse(FmDrops.rollEnvy(0), "envy shard is not assigned at roll 0");
+        helper.assertTrue(FmDrops.rollEnvy(1), "envy shard is assigned at roll 1");
+        helper.assertFalse(FmDrops.rollEnvy(174), "envy shard is not assigned at roll 174");
+        helper.assertTrue(FmItems.GLUTTONY_SHARD.get() != null, "gluttony shard item exists");
+        helper.assertTrue(FmItems.DEADLY_SHARDS.get("greed").get() != null, "greed shard item exists");
+        helper.assertTrue(FmItems.DEADLY_SHARDS.get("envy").get() != null, "envy shard item exists");
         helper.succeed();
     }
 
