@@ -15,6 +15,8 @@ public final class FmConfig {
     public static ModConfigSpec.IntValue wrathEff;
     public static ModConfigSpec.BooleanValue wrathCrazy;
     public static ModConfigSpec.BooleanValue spork;
+    public static ModConfigSpec.BooleanValue silverfishEmeralds;
+    public static ModConfigSpec.BooleanValue emeraldTrans;
 
     static {
         noLust = BUILDER.comment("Enable to remove Luxuria aspect and related items.").define("general.no_lust", false);
@@ -25,6 +27,8 @@ public final class FmConfig {
         wrathEff = BUILDER.comment("Spawns granted per essentia cost.").defineInRange("general.wrath_eff", 4, 1, 64);
         wrathCrazy = BUILDER.comment("Let the cage imprint on any non-boss mob.").define("general.wrath_crazy", false);
         spork = BUILDER.comment("Rename the Diabolist Fork to 'Diabolist Spork' and use the spork texture.").define("general.spork", false);
+        silverfishEmeralds = BUILDER.comment("Allow silverfish to drop emerald nuggets.").define("general.silverfish_emeralds", true);
+        emeraldTrans = BUILDER.comment("Enable Emerald Transmutation research and recipe.").define("general.emerald_transmutation", true);
         SPEC = BUILDER.build();
     }
 
@@ -65,5 +69,13 @@ public final class FmConfig {
 
     public static boolean spork() {
         return SPEC.isLoaded() ? spork.get() : spork.getDefault();
+    }
+
+    public static boolean silverfishEmeralds() {
+        return SPEC.isLoaded() ? silverfishEmeralds.get() : silverfishEmeralds.getDefault();
+    }
+
+    public static boolean emeraldTrans() {
+        return SPEC.isLoaded() ? emeraldTrans.get() : emeraldTrans.getDefault();
     }
 }
