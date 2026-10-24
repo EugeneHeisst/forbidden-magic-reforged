@@ -8,14 +8,14 @@ version="${mod_version}"
 displayName="${mod_name}"
 authors="${mod_authors}"
 credits="${mod_credits}"
-description=''' 
+description='''
 ${mod_description}
 '''
 
 [[dependencies.${mod_id}]]
     modId="neoforge"
     type="required"
-    versionRange="[21.1.0,)"
+    versionRange="[${neo_version},)"
     ordering="NONE"
     side="BOTH"
 
