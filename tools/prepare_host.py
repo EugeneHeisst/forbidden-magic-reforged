@@ -28,6 +28,8 @@ def clone() -> None:
             text=True,
         )
     run("git", "-C", str(HOST), "config", "core.autocrlf", "false")
+    run("git", "-C", str(HOST), "config", "user.name", "Forbidden Magic Port Build")
+    run("git", "-C", str(HOST), "config", "user.email", "port-build@example.invalid")
     run("git", "-C", str(HOST), "fetch", "--all")
     run("git", "-C", str(HOST), "checkout", "--force", "--detach", sha())
     run("git", "-C", str(HOST), "read-tree", "HEAD")
