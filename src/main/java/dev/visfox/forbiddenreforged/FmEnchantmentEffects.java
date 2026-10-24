@@ -133,6 +133,7 @@ public final class FmEnchantmentEffects {
             && victimType.equals(Identifier.withDefaultNamespace("silverfish"))) {
             Entity killer = event.getSource().getEntity();
             if (killer instanceof ServerPlayer player) {
+                // Legacy extremeHills has no exact modern equivalent; fidelity.md records this nearest-biome mapping.
                 Identifier biomeId = BuiltInRegistries.BIOME.getKey(
                     victim.level().getBiome(victim.blockPosition()).value());
                 boolean windsweptHills = Identifier.withDefaultNamespace("windswept_hills").equals(biomeId);
