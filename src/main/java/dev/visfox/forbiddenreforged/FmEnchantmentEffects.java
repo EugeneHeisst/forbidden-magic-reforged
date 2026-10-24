@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerPlayer;
@@ -134,9 +135,8 @@ public final class FmEnchantmentEffects {
             Entity killer = event.getSource().getEntity();
             if (killer instanceof ServerPlayer player) {
                 // Legacy extremeHills has no exact modern equivalent; fidelity.md records this nearest-biome mapping.
-                Identifier biomeId = BuiltInRegistries.BIOME.getKey(
-                    victim.level().getBiome(victim.blockPosition()).value());
-                boolean windsweptHills = Identifier.withDefaultNamespace("windswept_hills").equals(biomeId);
+                boolean windsweptHills = victim.level().getBiome(victim.blockPosition()).is(
+                    ResourceKey.create(Registries.BIOME, Identifier.withDefaultNamespace("windswept_hills")));
                 if (windsweptHills || !(killer instanceof FakePlayer)) {
                     int looting = FmEnchantments.level(
                         player.level().registryAccess(), player.getMainHandItem(), Enchantments.LOOTING);
