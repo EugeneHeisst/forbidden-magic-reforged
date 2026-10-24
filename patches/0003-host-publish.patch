@@ -1,28 +1,25 @@
-From acb00ec829a07141cf77f90ca768dd591cfe12e6 Mon Sep 17 00:00:00 2001
+From c3d21f8f2f8e1da36cde62e2b66f39db99a6d1a1 Mon Sep 17 00:00:00 2001
 From: Mxx Foxx <tanjiro235@proton.me>
-Date: Wed, 21 Oct 2026 11:44:40 +0300
-Subject: [PATCH] publish host
+Date: Sat, 24 Oct 2026 22:30:00 +0600
+Subject: [PATCH 3/3] build: publish patched Thaumcraft 1.21.1 artifact
 
 ---
- build.gradle      | 18 ++++++++++++++++++
- gradle.properties |  2 +-
- 2 files changed, 19 insertions(+), 1 deletion(-)
+ build.gradle | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
 
 diff --git a/build.gradle b/build.gradle
-index 8c11279..d580329 100644
+index 71a8b13..e8fd50f 100644
 --- a/build.gradle
 +++ b/build.gradle
-@@ -2,6 +2,7 @@ plugins {
+@@ -1,6 +1,7 @@
+ plugins {
      id 'java-library'
      id 'net.neoforged.moddev' version '2.0.148'
      id 'idea'
 +    id 'maven-publish'
  }
- 
- tasks.named('wrapper', Wrapper).configure {
-@@ -136,3 +137,20 @@ idea {
- tasks.named('runServer') {
-     standardInput = System.in
+@@ -153,3 +154,22 @@ tasks.named("runGameTestServer") {
+     dependsOn prepareOuterLandsTests
  }
 +
 +publishing {
@@ -41,19 +38,5 @@ index 8c11279..d580329 100644
 +        }
 +    }
 +}
-diff --git a/gradle.properties b/gradle.properties
-index b131c1b..52a66d6 100644
---- a/gradle.properties
-+++ b/gradle.properties
-@@ -13,7 +13,7 @@ neo_version=26.3.0.57-beta
- mod_id=thaumcraft
- mod_name=Thaumcraft 4: Reforged
- mod_license=All Rights Reserved
--mod_version=1.1
-+mod_version=1.2
- mod_group_id=thaumcraft
- mod_authors=Azanor (original), overseas (port)
- mod_credits=Special thanks to CovertJaguar, Dan Scott, Lorc, bonemouse, Scott Killen, Rorax and chicken_bones
 -- 
-2.52.0.windows.1
-
+2.52.0

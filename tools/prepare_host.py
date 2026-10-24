@@ -1,4 +1,5 @@
 import argparse
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -42,7 +43,7 @@ def apply_patches() -> None:
         )
         if check.returncode != 0:
             raise SystemExit(f"patch does not apply cleanly: {patch.name}")
-        run("git", "-C", str(HOST), "am", "--3way", "--ignore-space-change", "--no-gpg-sign", str(patch))
+        run("git", "-C", str(HOST), "am", "--ignore-space-change", "--no-gpg-sign", str(patch))
 
 
 def verify() -> None:
@@ -87,7 +88,10 @@ def main() -> int:
     clone()
     apply_patches()
     if arguments.rebuild:
-        run("cmd", "//c", "gradlew.bat", "build", cwd=HOST)
+        if os.name == "nt":
+            run("cmd", "//c", "gradlew.bat", "publish", cwd=HOST)
+        else:
+            run("./gradlew", "publish", cwd=HOST)
     return 0
 
 

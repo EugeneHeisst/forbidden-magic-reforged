@@ -20,8 +20,8 @@ index 0000000..7915098
 +import java.util.List;
 +import java.util.concurrent.CopyOnWriteArrayList;
 +import java.util.function.Consumer;
-+import net.minecraft.resources.Identifier;
-+import org.jspecify.annotations.Nullable;
++import net.minecraft.resources.ResourceLocation;
++import javax.annotation.Nullable;
 +
 +public final class AddonAspects {
 +    private static final List<Consumer<Addon>> REGISTRARS = new CopyOnWriteArrayList<>();
@@ -32,7 +32,7 @@ index 0000000..7915098
 +    }
 +
 +    public interface Addon {
-+        Aspect register(String tag, int color, Aspect @Nullable [] components, int blend, @Nullable Identifier texture);
++        Aspect register(String tag, int color, Aspect @Nullable [] components, int blend, @Nullable ResourceLocation texture);
 +    }
 +
 +    public static void addRegistrar(Consumer<Addon> registrar) {

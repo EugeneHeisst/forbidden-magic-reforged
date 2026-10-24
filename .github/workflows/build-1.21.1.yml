@@ -1,0 +1,59 @@
+name: Build Minecraft 1.21.1 port
+
+on:
+  push:
+    branches: [ "1.21.1" ]
+  pull_request:
+    branches: [ "1.21.1" ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout addon
+        uses: actions/checkout@v4
+        with:
+          path: forbidden-magic-reforged
+
+      - name: Checkout pinned Thaumcraft source
+        uses: actions/checkout@v4
+        with:
+          repository: notlikethiss/thaumcraft-4-reforged
+          ref: 17dd73087e52bf918cd7f580abd2114e44f88544
+          path: thaumcraft-4-reforged
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: gradle
+          cache-dependency-path: |
+            forbidden-magic-reforged/gradle/wrapper/gradle-wrapper.properties
+            thaumcraft-4-reforged/gradle/wrapper/gradle-wrapper.properties
+
+      - name: Prepare and publish patched host
+        working-directory: forbidden-magic-reforged
+        run: |
+          chmod +x gradlew
+          python3 tools/prepare_host.py --rebuild
+
+      - name: Build addon
+        working-directory: forbidden-magic-reforged
+        run: ./gradlew --no-daemon build
+
+      - name: Run GameTests
+        working-directory: forbidden-magic-reforged
+        run: ./gradlew --no-daemon runGameTestServer
+
+      - name: Upload addon jar
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: forbidden-magic-1.21.1
+          path: forbidden-magic-reforged/build/libs/*.jar
+          if-no-files-found: warn

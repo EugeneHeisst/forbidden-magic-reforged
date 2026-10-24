@@ -1,24 +1,24 @@
 package dev.visfox.forbiddenreforged;
 
+import com.mojang.logging.LogUtils;
 import dev.visfox.forbiddenreforged.test.FmGameTests;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
 
 @Mod(ForbiddenMagic.MODID)
 public final class ForbiddenMagic {
     public static final String MODID = "forbiddenmagic";
-    public static final Logger LOGGER = LogManager.getLogger(MODID);
+    public static final Logger LOGGER = LogUtils.getLogger();
 
     public ForbiddenMagic(IEventBus modEventBus, ModContainer modContainer) {
         FmAspects.init();
         FmGameTests.register(modEventBus);
     }
 
-    public static Identifier id(String path) {
-        return Identifier.fromNamespaceAndPath(MODID, path);
+    public static ResourceLocation id(String path) {
+        return ResourceLocation.fromNamespaceAndPath(MODID, path);
     }
 }

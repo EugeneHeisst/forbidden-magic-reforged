@@ -23,7 +23,7 @@ index 859be01..78e2b88 100644
  import java.util.Map;
  import net.minecraft.network.chat.Component;
 @@ -14,65 +14,61 @@ import net.minecraft.util.StringRepresentable;
- import org.jspecify.annotations.Nullable;
+ import javax.annotation.Nullable;
  import thaumcraft.Thaumcraft;
  
 -public enum Aspect implements StringRepresentable {
@@ -143,7 +143,7 @@ index 859be01..78e2b88 100644
      private final int color;
 @@ -81,21 +77,75 @@ public enum Aspect implements StringRepresentable {
      private final int blend;
-     private final Identifier image;
+     private final ResourceLocation image;
  
 -    Aspect(String tag, int color, String chatcolor, int blend) {
 -        this(tag, color, chatcolor, null, blend);
@@ -154,7 +154,7 @@ index 859be01..78e2b88 100644
 -    }
 -
 -    Aspect(String tag, int color, @Nullable String chatcolor, Aspect @Nullable [] components, int blend) {
-+    private Aspect(String tag, int color, @Nullable String chatcolor, Aspect @Nullable [] components, int blend, @Nullable Identifier image) {
++    private Aspect(String tag, int color, @Nullable String chatcolor, Aspect @Nullable [] components, int blend, @Nullable ResourceLocation image) {
          this.tag = tag;
          this.color = color;
          this.chatcolor = chatcolor;
@@ -176,7 +176,7 @@ index 859be01..78e2b88 100644
 +        return aspect;
 +    }
 +
-+    public static Aspect register(String tag, int color, Aspect @Nullable [] components, int blend, @Nullable Identifier image) {
++    public static Aspect register(String tag, int color, Aspect @Nullable [] components, int blend, @Nullable ResourceLocation image) {
 +        Aspect existing = BY_TAG.get(tag);
 +        if (existing != null) {
 +            return existing;

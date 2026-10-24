@@ -1,6 +1,6 @@
 package dev.visfox.forbiddenreforged;
 
-import org.jspecify.annotations.Nullable;
+import javax.annotation.Nullable;
 import thaumcraft.aspect.AddonAspects;
 import thaumcraft.aspect.Aspect;
 

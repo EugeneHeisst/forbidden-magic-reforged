@@ -44,8 +44,6 @@ neoForge {
         }
         gameTestServer {
             type = "gameTestServer"
-            programArgument '--tests'
-            programArgument "${mod_id}:*"
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
         }
         data {
