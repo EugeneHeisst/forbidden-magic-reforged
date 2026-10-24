@@ -1,6 +1,6 @@
 modLoader="javafml"
-loaderVersion="[1,)"
-license="MIT"
+loaderVersion="${loader_version_range}"
+license="${mod_license}"
 
 [[mods]]
 modId="${mod_id}"
@@ -8,14 +8,14 @@ version="${mod_version}"
 displayName="${mod_name}"
 authors="${mod_authors}"
 credits="${mod_credits}"
-description='''
+description=''' 
 ${mod_description}
 '''
 
 [[dependencies.${mod_id}]]
     modId="neoforge"
     type="required"
-    versionRange="[${neo_version},)"
+    versionRange="[21.1.0,)"
     ordering="NONE"
     side="BOTH"
 
@@ -29,6 +29,6 @@ ${mod_description}
 [[dependencies.${mod_id}]]
     modId="thaumcraft"
     type="required"
-    versionRange="[${thaumcraft_version},)"
+    versionRange="[${thaumcraft_version}]"
     ordering="AFTER"
     side="BOTH"
