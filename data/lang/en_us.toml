@@ -176,3 +176,6 @@ entity.forbiddenmagic.villager.heretic = "Heretic"
 
 [itemGroup]
 forbiddenmagic = "Forbidden Magic"
+
+tooltip.creativeonly = "Creative Only"
+tooltip.profane_contract = "Contract: %s"
