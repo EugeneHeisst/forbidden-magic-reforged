@@ -7,7 +7,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -113,9 +113,9 @@ public class BlinkFocusItem extends FocusItem {
         } else if (this.isUpgradedWith(focus, PANDEMONIUM)) {
             AABB aabb = new AABB(targetPos.x - range, targetPos.y - range, targetPos.z - range,
                 targetPos.x + range, targetPos.y + range, targetPos.z + range);
-            List<Mob> mobs = level.getEntitiesOfClass(Mob.class, aabb);
-            for (Mob mob : mobs) {
-                mob.teleportTo(player.getX(), player.getY(), player.getZ());
+            List<Enemy> enemies = level.getEntitiesOfClass(Enemy.class, aabb);
+            for (Enemy enemy : enemies) {
+                enemy.teleportTo(player.getX(), player.getY(), player.getZ());
             }
         }
         player.teleportTo(targetPos.x, targetPos.y, targetPos.z);
