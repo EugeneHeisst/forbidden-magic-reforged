@@ -4,8 +4,8 @@ Date: Sat, 24 Oct 2026 22:30:00 +0600
 Subject: [PATCH 3/3] build: publish patched Thaumcraft 1.21.1 artifact
 
 ---
- build.gradle | 17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
+ build.gradle | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
 
 diff --git a/build.gradle b/build.gradle
 index 71a8b13..e8fd50f 100644
@@ -18,7 +18,7 @@ index 71a8b13..e8fd50f 100644
      id 'idea'
 +    id 'maven-publish'
  }
-@@ -153,3 +154,19 @@ tasks.named("runGameTestServer") {
+@@ -153,3 +154,20 @@ tasks.named("runGameTestServer") {
      dependsOn prepareOuterLandsTests
  }
 +
