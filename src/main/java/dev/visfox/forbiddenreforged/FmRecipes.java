@@ -3,7 +3,9 @@ package dev.visfox.forbiddenreforged;
 import java.util.List;
 import thaumcraft.aspect.Aspect;
 import thaumcraft.aspect.AspectList;
+import net.minecraft.resources.ResourceLocation;
 import thaumcraft.crafting.CrucibleRecipe;
+import thaumcraft.crafting.CraftingRecipeRef;
 import thaumcraft.crafting.InfusionRecipe;
 import thaumcraft.crafting.ShapedArcaneRecipe;
 import thaumcraft.crafting.TcIngredient;
@@ -15,6 +17,21 @@ public final class FmRecipes {
     }
 
     public static void register() {
+
+        TcRecipes.register(new CraftingRecipeRef(
+            "BlackInk",
+            "BLACKFLOWER",
+            ResourceLocation.parse("forbiddenmagic:ink_from_rose"),
+            TcStack.of("forbiddenmagic:black_dye", 2)
+        ));
+
+        TcRecipes.register(new CraftingRecipeRef(
+            "TaintBrick",
+            "TAINTSTONE",
+            ResourceLocation.parse("forbiddenmagic:taint_stone_brick"),
+            TcStack.of("forbiddenmagic:taint_stone_brick", 4)
+        ));
+
         // Original Forbidden Magic crucible conversion: oak sapling -> taint sapling.
         TcRecipes.register(new CrucibleRecipe(
             "FM_TAINTTREE",
