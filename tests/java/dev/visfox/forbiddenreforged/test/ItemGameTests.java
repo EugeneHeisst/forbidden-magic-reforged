@@ -363,10 +363,16 @@ public final class ItemGameTests {
         WandRod infernalRod = WandRegistry.findRod("infernal");
         helper.assertTrue(infernalRod != null, "infernal rod must be registered");
         ItemStack infernalWand = Wands.create(WandRegistry.CAP_IRON, infernalRod, false);
-        helper.assertFalse(FmToolEvents.cancelsInfernalDamage(infernalWand, true),
-            "infernal wand must not cancel incoming fire or wither damage");
+        helper.assertTrue(FmToolEvents.cancelsInfernalDamage(infernalWand, true),
+            "infernal wand cancels incoming fire or wither damage");
         helper.assertFalse(FmToolEvents.cancelsInfernalDamage(infernalWand, false),
-            "infernal wand must not cancel unrelated incoming damage");
+            "infernal wand does not cancel unrelated incoming damage");
+        WandRod taintedRod = WandRegistry.findRod("tainted");
+        ItemStack taintedWand = Wands.create(WandRegistry.CAP_IRON, taintedRod, false);
+        helper.assertFalse(FmToolEvents.cancelsInfernalDamage(taintedWand, true),
+            "tainted wand does not inherit infernal immunity");
+        helper.assertFalse(FmToolEvents.cancelsInfernalDamage(new ItemStack(Items.STICK), true),
+            "ordinary items do not cancel fire damage");
         helper.succeed();
     }
 

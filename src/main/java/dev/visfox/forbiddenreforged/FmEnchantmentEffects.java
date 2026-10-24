@@ -207,6 +207,9 @@ public final class FmEnchantmentEffects {
     }
 
     private static void greedyDrops(LivingDropsEvent event, ServerPlayer player) {
+        if (!FmConfig.greedyEnchantmentEnabled()) {
+            return;
+        }
         ItemStack weapon = player.getMainHandItem();
         if (FmEnchantments.level(player.level().registryAccess(), weapon, FmEnchantments.GREEDY) <= 0) {
             return;
