@@ -1,6 +1,7 @@
 package dev.visfox.forbiddenreforged;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -12,6 +13,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.util.FakePlayer;
 import net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent;
+import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.level.BlockDropsEvent;
 import thaumcraft.platform.Baubles;
@@ -27,6 +29,7 @@ public final class FmToolEvents {
         NeoForge.EVENT_BUS.addListener(FmToolEvents::onBreakSpeed);
         NeoForge.EVENT_BUS.addListener(FmToolEvents::onBlockDrops);
         NeoForge.EVENT_BUS.addListener(FmToolEvents::onFoodFinished);
+        NeoForge.EVENT_BUS.addListener(FmToolEvents::onTooltip);
     }
 
     public static float taintPickaxeSpeed(float hardness) {
@@ -45,6 +48,20 @@ public final class FmToolEvents {
     public static boolean taintShardRoll(int roll, int fortune, boolean silkTouch) {
         int chance = 1 + 2 * fortune + (silkTouch ? 6 : 0);
         return roll <= chance;
+    }
+
+    public static String wandTooltipKind(ItemStack stack) {
+        if (!Wands.isWand(stack)) {
+            return "";
+        }
+        String rodTag = Wands.getRod(stack).tag();
+        if (rodTag.startsWith("neutronium")) {
+            return "creativeonly";
+        }
+        if (rodTag.startsWith("profane")) {
+            return "profane_contract";
+        }
+        return "";
     }
 
     private static void onBreakSpeed(PlayerEvent.BreakSpeed event) {
@@ -85,6 +102,17 @@ public final class FmToolEvents {
 
     public static boolean cancelsInfernalDamage(ItemStack held, boolean fireOrWither) {
         return false;
+    }
+
+    private static void onTooltip(ItemTooltipEvent event) {
+        ItemStack stack = event.getItemStack();
+        switch (wandTooltipKind(stack)) {
+            case "creativeonly" -> event.getToolTip().add(Component.translatable("tooltip.creativeonly"));
+            case "profane_contract" -> event.getToolTip().add(Component.translatable(
+                "tooltip.profane_contract", stack.getOrDefault(FmComponents.PROFANE_CONTRACT.get(), 0)));
+            default -> {
+            }
+        }
     }
 
     private static void onFoodFinished(LivingEntityUseItemEvent.Finish event) {
