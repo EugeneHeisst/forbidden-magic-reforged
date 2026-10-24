@@ -113,8 +113,9 @@ public class BlinkFocusItem extends FocusItem {
         } else if (this.isUpgradedWith(focus, PANDEMONIUM)) {
             AABB aabb = new AABB(targetPos.x - range, targetPos.y - range, targetPos.z - range,
                 targetPos.x + range, targetPos.y + range, targetPos.z + range);
-            List<Enemy> enemies = level.getEntitiesOfClass(Enemy.class, aabb);
-            for (Enemy enemy : enemies) {
+            List<LivingEntity> enemies = level.getEntitiesOfClass(
+                LivingEntity.class, aabb, entity -> entity instanceof Enemy);
+            for (LivingEntity enemy : enemies) {
                 enemy.teleportTo(player.getX(), player.getY(), player.getZ());
             }
         }
