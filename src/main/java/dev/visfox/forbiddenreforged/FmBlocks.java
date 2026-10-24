@@ -38,6 +38,9 @@ public final class FmBlocks {
     public static final DeferredBlock<UmbralRoseBlock> UMBRAL_ROSE =
         register("umbral_rose", UmbralRoseBlock::new, properties -> properties.mapColor(MapColor.COLOR_BLACK)
             .instabreak().sound(SoundType.GRASS).randomTicks().noOcclusion());
+    public static final DeferredBlock<WrathCageBlock> WRATH_CAGE =
+        register("wrath_cage", WrathCageBlock::new, properties -> properties.mapColor(MapColor.METAL)
+            .strength(4.0F, 10.0F).requiresCorrectToolForDrops().noOcclusion());
     public static final DeferredBlock<ArcaneCakeBlock> ARCANE_CAKE =
         register("arcane_cake", ArcaneCakeBlock::new, properties -> properties.mapColor(MapColor.COLOR_BROWN)
             .strength(0.5F).sound(SoundType.WOOL).randomTicks().noOcclusion().noLootTable());
@@ -78,5 +81,6 @@ public final class FmBlocks {
         FmItems.ITEMS.registerSimpleBlockItem(UMBRAL_ROSE);
         FmItems.ITEMS.registerSimpleBlockItem(UMBRAL_ROSE_BUSH);
         FmItems.ITEMS.registerSimpleBlockItem(ARCANE_CAKE);
+        FmItems.ITEMS.registerSimpleBlockItem(WRATH_CAGE);
     }
 }

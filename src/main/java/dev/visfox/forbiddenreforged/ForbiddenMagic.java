@@ -15,8 +15,10 @@ public final class ForbiddenMagic {
 
     public ForbiddenMagic(IEventBus modEventBus, ModContainer modContainer) {
         FmConfig.register(modContainer);
+        FmComponents.register(modEventBus);
         FmBlocks.register(modEventBus);
         FmItems.ITEMS.register(modEventBus);
+        FmBlockEntities.register(modEventBus);
         FmCreativeTab.register(modEventBus);
         FmAspectTags.register();
         NeoForge.EVENT_BUS.addListener(FmItemEvents::onFuel);

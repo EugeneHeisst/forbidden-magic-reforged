@@ -19,6 +19,34 @@ public final class FmRecipes {
     public static void register() {
 
         TcRecipes.register(new InfusionRecipe(
+            "FM_WRATHCAGE",
+            "WRATHCAGE",
+            TcStack.of("forbiddenmagic:wrath_cage"),
+            10,
+            new AspectList().add(FmAspects.WRATH, 32).add(Aspect.MAGIC, 32).add(Aspect.BEAST, 32).add(Aspect.MECHANISM, 16),
+            TcIngredient.item("thaumcraft:thaumium_block"),
+            List.of(
+                TcIngredient.item("forbiddenmagic:wrath_shard"),
+                TcIngredient.item("forbiddenmagic:wrath_shard"),
+                TcIngredient.item("forbiddenmagic:wrath_shard"),
+                TcIngredient.item("forbiddenmagic:wrath_shard"),
+                TcIngredient.item("minecraft:diamond"),
+                TcIngredient.item("minecraft:diamond"),
+                TcIngredient.item("minecraft:diamond"),
+                TcIngredient.item("minecraft:diamond"),
+                TcIngredient.item("thaumcraft:warded_jar"),
+                TcIngredient.item("thaumcraft:warded_jar"),
+                TcIngredient.item("thaumcraft:warded_jar")
+            )
+        ));
+        TcRecipes.register(new CrucibleRecipe(
+            "FM_MOBCRYSTAL", "WRATHCAGE",
+            TcStack.of("forbiddenmagic:mob_crystal"),
+            TcIngredient.item("minecraft:diamond"),
+            new AspectList().add(Aspect.MIND, 10).add(Aspect.ENERGY, 10)
+        ));
+
+        TcRecipes.register(new InfusionRecipe(
             "FM_ROD_TAINTED",
             "ROD_tainted",
             TcStack.of("forbiddenmagic:tainted_rod"),

@@ -4,6 +4,11 @@ import dev.visfox.forbiddenreforged.ForbiddenMagic;
 import dev.visfox.forbiddenreforged.FmAspects;
 import dev.visfox.forbiddenreforged.FmConfig;
 import dev.visfox.forbiddenreforged.FmItems;
+import dev.visfox.forbiddenreforged.FmComponents;
+import dev.visfox.forbiddenreforged.MobCrystalItem;
+import dev.visfox.forbiddenreforged.WrathCageBlock;
+import dev.visfox.forbiddenreforged.WrathCageBlockEntity;
+import dev.visfox.forbiddenreforged.FmBlockEntities;
 import dev.visfox.forbiddenreforged.FmItemEvents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.Blocks;
@@ -70,12 +75,34 @@ public final class FmGameTests {
     }
 
     @GameTest(template = "empty", templateNamespace = "minecraft")
+    public static void mobCrystalAttunesAndSwapsCageTarget(GameTestHelper helper) {
+        var cage = new WrathCageBlockEntity(new net.minecraft.core.BlockPos(0, 0, 0),
+            dev.visfox.forbiddenreforged.FmBlocks.WRATH_CAGE.get().defaultBlockState());
+        ItemStack crystal = new ItemStack(FmItems.MOB_CRYSTAL.get());
+        MobCrystalItem.setMob(crystal, "minecraft:zombie");
+        helper.assertTrue(WrathCageBlock.attune(cage, crystal), "valid crystal should attune cage");
+        helper.assertValueEqual(cage.getMobId(), "minecraft:zombie", "cage should remember the captured entity");
+        helper.assertTrue(MobCrystalItem.mob(crystal) == null, "crystal should be consumed into an empty cage");
+        ItemStack second = new ItemStack(FmItems.MOB_CRYSTAL.get());
+        MobCrystalItem.setMob(second, "minecraft:skeleton");
+        helper.assertTrue(WrathCageBlock.attune(cage, second), "second crystal should swap cage target");
+        helper.assertValueEqual(cage.getMobId(), "minecraft:skeleton", "cage should change its target");
+        helper.assertValueEqual(MobCrystalItem.mob(second), "minecraft:zombie", "old target should be returned in the crystal");
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty", templateNamespace = "minecraft")
     public static void forbiddenWandRodsAreRegistered(GameTestHelper helper) {
         helper.assertTrue(WandRegistry.findRod("tainted") != null, "tainted rod must be registered");
         helper.assertTrue(WandRegistry.findRod("infernal") != null, "infernal rod must be registered");
         helper.assertTrue(WandRegistry.findRod("profane") != null, "profane rod must be registered");
         helper.assertTrue(WandRegistry.findRod("witchwood") != null, "witchwood rod must be registered");
         helper.assertTrue(WandRegistry.findRod("witchwood_staff") != null, "witchwood staff rod must be registered");
+        helper.assertTrue(BuiltInRegistries.BLOCK_ENTITY_TYPE.get(ForbiddenMagic.id("wrath_cage")) == FmBlockEntities.WRATH_CAGE.get(),
+            "Wrath Cage block entity type must be registered");
+        helper.assertTrue(WrathCageBlockEntity.shouldSpawn(false, true, 0, 12, 12), "cage should spawn when fuel is available");
+        helper.assertTrue(!WrathCageBlockEntity.shouldSpawn(true, true, 0, 12, 12), "redstone must disable spawning");
+        helper.assertTrue(!WrathCageBlockEntity.shouldSpawn(false, false, 0, 12, 12), "unattuned cage must not spawn");
         helper.succeed();
     }
 
@@ -100,6 +127,8 @@ public final class FmGameTests {
         helper.assertTrue(TcRecipes.get("FM_ARCANECAKE") != null, "Thaumic Cake infusion recipe must exist");
         helper.assertTrue(TcRecipes.get("FM_ROD_TAINTED") != null, "tainted rod infusion recipe must exist");
         helper.assertTrue(TcRecipes.get("FM_ROD_INFERNAL") != null, "infernal rod infusion recipe must exist");
+        helper.assertTrue(TcRecipes.get("FM_WRATHCAGE") != null, "Wrath Cage infusion recipe must exist");
+        helper.assertTrue(TcRecipes.get("FM_MOBCRYSTAL") != null, "Mob Crystal crucible recipe must exist");
         helper.assertTrue(TcIngredient.item("thaumcraft:tainted_goo").exists(), "tainted goo central ingredient must exist");
         helper.assertTrue(TcIngredient.item("thaumcraft:salis_mundus").exists(), "Salis Mundus must exist");
         helper.assertTrue(TcIngredient.item("forbiddenmagic:tainted_rod").exists(), "tainted rod result must exist");

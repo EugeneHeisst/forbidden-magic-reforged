@@ -50,6 +50,9 @@ public final class FmAspectTags {
             register("forbiddenmagic:umbral_rose", tags().add(Aspect.PLANT, 2).add(Aspect.DARKNESS, 2));
             register("forbiddenmagic:umbral_rose_bush", tags().add(Aspect.PLANT, 3).add(Aspect.DARKNESS, 3));
             register("forbiddenmagic:arcane_cake", tags().add(Aspect.HUNGER, 4).add(FmAspects.GLUTTONY, 4).add(Aspect.CRAFT, 2));
+            register("forbiddenmagic:mob_crystal", tags().add(Aspect.MIND, 2).add(Aspect.ENERGY, 2));
+            register("forbiddenmagic:diabolist_fork", tags().add(Aspect.WEAPON, 2).add(Aspect.MECHANISM, 1));
+            register("forbiddenmagic:wrath_cage", tags().add(FmAspects.WRATH, 4).add(Aspect.BEAST, 4).add(Aspect.MECHANISM, 4));
         }
 
         private void registerShard(String vice, AspectList aspects) {

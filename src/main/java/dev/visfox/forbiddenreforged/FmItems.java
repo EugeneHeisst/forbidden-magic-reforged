@@ -22,6 +22,8 @@ public final class FmItems {
     public static final DeferredItem<Item> WITCHWOOD_ROD;
     public static final DeferredItem<Item> PROFANE_ROD;
     public static final DeferredItem<Item> WITCHWOOD_STAFF_ROD;
+    public static final DeferredItem<MobCrystalItem> MOB_CRYSTAL;
+    public static final DeferredItem<DiabolistForkItem> DIABOLIST_FORK;
 
     static {
         for (String vice : new String[]{"wrath", "envy", "taint", "pride", "lust", "sloth", "greed"}) {
@@ -45,6 +47,8 @@ public final class FmItems {
         WITCHWOOD_ROD = ITEMS.registerSimpleItem("witchwood_rod");
         PROFANE_ROD = ITEMS.registerSimpleItem("profane_rod");
         WITCHWOOD_STAFF_ROD = ITEMS.registerSimpleItem("witchwood_staff_rod");
+        MOB_CRYSTAL = ITEMS.registerItem("mob_crystal", MobCrystalItem::new);
+        DIABOLIST_FORK = ITEMS.registerItem("diabolist_fork", DiabolistForkItem::new);
     }
 
     private FmItems() {

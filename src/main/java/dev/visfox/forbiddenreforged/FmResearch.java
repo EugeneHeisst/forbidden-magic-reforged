@@ -112,5 +112,32 @@ public final class FmResearch {
             .setParents("NETHERSHARDS")
             .setHidden()
             .registerResearchItem();
+
+        new FmResearchItem(
+            "WRATHCAGE", "FORBIDDEN",
+            new AspectList().add(FmAspects.WRATH, 6).add(Aspect.BEAST, 4).add(Aspect.MECHANISM, 4),
+            -13, -2, 3, TcStack.of("forbiddenmagic:wrath_cage")
+        )
+            .setPages(
+                ResearchPage.text("forbiddenmagic.research_page.WRATHCAGE.1"),
+                ResearchPage.infusion("FM_WRATHCAGE"),
+                ResearchPage.text("forbiddenmagic.research_page.WRATHCAGE.2")
+            )
+            .setParents("NETHERSHARDS")
+            .setConcealed()
+            .registerResearchItem();
+
+        new FmResearchItem(
+            "MOBCRYSTAL", "FORBIDDEN",
+            new AspectList().add(Aspect.MIND, 4).add(Aspect.ENERGY, 4),
+            -14, 1, 1, TcStack.of("forbiddenmagic:mob_crystal")
+        )
+            .setPages(
+                ResearchPage.text("forbiddenmagic.research_page.MOBCRYSTAL.1"),
+                ResearchPage.crucible("FM_MOBCRYSTAL")
+            )
+            .setParents("WRATHCAGE")
+            .setConcealed()
+            .registerResearchItem();
     }
 }
