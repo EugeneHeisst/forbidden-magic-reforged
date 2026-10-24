@@ -33,17 +33,35 @@ public final class FmGameTests {
     }
 
     @GameTest(template = "empty", templateNamespace = "minecraft")
-    public static void addonAspectSurvivesClientSync(GameTestHelper helper) {
-        Aspect probe = FmAspects.PROBE;
-        helper.assertTrue(probe != null && probe.ordinal() >= Aspect.builtinCount(), "probe aspect must be an add-on aspect");
-        helper.assertValueEqual(Aspect.getAspect("probe"), probe, "by-tag lookup must find the add-on aspect");
-        AspectList list = new AspectList().add(probe, 3);
+    public static void addonAspectsSurviveSerialization(GameTestHelper helper) {
+        Aspect nether = FmAspects.NETHER;
+        helper.assertTrue(nether != null && nether.ordinal() >= Aspect.builtinCount(), "infernus must be an add-on aspect");
+        helper.assertValueEqual(Aspect.getAspect("infernus"), nether, "by-tag lookup must find infernus");
+        helper.assertTrue(FmAspects.PRIDE != null && FmAspects.GLUTTONY != null && FmAspects.ENVY != null
+            && FmAspects.SLOTH != null && FmAspects.WRATH != null, "all enabled sin aspects must be registered");
+        if (!FmConfigCheck.lustDisabled()) {
+            helper.assertTrue(FmAspects.LUST != null, "luxuria must register when no_lust is disabled");
+        } else {
+            helper.assertTrue(Aspect.getAspect("luxuria") == null, "luxuria must not register when no_lust is enabled");
+        }
+        AspectList list = new AspectList().add(nether, 3);
         io.netty.buffer.ByteBuf buffer = io.netty.buffer.Unpooled.buffer();
         AspectList.STREAM_CODEC.encode(buffer, list);
         buffer.readerIndex(0);
         AspectList decoded = AspectList.STREAM_CODEC.decode(buffer);
-        helper.assertValueEqual(decoded.getAmount(probe), 3, "aspect amount must survive a network round trip");
+        helper.assertValueEqual(decoded.getAmount(nether), 3, "aspect amount must survive a network round trip");
         buffer.release();
         helper.succeed();
+    }
+
+    private static final class FmConfigCheck {
+        private static boolean lustDisabled() {
+            try {
+                return (boolean) Class.forName("dev.visfox.forbiddenreforged.FmConfig")
+                    .getMethod("lustDisabled").invoke(null);
+            } catch (ReflectiveOperationException failure) {
+                throw new IllegalStateException(failure);
+            }
+        }
     }
 }
