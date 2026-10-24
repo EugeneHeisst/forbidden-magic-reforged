@@ -15,6 +15,7 @@ import thaumcraft.aspect.Aspect;
 import thaumcraft.aspect.AspectList;
 import thaumcraft.aspect.AspectRegistry;
 import thaumcraft.crafting.TcRecipes;
+import thaumcraft.research.ResearchCategories;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.neoforged.neoforge.event.furnace.FurnaceFuelBurnTimeEvent;
@@ -63,6 +64,16 @@ public final class FmGameTests {
             "umbral rose must be registered");
         helper.assertTrue(BuiltInRegistries.BLOCK.get(ForbiddenMagic.id("arcane_cake")) != Blocks.AIR,
             "arcane cake must be registered");
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty", templateNamespace = "minecraft")
+    public static void forbiddenMagicResearchIsRegistered(GameTestHelper helper) {
+        helper.assertTrue(ResearchCategories.get("FORBIDDEN") != null, "Forbidden research category must exist");
+        helper.assertTrue(ResearchCategories.getResearch("NETHERSHARDS") != null, "Nether shards entry must exist");
+        helper.assertTrue(ResearchCategories.getResearch("TAINTTREE") != null, "taint tree research must exist");
+        helper.assertTrue(ResearchCategories.getResearch("BLACKFLOWER") != null, "black flower research must exist");
+        helper.assertTrue(ResearchCategories.getResearch("ARCANECAKE") != null, "arcane cake research must exist");
         helper.succeed();
     }
 

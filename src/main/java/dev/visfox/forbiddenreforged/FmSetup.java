@@ -14,6 +14,7 @@ public final class FmSetup {
         event.enqueueWork(() -> {
             FmAspects.init();
             FmRecipes.register();
+            FmResearch.register();
         });
     }
 }
