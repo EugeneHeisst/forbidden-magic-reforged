@@ -27,6 +27,7 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Block;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.ModList;
 import net.neoforged.neoforge.event.RegisterGameTestsEvent;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import dev.visfox.forbiddenreforged.ForbiddenMagic;
@@ -52,6 +53,7 @@ import thaumcraft.research.ResearchCategories;
 import thaumcraft.research.ResearchItem;
 import thaumcraft.research.ResearchManager;
 import thaumcraft.registry.ModItems;
+import thaumcraft.research.Warp;
 
 @EventBusSubscriber(modid = ForbiddenMagic.MODID)
 public final class RecipeGameTests {
@@ -70,7 +72,9 @@ public final class RecipeGameTests {
         "ore_dictionary_entries_became_tags",
         "emerald_transmutation_matches_original",
         "ring_food_recipe_matches_original",
-        "subcollar_matches_original"
+        "subcollar_matches_original",
+        "warp_values_match_original",
+        "research_layout_matches_original"
     };
 
     static {
@@ -86,6 +90,8 @@ public final class RecipeGameTests {
         FUNCTIONS.register(TESTS[9], () -> RecipeGameTests::emeraldTransmutationMatchesOriginal);
         FUNCTIONS.register(TESTS[10], () -> RecipeGameTests::ringFoodRecipeMatchesOriginal);
         FUNCTIONS.register(TESTS[11], () -> RecipeGameTests::subcollarMatchesOriginal);
+        FUNCTIONS.register(TESTS[12], () -> RecipeGameTests::warpValuesMatchOriginal);
+        FUNCTIONS.register(TESTS[13], () -> RecipeGameTests::researchLayoutMatchesOriginal);
     }
 
     private RecipeGameTests() {}
@@ -316,6 +322,41 @@ public final class RecipeGameTests {
         helper.assertValueEqual(recipe.aspects().getAmount(Aspect.EARTH), 20, "RingFood earth cost");
         helper.assertValueEqual(recipe.grid().size(), 9, "RingFood has a 3x3 ingredient grid");
         helper.assertTrue(recipe.grid().get(4).exists(), "mundane ring is the center ingredient");
+        helper.succeed();
+    }
+
+    private static void researchLayoutMatchesOriginal(GameTestHelper helper) {
+        assertResearchLayout(helper, "MORPHTOOLS", -9, -3, 3);
+        assertResearchLayout(helper, "ROD_tainted", -8, 3, 3);
+        if (ModList.get().isLoaded("arsmagica2")) {
+            assertResearchLayout(helper, "ROD_witchwood", -3, 1, 3);
+            assertResearchLayout(helper, "ROD_witchwood_staff", -3, -1, 2);
+        }
+        assertResearchLayout(helper, "TAINTSHOVEL", -8, 1, 2);
+        assertResearchLayout(helper, "VOIDTOUCHED", -8, -1, 3);
+        assertResearchLayout(helper, "WRATH", -6, -3, 3);
+        assertResearchLayout(helper, "WRATHCAGE", -6, -9, 3);
+        helper.succeed();
+    }
+
+    private static void assertResearchLayout(GameTestHelper helper, String id, int column, int row, int complexity) {
+        ResearchItem research = ResearchCategories.getResearch(id);
+        helper.assertTrue(research != null, id + " research exists");
+        helper.assertValueEqual(research.column(), column, id + " column");
+        helper.assertValueEqual(research.row(), row, id + " row");
+        helper.assertValueEqual(research.complexity(), complexity, id + " complexity");
+    }
+
+    private static void warpValuesMatchOriginal(GameTestHelper helper) {
+        helper.assertValueEqual(ResearchCategories.getResearch("ROD_infernal").warp(), 2, "infernal rod research warp");
+        helper.assertValueEqual(ResearchCategories.getResearch("TAINTPICK").warp(), 0, "taint pick research has no warp");
+        helper.assertValueEqual(ResearchCategories.getResearch("ROD_tainted").warp(), 2, "tainted rod research warp");
+        helper.assertValueEqual(ResearchCategories.getResearch("TAINTTREE").warp(), 1, "taint tree research warp");
+        if (ModList.get().isLoaded("arsmagica2")) {
+            helper.assertValueEqual(ResearchCategories.getResearch("ROD_witchwood").warp(), 2, "witchwood research warp");
+        }
+        helper.assertValueEqual(Warp.getItemWarp(new ItemStack(FmBlocks.WRATH_CAGE.get())), 5, "wrath cage item warp");
+        helper.assertValueEqual(Warp.getItemWarp(new ItemStack(FmBlocks.TAINT_SAPLING.get())), 1, "taint sapling item warp");
         helper.succeed();
     }
 

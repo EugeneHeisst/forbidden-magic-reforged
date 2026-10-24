@@ -69,7 +69,7 @@ public final class FmItems {
         MORPH_PICKAXE = ITEMS.registerItem("morph_pickaxe", MorphToolItem::new,
             properties -> repairable(Registration.pickaxe(properties.rarity(Rarity.EPIC), TcMaterials.ELEMENTAL_TOOL, 2.0F, -2.8F)));
         MORPH_SWORD = ITEMS.registerItem("morph_sword", MorphToolItem::new,
-            properties -> repairable(Registration.sword(properties.rarity(Rarity.EPIC), TcMaterials.ELEMENTAL_TOOL, 4.0F, -2.4F)));
+            properties -> repairable(Registration.sword(properties.rarity(Rarity.EPIC), TcMaterials.ELEMENTAL_TOOL, 3.0F, -2.4F)));
         MORPH_SHOVEL = ITEMS.registerItem("morph_shovel", MorphToolItem::new,
             properties -> repairable(Registration.shovel(properties.rarity(Rarity.EPIC), TcMaterials.ELEMENTAL_TOOL, 1.0F, -3.0F)));
         MORPH_AXE = ITEMS.registerItem("morph_axe", MorphToolItem::new,

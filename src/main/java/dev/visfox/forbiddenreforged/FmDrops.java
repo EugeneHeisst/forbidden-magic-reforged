@@ -6,6 +6,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.EntityTypeTags;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -21,6 +22,7 @@ import net.minecraft.world.entity.monster.zombie.ZombifiedPiglin;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
@@ -77,6 +79,19 @@ public final class FmDrops {
         return roll == 1;
     }
 
+    public static int heldWrathDamage(ItemStack held) {
+        if (held.isEmpty() || !held.is(ItemTags.SWORDS)) {
+            return 0;
+        }
+        double modifier = held.getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY)
+            .compute(Attributes.ATTACK_DAMAGE, 0.0, EquipmentSlot.MAINHAND);
+        return (int) (1.0 + modifier);
+    }
+
+    public static boolean wrathEligible(LivingEntity entity) {
+        return entity instanceof Enemy;
+    }
+
     public static ItemStack wrathShardStack() {
         return new ItemStack(FmItems.DEADLY_SHARDS.get("wrath").get());
     }
@@ -96,7 +111,7 @@ public final class FmDrops {
             return;
         }
         ServerPlayer player = (ServerPlayer) attacker;
-        if (entity instanceof Enemy || isBoss(entity)) {
+        if (wrathEligible(entity)) {
             ItemStack held = player.getMainHandItem();
             int wrath = wrathBonus(player, entity);
             if (rollWrath(wrath, entity.getRandom().nextInt(61))) {
@@ -185,7 +200,7 @@ public final class FmDrops {
         if (held.isEmpty()) {
             return wrath;
         }
-        wrath += Math.max(0, (int) player.getAttributeValue(Attributes.ATTACK_DAMAGE) - 1);
+        wrath += heldWrathDamage(held);
         wrath += enchant(player, held, Enchantments.SHARPNESS);
         wrath += enchant(player, held, Enchantments.POWER);
         if (!target.fireImmune()) {
