@@ -1,5 +1,6 @@
 package dev.visfox.forbiddenreforged;
 
+import net.neoforged.fml.ModList;
 import thaumcraft.Config;
 import thaumcraft.aspect.Aspect;
 import thaumcraft.aspect.AspectList;
@@ -204,22 +205,26 @@ public final class FmResearch {
                 .setHidden()
                 .registerResearchItem();
         }
-        new FmResearchItem("ROD_witchwood", "FORBIDDEN", new AspectList().add(Aspect.TREE, 3).add(Aspect.MAGIC, 2), -10, -5, 2, TcStack.of(FmItems.WITCHWOOD_ROD.getId().toString(), 1))
-            .setPages(ResearchPage.text("forbiddenmagic.research_page.ROD_witchwood.1"))
-            .setParents("NETHERSHARDS")
-            .setHidden()
-            .registerResearchItem();
+        if (ModList.get().isLoaded("arsmagica2")) {
+            new FmResearchItem("ROD_witchwood", "FORBIDDEN", new AspectList().add(Aspect.TREE, 3).add(Aspect.MAGIC, 2), -10, -5, 2, TcStack.of(FmItems.WITCHWOOD_ROD.getId().toString(), 1))
+                .setPages(ResearchPage.text("forbiddenmagic.research_page.ROD_witchwood.1"))
+                .setParents("NETHERSHARDS")
+                .setHidden()
+                .registerResearchItem();
+        }
         new FmResearchItem("ROD_profane", "FORBIDDEN", new AspectList(), -9, -8, 0, TcStack.of(FmItems.PROFANE_ROD.getId().toString(), 1))
             .setPages(ResearchPage.text("forbiddenmagic.research_page.ROD_profane.1"))
             .setParents("NETHERSHARDS")
             .setHidden()
             .setStub()
             .registerResearchItem();
-        new FmResearchItem("ROD_witchwood_staff", "FORBIDDEN", new AspectList().add(Aspect.TREE, 4).add(Aspect.MAGIC, 3), -10, -6, 3, TcStack.of(FmItems.WITCHWOOD_STAFF_ROD.getId().toString(), 1))
-            .setPages(ResearchPage.text("forbiddenmagic.research_page.ROD_witchwood_staff.1"))
-            .setParents("ROD_witchwood")
-            .setHidden()
-            .registerResearchItem();
+        if (ModList.get().isLoaded("arsmagica2")) {
+            new FmResearchItem("ROD_witchwood_staff", "FORBIDDEN", new AspectList().add(Aspect.TREE, 4).add(Aspect.MAGIC, 3), -10, -6, 3, TcStack.of(FmItems.WITCHWOOD_STAFF_ROD.getId().toString(), 1))
+                .setPages(ResearchPage.text("forbiddenmagic.research_page.ROD_witchwood_staff.1"))
+                .setParents("ROD_witchwood")
+                .setHidden()
+                .registerResearchItem();
+        }
         if (FmConfig.emeraldTrans()) {
             new FmResearchItem("TRANSEMERALD", "FORBIDDEN", new AspectList().add(Aspect.CRYSTAL, 2).add(Aspect.EXCHANGE, 5).add(Aspect.GREED, 4), 0, -6, 3, TcStack.of(FmItems.EMERALD_FRAGMENT.getId().toString(), 1))
                 .setPages(ResearchPage.text("forbiddenmagic.research_page.TRANSEMERALD.1"), ResearchPage.crucible("TRANSEMERALD"))

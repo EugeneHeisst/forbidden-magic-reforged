@@ -56,6 +56,7 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.RegisterGameTestsEvent;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -117,7 +118,9 @@ public final class ItemGameTests {
         "infernal_and_tainted_wand_damage_behaviors_match_original",
         "hellfire_trigger_targets_netherrack_and_obsidian",
         "subcollar_places_on_another_player_and_stores_damage_vis",
-        "riding_crop_effects_match_original"
+        "riding_crop_effects_match_original",
+        "heretic_trades_match_original_listing",
+        "witchwood_requires_ars_magica"
     };
 
     static {
@@ -149,6 +152,8 @@ public final class ItemGameTests {
         FUNCTIONS.register(TESTS[25], () -> ItemGameTests::hellfireTriggerTargetsNetherrackAndObsidian);
         FUNCTIONS.register(TESTS[26], () -> ItemGameTests::subcollarPlacesOnAnotherPlayerAndStoresDamageVis);
         FUNCTIONS.register(TESTS[27], () -> ItemGameTests::ridingCropEffectsMatchOriginal);
+        FUNCTIONS.register(TESTS[28], () -> ItemGameTests::hereticTradesMatchOriginalListing);
+        FUNCTIONS.register(TESTS[29], () -> ItemGameTests::witchwoodRequiresArsMagica);
     }
 
     private ItemGameTests() {}
@@ -192,6 +197,8 @@ public final class ItemGameTests {
         helper.assertValueEqual(recipe.aspects().getAmount(Aspect.MECHANISM), 8, "FORK mechanism cost");
         helper.assertValueEqual(recipe.aspects().getAmount(Aspect.ENERGY), 8, "FORK energy cost");
         helper.assertValueEqual(recipe.components().size(), 4, "FORK has 4 components");
+        ItemStack forkStack = new ItemStack(FmItems.DIABOLIST_FORK.get());
+        helper.assertValueEqual(forkStack.getItem().getDestroySpeed(forkStack, Blocks.COBWEB.defaultBlockState()), 1.0F, "the fork always digs at speed 1");
         helper.succeed();
     }
 
@@ -750,6 +757,57 @@ public final class ItemGameTests {
         MobEffectInstance mountSpeed = mount.getEffect(MobEffects.SPEED);
         helper.assertTrue(mountSpeed != null && mountSpeed.getDuration() == 200 && mountSpeed.getAmplifier() == 5, "right-click while riding gives the mount speed 200 at amplifier 5");
         helper.assertValueEqual(mount.getHealth(), health - 1.0F, "right-click while riding deals one damage to the mount");
+        helper.succeed();
+    }
+
+    private static void hereticTradesMatchOriginalListing(GameTestHelper helper) {
+        JsonObject level1 = readJson(helper, "/data/forbiddenmagic/trade_set/heretic/level_1.json");
+        helper.assertValueEqual(level1.get("amount").getAsInt(), 9, "all nine heretic offers are available from the first level");
+        for (int level = 2; level <= 5; level++) {
+            JsonObject set = readJson(helper, "/data/forbiddenmagic/trade_set/heretic/level_" + level + ".json");
+            helper.assertValueEqual(set.get("amount").getAsInt(), 0, "level " + level + " adds no extra offers");
+        }
+
+        JsonArray pool = readJson(helper, "/data/forbiddenmagic/tags/villager_trade/heretic/pool.json").getAsJsonArray("values");
+        helper.assertValueEqual(pool.size(), 9, "the lust pool lists nine offers");
+        Set<String> unique = new HashSet<>();
+        for (var value : pool) {
+            unique.add(value.getAsString());
+        }
+        helper.assertValueEqual(unique.size(), 9, "the lust pool has no duplicate offers");
+        JsonArray noLustPool = readJson(helper, "/data/forbiddenmagic/tags/villager_trade/heretic/no_lust_pool.json").getAsJsonArray("values");
+        helper.assertValueEqual(noLustPool.size(), 8, "the no_lust pool lists eight offers");
+        JsonObject noLustLevel1 = readJson(helper, "/data/forbiddenmagic/trade_set/heretic/no_lust/level_1.json");
+        helper.assertValueEqual(noLustLevel1.get("amount").getAsInt(), 9, "the no_lust profession also offers everything at once");
+        for (int level = 2; level <= 5; level++) {
+            JsonObject set = readJson(helper, "/data/forbiddenmagic/trade_set/heretic/no_lust/level_" + level + ".json");
+            helper.assertValueEqual(set.get("amount").getAsInt(), 0, "no_lust level " + level + " adds no extra offers");
+        }
+
+        String[] normal = {
+            "emerald_greed_shard", "lust_shard_emerald", "wrath_shard_emerald", "gluttony_shard_emerald",
+            "emerald_skull", "emerald_ghast_tear", "emerald_glowstone"
+        };
+        for (String name : normal) {
+            JsonObject trade = readJson(helper, "/data/forbiddenmagic/villager_trade/heretic/" + name + ".json");
+            helper.assertValueEqual(trade.get("max_uses").getAsInt(), 7, name + " keeps the original seven uses");
+            helper.assertValueEqual(trade.get("xp").getAsInt(), 0, name + " grants no trade xp");
+            helper.assertValueEqual(trade.get("reputation_discount").getAsDouble(), 0.0, name + " has no reputation discount");
+        }
+        for (String name : new String[]{"emerald_profane_wand", "emerald_fire_focus"}) {
+            JsonObject trade = readJson(helper, "/data/forbiddenmagic/villager_trade/heretic/" + name + ".json");
+            helper.assertValueEqual(trade.get("max_uses").getAsInt(), 1, name + " keeps the original single use");
+            helper.assertValueEqual(trade.get("xp").getAsInt(), 0, name + " grants no trade xp");
+        }
+        helper.succeed();
+    }
+
+    private static void witchwoodRequiresArsMagica(GameTestHelper helper) {
+        boolean am2 = ModList.get().isLoaded("arsmagica2");
+        helper.assertValueEqual(BuiltInRegistries.ITEM.getOptional(ForbiddenMagic.id("witchwood_rod")).isPresent(), am2, "the witchwood rod exists only with Ars Magica 2");
+        helper.assertValueEqual(BuiltInRegistries.ITEM.getOptional(ForbiddenMagic.id("witchwood_staff_rod")).isPresent(), am2, "the witchwood staff rod exists only with Ars Magica 2");
+        helper.assertValueEqual(ResearchCategories.getResearch("ROD_witchwood") != null, am2, "the witchwood research exists only with Ars Magica 2");
+        helper.assertValueEqual(ResearchCategories.getResearch("ROD_witchwood_staff") != null, am2, "the witchwood staff research exists only with Ars Magica 2");
         helper.succeed();
     }
 

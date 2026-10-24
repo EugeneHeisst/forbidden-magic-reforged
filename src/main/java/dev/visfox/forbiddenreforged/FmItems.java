@@ -15,6 +15,7 @@ import net.minecraft.world.level.storage.loot.providers.number.floats.ContextFlo
 import net.minecraft.world.level.storage.loot.providers.number.floats.ResolvableFloat;
 import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProvider;
 import net.minecraft.world.level.storage.loot.providers.number.ints.ResolvableInt;
+import net.neoforged.fml.ModList;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import org.jspecify.annotations.Nullable;
@@ -44,9 +45,9 @@ public final class FmItems {
     public static final DeferredItem<Item> RING_NUTRITION;
     public static final DeferredItem<Item> TAINTED_ROD;
     public static final DeferredItem<Item> INFERNAL_ROD;
-    public static final DeferredItem<Item> WITCHWOOD_ROD;
+    public static final @Nullable DeferredItem<Item> WITCHWOOD_ROD;
     public static final DeferredItem<Item> PROFANE_ROD;
-    public static final DeferredItem<Item> WITCHWOOD_STAFF_ROD;
+    public static final @Nullable DeferredItem<Item> WITCHWOOD_STAFF_ROD;
     public static final DeferredItem<Item> TAINT_SHOVEL;
     public static final DeferredItem<Item> TAINT_PICKAXE;
     public static final DeferredItem<Item> CRYSTALWELL;
@@ -96,9 +97,14 @@ public final class FmItems {
             properties -> properties.stacksTo(1));
         TAINTED_ROD = ITEMS.registerSimpleItem("tainted_rod");
         INFERNAL_ROD = ITEMS.registerSimpleItem("infernal_rod");
-        WITCHWOOD_ROD = ITEMS.registerSimpleItem("witchwood_rod");
+        if (ModList.get().isLoaded("arsmagica2")) {
+            WITCHWOOD_ROD = ITEMS.registerSimpleItem("witchwood_rod");
+            WITCHWOOD_STAFF_ROD = ITEMS.registerSimpleItem("witchwood_staff_rod");
+        } else {
+            WITCHWOOD_ROD = null;
+            WITCHWOOD_STAFF_ROD = null;
+        }
         PROFANE_ROD = ITEMS.registerSimpleItem("profane_rod");
-        WITCHWOOD_STAFF_ROD = ITEMS.registerSimpleItem("witchwood_staff_rod");
         TAINT_SHOVEL = ITEMS.registerItem("taint_shovel", TaintShovelItem::new,
             properties -> Registration.shovel(properties.rarity(Rarity.UNCOMMON), TcMaterials.ELEMENTAL_TOOL, 1.0F, -3.0F)
                 .repairable(ModItems.THAUMIUM_INGOT.get()));

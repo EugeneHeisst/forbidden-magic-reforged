@@ -5,9 +5,9 @@
   "gives": {
     "id": "minecraft:glowstone_dust"
   },
-  "max_uses": 10,
-  "xp": 5,
-  "reputation_discount": 0.05,
+  "max_uses": 7,
+  "xp": 0,
+  "reputation_discount": 0,
   "given_item_modifier": {
     "type": "minecraft:set_count",
     "count": {
