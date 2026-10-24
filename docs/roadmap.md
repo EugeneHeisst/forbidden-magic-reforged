@@ -8,7 +8,7 @@
 ```
 host PR: https://github.com/notlikethiss/thaumcraft-4-reforged/pull/37
 last checked: 2026-10-25
-status at last check: open, Draft; awaiting upstream maintainer review
+status at last check: open, ready for review; awaiting upstream maintainer review
 ```
 
 PR #37 добавляет публичный API регистрации аспектов аддона. До решения владельца хоста продолжаем
