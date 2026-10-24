@@ -38,24 +38,37 @@ public final class WrathCageBlock extends Block implements EntityBlock {
     }
 
     @Override
-    public InteractionResult use(
-        BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit
+    protected InteractionResult useWithoutItem(
+        BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit
     ) {
         if (!(level.getBlockEntity(pos) instanceof WrathCageBlockEntity cage)) {
             return InteractionResult.PASS;
         }
-        ItemStack held = player.getItemInHand(hand);
-        if (attune(cage, held)) {
-            return InteractionResult.sidedSuccess(level.isClientSide());
-        }
-        if (held.is(FmItems.DIABOLIST_FORK.get()) && FmConfig.wrathCost() > 0) {
-            if (!level.isClientSide()) {
-                cage.cycleMode();
-            }
-            player.swing(hand);
+        if (attune(cage, player.getMainHandItem())) {
             return InteractionResult.sidedSuccess(level.isClientSide());
         }
         return InteractionResult.PASS;
+    }
+
+    @Override
+    protected InteractionResult useItemOn(
+        ItemStack stack, BlockState state, Level level, BlockPos pos, Player player,
+        InteractionHand hand, BlockHitResult hit
+    ) {
+        if (!(level.getBlockEntity(pos) instanceof WrathCageBlockEntity cage)) {
+            return InteractionResult.PASS;
+        }
+        if (attune(cage, stack)) {
+            return InteractionResult.sidedSuccess(level.isClientSide());
+        }
+        if (!stack.is(FmItems.DIABOLIST_FORK.get()) || FmConfig.wrathCost() <= 0) {
+            return InteractionResult.PASS;
+        }
+        if (!level.isClientSide()) {
+            cage.cycleMode();
+        }
+        player.swing(hand);
+        return InteractionResult.sidedSuccess(level.isClientSide());
     }
 
     @Override

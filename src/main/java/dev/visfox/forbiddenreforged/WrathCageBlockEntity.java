@@ -162,11 +162,15 @@ public class WrathCageBlockEntity extends TcBlockEntity implements AspectSource,
             spawnDelay = nextDelay(level.getRandom(), slothful);
             return;
         }
-        EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.getValue(id);
+        EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.getOptional(id).orElse(null);
+        if (type == null) {
+            spawnDelay = nextDelay(level.getRandom(), slothful);
+            return;
+        }
         AABB nearby = new AABB(pos.getX() - 4, pos.getY() - 1, pos.getZ() - 4, pos.getX() + 5, pos.getY() + 2, pos.getZ() + 5);
         int cost = FmConfig.wrathCost();
         for (int attempt = 0; attempt < SPAWN_COUNT && (fuel > 0 || cost <= 0); attempt++) {
-            Entity entity = type.create(level, MobSpawnType.SPAWNER);
+            Entity entity = type.create(null, level, MobSpawnType.SPAWNER);
             if (entity == null) {
                 break;
             }
@@ -176,7 +180,7 @@ public class WrathCageBlockEntity extends TcBlockEntity implements AspectSource,
             double x = pos.getX() + 0.5 + (level.getRandom().nextDouble() - level.getRandom().nextDouble()) * SPAWN_RANGE;
             double y = pos.getY() + level.getRandom().nextInt(3) - 1;
             double z = pos.getZ() + 0.5 + (level.getRandom().nextDouble() - level.getRandom().nextDouble()) * SPAWN_RANGE;
-            entity.snapTo(x, y, z, level.getRandom().nextFloat() * 360.0F, 0.0F);
+            entity.moveTo(x, y, z, level.getRandom().nextFloat() * 360.0F, 0.0F);
             if (level.noCollision(entity) && !level.containsAnyLiquid(entity.getBoundingBox())) {
                 level.addFreshEntity(entity);
                 if (fuel > 0) {

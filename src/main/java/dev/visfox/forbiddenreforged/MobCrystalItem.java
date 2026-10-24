@@ -3,7 +3,6 @@ package dev.visfox.forbiddenreforged;
 import java.util.List;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.Util;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -31,7 +30,11 @@ public class MobCrystalItem extends Item {
             return Component.translatable("item.forbiddenmagic.mob_crystal.empty");
         }
         return Component.translatable("item.forbiddenmagic.mob_crystal.filled",
-            Component.translatable(Util.makeDescriptionId("entity", ResourceLocation.parse(id))));
+            Component.translatable(entityTranslationKey(ResourceLocation.parse(id))));
+    }
+
+    private static String entityTranslationKey(ResourceLocation id) {
+        return "entity." + id.getNamespace() + "." + id.getPath().replace('/', '.');
     }
 
     @Override
