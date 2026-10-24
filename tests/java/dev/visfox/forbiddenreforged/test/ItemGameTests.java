@@ -73,7 +73,8 @@ public final class ItemGameTests {
         "creative_wand_family_matches_original",
         "morph_phase_tints_match_original",
         "tool_and_skull_axe_chance_rules_preserve_original_boundaries",
-        "silverfish_emerald_drop_thresholds_match_original"
+        "silverfish_emerald_drop_thresholds_match_original",
+        "wand_tooltip_kinds_preserve_original_hints"
     };
 
     static {
@@ -93,6 +94,7 @@ public final class ItemGameTests {
         FUNCTIONS.register(TESTS[13], () -> ItemGameTests::morphPhaseTintsMatchOriginal);
         FUNCTIONS.register(TESTS[14], () -> ItemGameTests::toolAndSkullAxeChanceRulesPreserveOriginalBoundaries);
         FUNCTIONS.register(TESTS[15], () -> ItemGameTests::silverfishEmeraldDropThresholdsMatchOriginal);
+        FUNCTIONS.register(TESTS[16], () -> ItemGameTests::wandTooltipKindsPreserveOriginalHints);
     }
 
     private ItemGameTests() {}
@@ -378,6 +380,25 @@ public final class ItemGameTests {
         helper.assertFalse(FmEnchantmentEffects.silverfishEmeraldRoll(false, 2, 0), "other biomes exclude roll 2 at Looting 0");
         helper.assertTrue(FmEnchantmentEffects.silverfishEmeraldRoll(false, 4, 1), "other biomes add three per Looting level");
         helper.assertFalse(FmEnchantmentEffects.silverfishEmeraldRoll(false, 5, 1), "other biomes exclude the next roll");
+        helper.succeed();
+    }
+
+    private static void wandTooltipKindsPreserveOriginalHints(GameTestHelper helper) {
+        WandRod neutronium = WandRegistry.findRod("neutronium");
+        WandRod neutroniumStaff = WandRegistry.findRod("neutronium_staff");
+        WandRod profane = WandRegistry.findRod("profane");
+        helper.assertTrue(neutronium != null, "neutronium rod is registered");
+        helper.assertTrue(neutroniumStaff != null, "neutronium staff rod is registered");
+        helper.assertTrue(profane != null, "profane rod is registered");
+
+        helper.assertValueEqual(FmToolEvents.wandTooltipKind(Wands.create(WandRegistry.CAP_IRON, neutronium, false)),
+            "creativeonly", "neutronium wand exposes the creative-only tooltip");
+        helper.assertValueEqual(FmToolEvents.wandTooltipKind(Wands.create(WandRegistry.CAP_IRON, neutroniumStaff, false)),
+            "creativeonly", "neutronium staff exposes the creative-only tooltip");
+        helper.assertValueEqual(FmToolEvents.wandTooltipKind(Wands.create(WandRegistry.CAP_IRON, profane, false)),
+            "profane_contract", "profane wand exposes its contract tooltip");
+        helper.assertValueEqual(FmToolEvents.wandTooltipKind(new ItemStack(Items.STICK)), "",
+            "non-wand items do not receive wand-specific tooltips");
         helper.succeed();
     }
 
