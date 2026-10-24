@@ -63,6 +63,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import dev.visfox.forbiddenreforged.ForbiddenMagic;
 import dev.visfox.forbiddenreforged.FmAspects;
 import dev.visfox.forbiddenreforged.FmComponents;
+import dev.visfox.forbiddenreforged.FmDrops;
 import dev.visfox.forbiddenreforged.FmItems;
 import dev.visfox.forbiddenreforged.FmConfig;
 import dev.visfox.forbiddenreforged.FmResearchItem;
@@ -120,7 +121,8 @@ public final class ItemGameTests {
         "subcollar_places_on_another_player_and_stores_damage_vis",
         "riding_crop_effects_match_original",
         "heretic_trades_match_original_listing",
-        "witchwood_requires_ars_magica"
+        "witchwood_requires_ars_magica",
+        "wrath_shard_formula_matches_original"
     };
 
     static {
@@ -154,6 +156,7 @@ public final class ItemGameTests {
         FUNCTIONS.register(TESTS[27], () -> ItemGameTests::ridingCropEffectsMatchOriginal);
         FUNCTIONS.register(TESTS[28], () -> ItemGameTests::hereticTradesMatchOriginalListing);
         FUNCTIONS.register(TESTS[29], () -> ItemGameTests::witchwoodRequiresArsMagica);
+        FUNCTIONS.register(TESTS[30], () -> ItemGameTests::wrathShardFormulaMatchesOriginal);
     }
 
     private ItemGameTests() {}
@@ -799,6 +802,20 @@ public final class ItemGameTests {
             helper.assertValueEqual(trade.get("max_uses").getAsInt(), 1, name + " keeps the original single use");
             helper.assertValueEqual(trade.get("xp").getAsInt(), 0, name + " grants no trade xp");
         }
+        helper.succeed();
+    }
+
+    private static void wrathShardFormulaMatchesOriginal(GameTestHelper helper) {
+        helper.assertValueEqual(FmDrops.heldWrathDamage(new ItemStack(Items.WOODEN_SWORD)), 4, "wooden sword adds four wrath");
+        helper.assertValueEqual(FmDrops.heldWrathDamage(new ItemStack(Items.IRON_SWORD)), 6, "iron sword adds six wrath");
+        helper.assertValueEqual(FmDrops.heldWrathDamage(new ItemStack(Items.DIAMOND_SWORD)), 7, "diamond sword adds seven wrath");
+        helper.assertValueEqual(FmDrops.heldWrathDamage(new ItemStack(Items.IRON_PICKAXE)), 0, "tools add no wrath damage");
+        helper.assertValueEqual(FmDrops.heldWrathDamage(new ItemStack(FmItems.DIABOLIST_FORK.get())), 6, "the fork counts as its sword damage");
+        helper.assertValueEqual(FmDrops.heldWrathDamage(new ItemStack(FmItems.SKULL_AXE.get())), 7, "the skull axe counts as elemental sword damage");
+        helper.assertValueEqual(FmDrops.heldWrathDamage(new ItemStack(FmItems.MORPH_SWORD.get())), 7, "the morph sword counts as elemental sword damage");
+        helper.assertValueEqual(FmDrops.heldWrathDamage(new ItemStack(FmItems.RIDING_CROP.get())), 4, "the riding crop counts as wooden sword damage");
+        helper.assertTrue(FmDrops.wrathEligible(helper.spawn(EntityTypes.ZOMBIE, new BlockPos(2, 4, 2))), "hostile mobs are eligible");
+        helper.assertFalse(FmDrops.wrathEligible(helper.spawn(EntityTypes.PIG, new BlockPos(4, 4, 4))), "passive animals are not eligible");
         helper.succeed();
     }
 

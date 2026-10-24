@@ -5,6 +5,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import thaumcraft.aspect.AddonAspects;
 import thaumcraft.aspect.Aspect;
+import thaumcraft.research.Warp;
 
 @EventBusSubscriber(modid = ForbiddenMagic.MODID)
 public final class FmSetup {
@@ -20,6 +21,8 @@ public final class FmSetup {
             FmWandTriggers.register();
             FmRecipes.register();
             FmResearch.register();
+            Warp.registerItem(ForbiddenMagic.id("wrath_cage"), 5);
+            Warp.registerItem(ForbiddenMagic.id("taint_sapling"), 1);
             FmTinkerer.register();
         });
     }

@@ -70,7 +70,7 @@ public final class FmResearch {
             .setConcealed()
             .setParents("INFUSION", "NETHERSHARDS", "THAUMIUM")
             .registerResearchItem();
-        new FmResearchItem("MORPHTOOLS", "FORBIDDEN", new AspectList().add(Aspect.TOOL, 2).add(FmAspects.ENVY, 3).add(Aspect.EXCHANGE, 2), -9, -3, 3, TcStack.of("forbiddenmagic:morph_pickaxe", 1))
+        new FmResearchItem("MORPHTOOLS", "FORBIDDEN", new AspectList().add(Aspect.TOOL, 2).add(FmAspects.ENVY, 3).add(Aspect.EXCHANGE, 2), -9, -3, 4, TcStack.of("forbiddenmagic:morph_pickaxe", 1))
             .setPages(
                 ResearchPage.text("forbiddenmagic.research_page.MORPHTOOLS.1"),
                 ResearchPage.infusion("MORPHPICK"),
@@ -95,7 +95,7 @@ public final class FmResearch {
                 .setParents("MORPHTOOLS", "ELEMENTALSHOVEL")
                 .setConcealed()
                 .registerResearchItem();
-            new FmResearchItem("VOIDTOUCHED", "FORBIDDEN", new AspectList().add(Aspect.ELDRITCH, 16).add(Aspect.TOOL, 10).add(Aspect.CRAFT, 8).add(FmAspects.ENVY, 32), -8, -1, 3, ForbiddenMagic.id("textures/misc/voidtouched.png"))
+            new FmResearchItem("VOIDTOUCHED", "FORBIDDEN", new AspectList().add(Aspect.ELDRITCH, 16).add(Aspect.TOOL, 10).add(Aspect.CRAFT, 8).add(FmAspects.ENVY, 32), -8, -1, 4, ForbiddenMagic.id("textures/misc/voidtouched.png"))
                 .setPages(ResearchPage.text("forbiddenmagic.research_page.VOIDTOUCHED.1"), ResearchPage.infusionEnchantment("VOIDTOUCHED"))
                 .setParents("MORPHTOOLS", "VOIDMETAL")
                 .setConcealed()
@@ -108,7 +108,7 @@ public final class FmResearch {
             .setAspectTriggers(FmAspects.GLUTTONY)
             .setConcealed()
             .registerResearchItem();
-        new FmResearchItem("WRATHCAGE", "FORBIDDEN", new AspectList().add(FmAspects.WRATH, 5).add(Aspect.MECHANISM, 3).add(Aspect.BEAST, 2), -9, -9, 3, TcStack.of("forbiddenmagic:wrath_cage", 1))
+        new FmResearchItem("WRATHCAGE", "FORBIDDEN", new AspectList().add(FmAspects.WRATH, 5).add(Aspect.MECHANISM, 3).add(Aspect.BEAST, 2), -6, -9, 4, TcStack.of("forbiddenmagic:wrath_cage", 1))
             .setPages(
                 ResearchPage.text("forbiddenmagic.research_page.WRATHCAGE.1"),
                 ResearchPage.infusion("WRATHCAGE"),
@@ -125,6 +125,7 @@ public final class FmResearch {
             .setPages(ResearchPage.text("forbiddenmagic.research_page.TAINTTREE.1"), ResearchPage.crucible("TAINTTREE"))
             .setParents("THAUMIUM", "INFUSION", "ETHEREALBLOOM")
             .setConcealed()
+            .setWarp(1)
             .registerResearchItem();
         new FmResearchItem("TAINTSTONE", "FORBIDDEN", new AspectList().add(Aspect.EARTH, 4).add(Aspect.TAINT, 6).add(Aspect.ORDER, 2), -10, 3, 2, TcStack.of("forbiddenmagic:taint_stone_brick", 1))
             .setPages(
@@ -140,7 +141,7 @@ public final class FmResearch {
             .setAspectTriggers(Aspect.SENSES)
             .registerResearchItem();
         if (FmConfig.enchantmentsEnabled()) {
-            new FmResearchItem("WRATH", "FORBIDDEN", new AspectList().add(FmAspects.WRATH, 16).add(Aspect.WEAPON, 20).add(Aspect.MAGIC, 10), -6, -3, 3, ForbiddenMagic.id("textures/misc/wrath.png"))
+            new FmResearchItem("WRATH", "FORBIDDEN", new AspectList().add(FmAspects.WRATH, 16).add(Aspect.WEAPON, 20).add(Aspect.MAGIC, 10), -6, -3, 4, ForbiddenMagic.id("textures/misc/wrath.png"))
                 .setPages(ResearchPage.text("forbiddenmagic.research_page.WRATH.1"), ResearchPage.infusionEnchantment("WRATH"))
                 .setParents("NETHERSHARDS", "INFUSIONENCHANTMENT")
                 .setConcealed()
@@ -181,10 +182,11 @@ public final class FmResearch {
             .setPages(ResearchPage.text("forbiddenmagic.research_page.RINGFOOD.1"), ResearchPage.arcane("RINGFOOD"))
             .setParents("NETHERSHARDS")
             .registerResearchItem();
-        new FmResearchItem("ROD_tainted", "FORBIDDEN", new AspectList().add(Aspect.TAINT, 4).add(Aspect.MAGIC, 2), -10, -4, 1, TcStack.of(FmItems.TAINTED_ROD.getId().toString(), 1))
+        new FmResearchItem("ROD_tainted", "FORBIDDEN", new AspectList().add(Aspect.TAINT, 4).add(Aspect.MAGIC, 2), -8, 3, 3, TcStack.of(FmItems.TAINTED_ROD.getId().toString(), 1))
             .setPages(ResearchPage.text("forbiddenmagic.research_page.ROD_tainted.1"))
             .setParents("NETHERSHARDS")
             .setHidden()
+            .setWarp(2)
             .registerResearchItem();
         new FmResearchItem("ROD_infernal", "FORBIDDEN", new AspectList().add(FmAspects.NETHER, 4).add(Aspect.FIRE, 3).add(Aspect.TOOL, 1), -11, -4, 3, TcStack.of(FmItems.INFERNAL_ROD.getId().toString(), 1))
             .setPages(
@@ -193,6 +195,7 @@ public final class FmResearch {
             )
             .setParents("ROD_silverwood", "INFUSION", "NETHERSHARDS")
             .setConcealed()
+            .setWarp(2)
             .registerResearchItem();
         if (!FmConfig.lustDisabled()) {
             new FmResearchItem("SUBCOLLAR", "FORBIDDEN", new AspectList().add(Aspect.AURA, 3).add(FmAspects.LUST, 8).add(Aspect.MAGIC, 3).add(Aspect.TRAP, 6).add(Aspect.FLESH, 4), -11, -5, 2, TcStack.of("forbiddenmagic:sub_collar", 1))
@@ -206,10 +209,11 @@ public final class FmResearch {
                 .registerResearchItem();
         }
         if (ModList.get().isLoaded("arsmagica2")) {
-            new FmResearchItem("ROD_witchwood", "FORBIDDEN", new AspectList().add(Aspect.TREE, 3).add(Aspect.MAGIC, 2), -10, -5, 2, TcStack.of(FmItems.WITCHWOOD_ROD.getId().toString(), 1))
+            new FmResearchItem("ROD_witchwood", "FORBIDDEN", new AspectList().add(Aspect.TREE, 3).add(Aspect.MAGIC, 2), -3, 1, 3, TcStack.of(FmItems.WITCHWOOD_ROD.getId().toString(), 1))
                 .setPages(ResearchPage.text("forbiddenmagic.research_page.ROD_witchwood.1"))
                 .setParents("NETHERSHARDS")
                 .setHidden()
+                .setWarp(2)
                 .registerResearchItem();
         }
         new FmResearchItem("ROD_profane", "FORBIDDEN", new AspectList(), -9, -8, 0, TcStack.of(FmItems.PROFANE_ROD.getId().toString(), 1))
@@ -219,7 +223,7 @@ public final class FmResearch {
             .setStub()
             .registerResearchItem();
         if (ModList.get().isLoaded("arsmagica2")) {
-            new FmResearchItem("ROD_witchwood_staff", "FORBIDDEN", new AspectList().add(Aspect.TREE, 4).add(Aspect.MAGIC, 3), -10, -6, 3, TcStack.of(FmItems.WITCHWOOD_STAFF_ROD.getId().toString(), 1))
+            new FmResearchItem("ROD_witchwood_staff", "FORBIDDEN", new AspectList().add(Aspect.TREE, 4).add(Aspect.MAGIC, 3), -3, -1, 2, TcStack.of(FmItems.WITCHWOOD_STAFF_ROD.getId().toString(), 1))
                 .setPages(ResearchPage.text("forbiddenmagic.research_page.ROD_witchwood_staff.1"))
                 .setParents("ROD_witchwood")
                 .setHidden()
@@ -247,7 +251,7 @@ public final class FmResearch {
             .setParents("PRIMPEARL")
             .setConcealed()
             .registerResearchItem();
-        new FmResearchItem("TAINTSHOVEL", "FORBIDDEN", new AspectList().add(Aspect.TOOL, 2).add(Aspect.TAINT, 4).add(Aspect.HEAL, 3), -10, 2, 2, TcStack.of(FmItems.TAINT_SHOVEL.getId().toString(), 1))
+        new FmResearchItem("TAINTSHOVEL", "FORBIDDEN", new AspectList().add(Aspect.TOOL, 2).add(Aspect.TAINT, 4).add(Aspect.HEAL, 3), -8, 1, 2, TcStack.of(FmItems.TAINT_SHOVEL.getId().toString(), 1))
             .setPages(
                 ResearchPage.text("forbiddenmagic.research_page.TAINTSHOVEL.1"),
                 ResearchPage.text("forbiddenmagic.research_page.TAINTSHOVEL.2"),
