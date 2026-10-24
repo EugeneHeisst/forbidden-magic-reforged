@@ -1,9 +1,6 @@
 package dev.visfox.forbiddenreforged;
 
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import thaumcraft.item.gear.RunicArmor;
@@ -27,9 +24,8 @@ public class RingNutritionItem extends Item implements Bauble, RunicArmor {
 
     @Override
     public void onWornTick(ItemStack stack, LivingEntity wearer) {
-        if (wearer instanceof Player player && wearer.level().getGameTime() % 40 == 0) {
-            player.addEffect(new MobEffectInstance(MobEffects.SATURATION, 40, 0, true, false));
-        }
+        // The original ring grants +2 food and +2 saturation when food is consumed;
+        // that behavior is handled by FmToolEvents.onFoodFinished.
     }
 
     @Override
