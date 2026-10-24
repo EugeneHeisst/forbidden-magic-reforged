@@ -203,12 +203,14 @@ public final class FmResearch {
             .setParents("ROD_witchwood")
             .setHidden()
             .registerResearchItem();
-        new ResearchItem("TRANSEMERALD", "FORBIDDEN", new AspectList().add(Aspect.CRYSTAL, 2).add(Aspect.EXCHANGE, 5).add(Aspect.GREED, 4), 0, -6, 3, TcStack.of(FmItems.EMERALD_FRAGMENT.getId().toString(), 1))
-            .setPages(ResearchPage.text("forbiddenmagic.research_page.TRANSEMERALD.1"))
-            .setSecondary()
-            .setConcealed()
-            .setParents("TRANSGOLD")
-            .registerResearchItem();
+        if (FmConfig.emeraldTrans()) {
+            new ResearchItem("TRANSEMERALD", "FORBIDDEN", new AspectList().add(Aspect.CRYSTAL, 2).add(Aspect.EXCHANGE, 5).add(Aspect.GREED, 4), 0, -6, 3, TcStack.of(FmItems.EMERALD_FRAGMENT.getId().toString(), 1))
+                .setPages(ResearchPage.text("forbiddenmagic.research_page.TRANSEMERALD.1"), ResearchPage.crucible("TRANSEMERALD"))
+                .setSecondary()
+                .setConcealed()
+                .setParents("TRANSGOLD")
+                .registerResearchItem();
+        }
         new ResearchItem("CRYSTALWELL", "FORBIDDEN", new AspectList().add(Aspect.MIND, 3).add(Aspect.CRYSTAL, 2).add(Aspect.MAGIC, 1), -2, -8, 1, TcStack.of(FmItems.CRYSTALWELL.getId().toString(), 1))
             .setPages(ResearchPage.text("forbiddenmagic.research_page.CRYSTALWELL.1"), ResearchPage.arcane("CRYSTALWELL"))
             .setParents("RESEARCH")
