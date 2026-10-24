@@ -3,6 +3,7 @@ package dev.visfox.forbiddenreforged.test;
 import dev.visfox.forbiddenreforged.ForbiddenMagic;
 import dev.visfox.forbiddenreforged.FmAspects;
 import dev.visfox.forbiddenreforged.FmConfig;
+import dev.visfox.forbiddenreforged.FmItems;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -10,6 +11,7 @@ import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.fml.ModList;
 import thaumcraft.aspect.Aspect;
 import thaumcraft.aspect.AspectList;
+import thaumcraft.aspect.AspectRegistry;
 
 @GameTestHolder(ForbiddenMagic.MODID)
 public final class FmGameTests {
@@ -30,6 +32,18 @@ public final class FmGameTests {
             "black dye must be registered");
         helper.assertTrue(BuiltInRegistries.ITEM.get(ForbiddenMagic.id("lust_shard")) != net.minecraft.world.item.Items.AIR,
             "lust shard must be registered");
+        helper.succeed();
+    }
+
+
+    @GameTest(template = "empty", templateNamespace = "minecraft")
+    public static void itemAspectTagsExist(GameTestHelper helper) {
+        AspectList fruit = AspectRegistry.active().getObjectTags(FmItems.TAINT_FRUIT.get());
+        AspectList shard = AspectRegistry.active().getObjectTags(FmItems.DEADLY_SHARDS.get("wrath").get());
+        helper.assertTrue(fruit != null && fruit.getAmount(Aspect.TAINT) >= 2,
+            "taint fruit must carry taint aspects");
+        helper.assertTrue(shard != null && shard.getAmount(FmAspects.WRATH) >= 2,
+            "wrath shard must carry wrath aspects");
         helper.succeed();
     }
 
