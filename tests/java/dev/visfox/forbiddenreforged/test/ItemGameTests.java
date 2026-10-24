@@ -39,6 +39,8 @@ import dev.visfox.forbiddenreforged.ForbiddenMagic;
 import dev.visfox.forbiddenreforged.FmAspects;
 import dev.visfox.forbiddenreforged.FmItems;
 import dev.visfox.forbiddenreforged.MorphState;
+import dev.visfox.forbiddenreforged.FmEnchantmentEffects;
+import dev.visfox.forbiddenreforged.FmToolEvents;
 import dev.visfox.forbiddenreforged.RidingCropItem;
 import thaumcraft.aspect.Aspect;
 import thaumcraft.aspect.AspectList;
@@ -69,7 +71,8 @@ public final class ItemGameTests {
         "diabolist_fork_switches_to_the_spork_model",
         "lust_shard_switches_to_the_despair_model",
         "creative_wand_family_matches_original",
-        "morph_phase_tints_match_original"
+        "morph_phase_tints_match_original",
+        "tool_and_skull_axe_chance_rules_preserve_original_boundaries"
     };
 
     static {
@@ -87,6 +90,7 @@ public final class ItemGameTests {
         FUNCTIONS.register(TESTS[11], () -> ItemGameTests::lustShardSwitchesToTheDespairModel);
         FUNCTIONS.register(TESTS[12], () -> ItemGameTests::creativeWandFamilyMatchesOriginal);
         FUNCTIONS.register(TESTS[13], () -> ItemGameTests::morphPhaseTintsMatchOriginal);
+        FUNCTIONS.register(TESTS[14], () -> ItemGameTests::toolAndSkullAxeChanceRulesPreserveOriginalBoundaries);
     }
 
     private ItemGameTests() {}
@@ -328,6 +332,37 @@ public final class ItemGameTests {
             helper.assertValueEqual(tints.get(0).getAsJsonObject().get("value").getAsInt(), 16777215, name + " base layer remains untinted");
             helper.assertValueEqual(tints.get(1).getAsJsonObject().get("type").getAsString(), "forbiddenmagic:morph_phase", name + " overlay tint uses the phase source");
         }
+        helper.succeed();
+    }
+
+    private static void toolAndSkullAxeChanceRulesPreserveOriginalBoundaries(GameTestHelper helper) {
+        helper.assertValueEqual(FmToolEvents.taintPickaxeSpeed(0.0F), 0.0F, "zero-hardness blocks remain instant");
+        helper.assertValueEqual(FmToolEvents.taintPickaxeSpeed(2.0F), 0.1F, "hardness below five uses the original slow speed");
+        helper.assertValueEqual(FmToolEvents.taintPickaxeSpeed(10.0F), 5.0F, "hardness below twenty is halved");
+        helper.assertValueEqual(FmToolEvents.taintPickaxeSpeed(20.0F), 25.0F, "hardness twenty and above adds five");
+
+        helper.assertTrue(FmToolEvents.taintShardRoll(1, 0, false), "taint shard roll succeeds at base threshold");
+        helper.assertFalse(FmToolEvents.taintShardRoll(2, 0, false), "taint shard roll fails above base threshold");
+        helper.assertTrue(FmToolEvents.taintShardRoll(7, 0, true), "silk touch adds six to taint shard threshold");
+        helper.assertTrue(FmToolEvents.taintShardRoll(3, 1, false), "Fortune adds two per level to taint shard threshold");
+        helper.assertFalse(FmToolEvents.taintShardRoll(4, 1, false), "taint shard threshold excludes the next roll");
+
+        helper.assertTrue(FmEnchantmentEffects.skullAxeRoll(3, 0, 3, 1), "skeleton threshold includes roll three");
+        helper.assertFalse(FmEnchantmentEffects.skullAxeRoll(4, 0, 3, 1), "skeleton threshold excludes roll four");
+        helper.assertTrue(FmEnchantmentEffects.skullAxeRoll(4, 1, 3, 1), "Looting adds one to skeleton threshold");
+        helper.assertTrue(FmEnchantmentEffects.skullAxeRoll(2, 0, 2, 2), "zombie threshold includes roll two");
+        helper.assertFalse(FmEnchantmentEffects.skullAxeRoll(3, 0, 2, 2), "zombie threshold excludes roll three");
+        helper.assertTrue(FmEnchantmentEffects.skullAxeRoll(4, 1, 2, 2), "Looting II raises zombie threshold by four");
+        helper.assertTrue(FmEnchantmentEffects.skullAxeRoll(1, 0, 1, 1), "player head threshold includes roll one");
+        helper.assertFalse(FmEnchantmentEffects.skullAxeRoll(3, 1, 1, 1), "player head threshold excludes roll three at Looting I");
+
+        WandRod infernalRod = WandRegistry.findRod("infernal");
+        helper.assertTrue(infernalRod != null, "infernal rod must be registered");
+        ItemStack infernalWand = Wands.create(WandRegistry.CAP_IRON, infernalRod, false);
+        helper.assertFalse(FmToolEvents.cancelsInfernalDamage(infernalWand, true),
+            "infernal wand must not cancel incoming fire or wither damage");
+        helper.assertFalse(FmToolEvents.cancelsInfernalDamage(infernalWand, false),
+            "infernal wand must not cancel unrelated incoming damage");
         helper.succeed();
     }
 

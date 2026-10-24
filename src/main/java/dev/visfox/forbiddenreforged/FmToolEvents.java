@@ -1,0 +1,113 @@
+package dev.visfox.forbiddenreforged;
+
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.common.util.FakePlayer;
+import net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.level.BlockDropsEvent;
+import thaumcraft.platform.Baubles;
+import thaumcraft.registry.ModBlocks;
+import thaumcraft.taint.TaintBlock;
+import thaumcraft.taint.TaintFibresBlock;
+
+public final class FmToolEvents {
+    private FmToolEvents() {
+    }
+
+    public static void register() {
+        NeoForge.EVENT_BUS.addListener(FmToolEvents::onBreakSpeed);
+        NeoForge.EVENT_BUS.addListener(FmToolEvents::onBlockDrops);
+        NeoForge.EVENT_BUS.addListener(FmToolEvents::onFoodFinished);
+    }
+
+    public static float taintPickaxeSpeed(float hardness) {
+        if (hardness == 0.0F) {
+            return 0.0F;
+        }
+        if (hardness < 5.0F) {
+            return 0.1F;
+        }
+        if (hardness < 20.0F) {
+            return hardness / 2.0F;
+        }
+        return 5.0F + hardness;
+    }
+
+    public static boolean taintShardRoll(int roll, int fortune, boolean silkTouch) {
+        int chance = 1 + 2 * fortune + (silkTouch ? 6 : 0);
+        return roll <= chance;
+    }
+
+    private static void onBreakSpeed(PlayerEvent.BreakSpeed event) {
+        Player player = event.getEntity();
+        if (!player.getMainHandItem().is(FmItems.TAINT_PICKAXE.get())) {
+            return;
+        }
+        BlockPos pos = event.getPosition().orElse(BlockPos.ZERO);
+        float hardness = event.getState().getDestroySpeed(player.level(), pos);
+        event.setNewSpeed(taintPickaxeSpeed(hardness));
+    }
+
+    private static void onBlockDrops(BlockDropsEvent event) {
+        Entity breaker = event.getBreaker();
+        if (!(breaker instanceof ServerPlayer player) || breaker instanceof FakePlayer) {
+            return;
+        }
+        ItemStack tool = event.getTool();
+        BlockState state = event.getState();
+        if (!tool.is(FmItems.TAINT_SHOVEL.get())
+            || !event.getDrops().isEmpty()
+            || !isTaintMaterial(state)
+            || state.is(FmBlocks.TAINT_LEAVES.get())) {
+            return;
+        }
+
+        int fortune = enchantmentLevel(player, tool, Enchantments.FORTUNE);
+        boolean silkTouch = enchantmentLevel(player, tool, Enchantments.SILK_TOUCH) > 0;
+        if (!taintShardRoll(event.getLevel().getRandom().nextInt(31), fortune, silkTouch)) {
+            return;
+        }
+        BlockPos pos = event.getPos();
+        ItemEntity drop = new ItemEntity(player.level(), pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
+            new ItemStack(FmItems.DEADLY_SHARDS.get("taint").get()));
+        drop.setPickUpDelay(10);
+        event.getDrops().add(drop);
+    }
+
+    public static boolean cancelsInfernalDamage(ItemStack held, boolean fireOrWither) {
+        return false;
+    }
+
+    private static void onFoodFinished(LivingEntityUseItemEvent.Finish event) {
+        if (!(event.getEntity() instanceof Player player) || player.level().isClientSide()
+            || event.getItem().get(net.minecraft.core.component.DataComponents.FOOD) == null
+            || !Baubles.isEquipped(player, FmItems.RING_NUTRITION.get())) {
+            return;
+        }
+        player.getFoodData().eat(2, 2.0F);
+    }
+
+    private static boolean isTaintMaterial(BlockState state) {
+        return state.getBlock() instanceof TaintBlock
+            || state.getBlock() instanceof TaintFibresBlock
+            || state.is(ModBlocks.FLUX_GOO.get())
+            || state.is(ModBlocks.FLUX_GAS.get())
+            || state.is(FmBlocks.TAINT_LOG.get())
+            || state.is(FmBlocks.TAINT_PLANKS.get())
+            || state.is(FmBlocks.TAINT_STONE_SMOOTH.get())
+            || state.is(FmBlocks.TAINT_STONE_BRICK.get());
+    }
+
+    private static int enchantmentLevel(ServerPlayer player, ItemStack stack, net.minecraft.resources.ResourceKey<net.minecraft.world.item.enchantment.Enchantment> key) {
+        return stack.getEnchantmentLevel(player.level().registryAccess().lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(key));
+    }
+}

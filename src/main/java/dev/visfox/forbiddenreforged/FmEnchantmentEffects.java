@@ -2,20 +2,25 @@ package dev.visfox.forbiddenreforged;
 
 import java.util.List;
 import java.util.Set;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.resources.Identifier;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.npc.villager.Villager;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.util.FakePlayer;
@@ -112,8 +117,12 @@ public final class FmEnchantmentEffects {
         }
     }
 
+    public static boolean skullAxeRoll(int roll, int looting, int baseChance, int lootingMultiplier) {
+        return roll <= baseChance + looting * lootingMultiplier;
+    }
+
     private static void onLivingDrops(LivingDropsEvent event) {
-        Entity attacker = event.getSource().getDirectEntity();
+        Entity attacker = event.getSource().getEntity();
         if (!(attacker instanceof ServerPlayer player) || attacker instanceof FakePlayer || !event.isRecentlyHit()) {
             return;
         }
@@ -121,6 +130,9 @@ public final class FmEnchantmentEffects {
             greedyDrops(event, player);
         }
         ItemStack weapon = player.getMainHandItem();
+        if (weapon.is(FmItems.SKULL_AXE.get())) {
+            skullAxeDrops(event, player, weapon);
+        }
         if (!weapon.is(FmItems.DIABOLIST_FORK.get())) {
             return;
         }
@@ -133,6 +145,32 @@ public final class FmEnchantmentEffects {
                     break;
                 }
             }
+        }
+    }
+
+    private static void skullAxeDrops(LivingDropsEvent event, ServerPlayer player, ItemStack weapon) {
+        LivingEntity victim = event.getEntity();
+        Identifier type = BuiltInRegistries.ENTITY_TYPE.getKey(victim.getType());
+        int looting = FmEnchantments.level(player.level().registryAccess(), weapon, Enchantments.LOOTING);
+        if (type.equals(Identifier.withDefaultNamespace("skeleton"))
+            || type.equals(Identifier.withDefaultNamespace("wither_skeleton"))) {
+            if (skullAxeRoll(victim.getRandom().nextInt(26), looting, 3, 1)) {
+                addDrop(event, new ItemStack(type.equals(Identifier.withDefaultNamespace("wither_skeleton"))
+                    ? Items.WITHER_SKELETON_SKULL : Items.SKELETON_SKULL));
+            }
+        } else if (type.equals(Identifier.withDefaultNamespace("zombie"))) {
+            if (skullAxeRoll(victim.getRandom().nextInt(26), looting, 2, 2)) {
+                addDrop(event, new ItemStack(Items.ZOMBIE_HEAD));
+            }
+        } else if (type.equals(Identifier.withDefaultNamespace("creeper"))) {
+            if (skullAxeRoll(victim.getRandom().nextInt(26), looting, 2, 2)) {
+                addDrop(event, new ItemStack(Items.CREEPER_HEAD));
+            }
+        } else if (victim instanceof Player target
+            && skullAxeRoll(victim.getRandom().nextInt(11), looting, 1, 1)) {
+            ItemStack head = new ItemStack(Items.PLAYER_HEAD);
+            head.set(DataComponents.PROFILE, ResolvableProfile.createResolved(target.getGameProfile()));
+            addDrop(event, head);
         }
     }
 
@@ -174,8 +212,8 @@ public final class FmEnchantmentEffects {
         if (!FmEnchantments.enabled()) {
             return;
         }
-        Entity direct = event.getSource().getDirectEntity();
-        if (!(direct instanceof ServerPlayer player) || direct instanceof FakePlayer) {
+        Entity attacker = event.getSource().getEntity();
+        if (!(attacker instanceof ServerPlayer player) || attacker instanceof FakePlayer) {
             return;
         }
         int level = FmEnchantments.level(player.level().registryAccess(), player.getMainHandItem(), FmEnchantments.WRATH);
