@@ -60,6 +60,8 @@ public final class FmGameTests {
             "taint sapling must be registered");
         helper.assertTrue(BuiltInRegistries.BLOCK.get(ForbiddenMagic.id("umbral_rose")) != Blocks.AIR,
             "umbral rose must be registered");
+        helper.assertTrue(BuiltInRegistries.BLOCK.get(ForbiddenMagic.id("arcane_cake")) != Blocks.AIR,
+            "arcane cake must be registered");
         helper.succeed();
     }
 

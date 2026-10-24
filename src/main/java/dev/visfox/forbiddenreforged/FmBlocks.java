@@ -38,6 +38,9 @@ public final class FmBlocks {
     public static final DeferredBlock<UmbralRoseBlock> UMBRAL_ROSE =
         register("umbral_rose", UmbralRoseBlock::new, properties -> properties.mapColor(MapColor.COLOR_BLACK)
             .instabreak().sound(SoundType.GRASS).randomTicks().noOcclusion());
+    public static final DeferredBlock<ArcaneCakeBlock> ARCANE_CAKE =
+        register("arcane_cake", ArcaneCakeBlock::new, properties -> properties.mapColor(MapColor.COLOR_BROWN)
+            .strength(0.5F).sound(SoundType.WOOL).randomTicks().noOcclusion().noLootTable());
     public static final DeferredBlock<UmbralRoseBushBlock> UMBRAL_ROSE_BUSH =
         register("umbral_rose_bush", UmbralRoseBushBlock::new, properties -> properties.mapColor(MapColor.COLOR_BLACK)
             .instabreak().sound(SoundType.GRASS).randomTicks().noOcclusion());
@@ -74,5 +77,6 @@ public final class FmBlocks {
         FmItems.ITEMS.registerSimpleBlockItem(TAINT_SAPLING);
         FmItems.ITEMS.registerSimpleBlockItem(UMBRAL_ROSE);
         FmItems.ITEMS.registerSimpleBlockItem(UMBRAL_ROSE_BUSH);
+        FmItems.ITEMS.registerSimpleBlockItem(ARCANE_CAKE);
     }
 }
