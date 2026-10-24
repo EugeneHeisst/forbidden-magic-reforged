@@ -3,6 +3,7 @@ package dev.visfox.forbiddenreforged;
 import java.util.List;
 import java.util.Set;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.resources.Identifier;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerPlayer;
@@ -149,18 +150,19 @@ public final class FmEnchantmentEffects {
 
     private static void skullAxeDrops(LivingDropsEvent event, ServerPlayer player, ItemStack weapon) {
         LivingEntity victim = event.getEntity();
-        EntityType<?> type = victim.getType();
+        Identifier type = BuiltInRegistries.ENTITY_TYPE.getKey(victim.getType());
         int looting = FmEnchantments.level(player.level().registryAccess(), weapon, Enchantments.LOOTING);
-        if (type == EntityType.SKELETON || type == EntityType.WITHER_SKELETON) {
+        if (type.equals(Identifier.withDefaultNamespace("skeleton"))
+            || type.equals(Identifier.withDefaultNamespace("wither_skeleton"))) {
             if (skullAxeRoll(victim.getRandom().nextInt(26), looting, 3, 1)) {
-                addDrop(event, new ItemStack(type == EntityType.WITHER_SKELETON
+                addDrop(event, new ItemStack(type.equals(Identifier.withDefaultNamespace("wither_skeleton"))
                     ? Items.WITHER_SKELETON_SKULL : Items.SKELETON_SKULL));
             }
-        } else if (type == EntityType.ZOMBIE) {
+        } else if (type.equals(Identifier.withDefaultNamespace("zombie"))) {
             if (skullAxeRoll(victim.getRandom().nextInt(26), looting, 2, 2)) {
                 addDrop(event, new ItemStack(Items.ZOMBIE_HEAD));
             }
-        } else if (type == EntityType.CREEPER) {
+        } else if (type.equals(Identifier.withDefaultNamespace("creeper"))) {
             if (skullAxeRoll(victim.getRandom().nextInt(26), looting, 2, 2)) {
                 addDrop(event, new ItemStack(Items.CREEPER_HEAD));
             }
