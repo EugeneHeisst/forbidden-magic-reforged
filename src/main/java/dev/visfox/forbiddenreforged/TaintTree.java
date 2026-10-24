@@ -11,7 +11,7 @@ public final class TaintTree {
 
     public static boolean grow(ServerLevel level, BlockPos pos, RandomSource random) {
         int height = 4 + random.nextInt(3);
-        if (pos.getY() + height + 2 >= level.getMaxY()) {
+        if (pos.getY() + height + 2 >= level.getMaxBuildHeight()) {
             return false;
         }
         for (int y = 1; y <= height; y++) {

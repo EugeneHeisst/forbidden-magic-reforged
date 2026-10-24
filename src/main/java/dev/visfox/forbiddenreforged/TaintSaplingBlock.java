@@ -1,5 +1,6 @@
 package dev.visfox.forbiddenreforged;
 
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
@@ -11,8 +12,14 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 
 public final class TaintSaplingBlock extends BushBlock implements BonemealableBlock {
+    public static final MapCodec<TaintSaplingBlock> CODEC = simpleCodec(TaintSaplingBlock::new);
     public TaintSaplingBlock(BlockBehaviour.Properties properties) {
         super(properties);
+    }
+
+    @Override
+    public MapCodec<? extends TaintSaplingBlock> codec() {
+        return CODEC;
     }
 
     @Override

@@ -34,13 +34,13 @@ public final class FmBlocks {
             .isValidSpawn((state, level, pos, type) -> false));
     public static final DeferredBlock<TaintSaplingBlock> TAINT_SAPLING =
         register("taint_sapling", TaintSaplingBlock::new, properties -> properties.mapColor(MapColor.COLOR_PURPLE)
-            .instabreak().sound(SoundType.GRASS).randomTicks().noCollision());
+            .instabreak().sound(SoundType.GRASS).randomTicks().noOcclusion());
     public static final DeferredBlock<UmbralRoseBlock> UMBRAL_ROSE =
         register("umbral_rose", UmbralRoseBlock::new, properties -> properties.mapColor(MapColor.COLOR_BLACK)
-            .instabreak().sound(SoundType.GRASS).randomTicks().noCollision());
+            .instabreak().sound(SoundType.GRASS).randomTicks().noOcclusion());
     public static final DeferredBlock<UmbralRoseBushBlock> UMBRAL_ROSE_BUSH =
         register("umbral_rose_bush", UmbralRoseBushBlock::new, properties -> properties.mapColor(MapColor.COLOR_BLACK)
-            .instabreak().sound(SoundType.GRASS).randomTicks().noCollision());
+            .instabreak().sound(SoundType.GRASS).randomTicks().noOcclusion());
 
     private FmBlocks() {
     }
