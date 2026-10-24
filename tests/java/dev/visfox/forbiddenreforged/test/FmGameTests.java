@@ -16,6 +16,7 @@ import thaumcraft.aspect.AspectList;
 import thaumcraft.aspect.AspectRegistry;
 import thaumcraft.crafting.TcRecipes;
 import thaumcraft.research.ResearchCategories;
+import thaumcraft.wand.WandRegistry;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.neoforged.neoforge.event.furnace.FurnaceFuelBurnTimeEvent;
@@ -64,6 +65,16 @@ public final class FmGameTests {
             "umbral rose must be registered");
         helper.assertTrue(BuiltInRegistries.BLOCK.get(ForbiddenMagic.id("arcane_cake")) != Blocks.AIR,
             "arcane cake must be registered");
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty", templateNamespace = "minecraft")
+    public static void forbiddenWandRodsAreRegistered(GameTestHelper helper) {
+        helper.assertTrue(WandRegistry.findRod("tainted") != null, "tainted rod must be registered");
+        helper.assertTrue(WandRegistry.findRod("infernal") != null, "infernal rod must be registered");
+        helper.assertTrue(WandRegistry.findRod("profane") != null, "profane rod must be registered");
+        helper.assertTrue(WandRegistry.findRod("witchwood") != null, "witchwood rod must be registered");
+        helper.assertTrue(WandRegistry.findRod("witchwood_staff") != null, "witchwood staff rod must be registered");
         helper.succeed();
     }
 

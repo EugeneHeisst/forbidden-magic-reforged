@@ -15,6 +15,7 @@ public final class FmSetup {
             FmAspects.init();
             FmRecipes.register();
             FmResearch.register();
+            FmWands.register();
         });
     }
 }

@@ -85,5 +85,32 @@ public final class FmResearch {
             .setAspectTriggers(FmAspects.GLUTTONY)
             .setConcealed()
             .registerResearchItem();
+
+        new FmResearchItem(
+            "ROD_tainted", "FORBIDDEN",
+            new AspectList().add(Aspect.TAINT, 4).add(Aspect.MAGIC, 2),
+            -10, -4, 1, TcStack.of("forbiddenmagic:tainted_rod")
+        )
+            .setPages(
+                ResearchPage.text("forbiddenmagic.research_page.ROD_tainted.1"),
+                ResearchPage.infusion("FM_ROD_TAINTED")
+            )
+            .setParents("NETHERSHARDS")
+            .setHidden()
+            .registerResearchItem();
+
+        new FmResearchItem(
+            "ROD_infernal", "FORBIDDEN",
+            new AspectList().add(FmAspects.NETHER, 4).add(Aspect.FIRE, 3).add(Aspect.TOOL, 1),
+            -11, -4, 3, TcStack.of("forbiddenmagic:infernal_rod")
+        )
+            .setPages(
+                ResearchPage.text("forbiddenmagic.research_page.ROD_infernal.1"),
+                ResearchPage.text("forbiddenmagic.research_page.ROD_infernal.2"),
+                ResearchPage.infusion("FM_ROD_INFERNAL")
+            )
+            .setParents("NETHERSHARDS")
+            .setHidden()
+            .registerResearchItem();
     }
 }

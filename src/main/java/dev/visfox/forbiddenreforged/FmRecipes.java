@@ -18,6 +18,42 @@ public final class FmRecipes {
 
     public static void register() {
 
+        TcRecipes.register(new InfusionRecipe(
+            "FM_ROD_TAINTED",
+            "ROD_tainted",
+            TcStack.of("forbiddenmagic:tainted_rod"),
+            5,
+            new AspectList().add(Aspect.TAINT, 24).add(Aspect.MAGIC, 12).add(Aspect.ENTROPY, 12),
+            TcIngredient.item("thaumcraft:tainted_goo"),
+            List.of(
+                TcIngredient.item("thaumcraft:salis_mundus"),
+                TcIngredient.item("forbiddenmagic:taint_shard"),
+                TcIngredient.item("forbiddenmagic:taint_shard"),
+                TcIngredient.item("forbiddenmagic:taint_shard"),
+                TcIngredient.item("forbiddenmagic:taint_shard"),
+                TcIngredient.item("forbiddenmagic:taint_shard"),
+                TcIngredient.item("forbiddenmagic:taint_shard")
+            )
+        ));
+
+        TcRecipes.register(new InfusionRecipe(
+            "FM_ROD_INFERNAL",
+            "ROD_infernal",
+            TcStack.of("forbiddenmagic:infernal_rod"),
+            5,
+            new AspectList().add(FmAspects.NETHER, 32).add(Aspect.MAGIC, 12).add(FmAspects.PRIDE, 12),
+            TcIngredient.item("minecraft:blaze_rod"),
+            List.of(
+                TcIngredient.item("thaumcraft:salis_mundus"),
+                TcIngredient.item("forbiddenmagic:pride_shard"),
+                TcIngredient.item("forbiddenmagic:pride_shard"),
+                TcIngredient.item("minecraft:soul_sand"),
+                TcIngredient.item("minecraft:wither_skeleton_skull"),
+                TcIngredient.item("minecraft:quartz"),
+                TcIngredient.item("minecraft:blaze_powder")
+            )
+        ));
+
         TcRecipes.register(new CraftingRecipeRef(
             "BlackInk",
             "BLACKFLOWER",
