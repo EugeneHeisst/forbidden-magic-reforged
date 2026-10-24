@@ -16,7 +16,7 @@ public final class PrimewellItem extends ScribingToolsItem {
     }
 
     @Override
-    public int getMaxDamage() {
+    public int getMaxDamage(ItemStack stack) {
         return Integer.MAX_VALUE;
     }
 

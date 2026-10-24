@@ -289,7 +289,7 @@ public final class ItemGameTests {
         ItemStack stack = new ItemStack(FmItems.PRIMEWELL.get());
         helper.assertTrue(stack.getItem() instanceof PrimewellItem, "primewell uses its behavior item");
         helper.assertTrue(stack.getItem() instanceof ScribingToolsItem, "primewell can occupy the research table scribe slot");
-        helper.assertValueEqual(stack.getItem().getRarity(stack), Rarity.EPIC, "primewell retains epic rarity");
+        helper.assertValueEqual(stack.getRarity(), Rarity.EPIC, "primewell retains epic rarity");
         helper.assertTrue(stack.getMaxDamage() > 1_000_000_000, "primewell does not wear out during research");
         stack.setDamageValue(1000);
         helper.assertFalse(stack.getItem().isBarVisible(stack), "primewell does not display a misleading durability bar");

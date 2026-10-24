@@ -23,7 +23,7 @@ public final class CrystalwellItem extends ScribingToolsItem {
     }
 
     @Override
-    public int getMaxDamage() {
+    public int getMaxDamage(ItemStack stack) {
         return Config.researchDifficulty() == -1 ? 50 : 100;
     }
 
