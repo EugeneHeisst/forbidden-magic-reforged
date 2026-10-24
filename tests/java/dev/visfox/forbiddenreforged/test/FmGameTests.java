@@ -15,6 +15,7 @@ import thaumcraft.aspect.Aspect;
 import thaumcraft.aspect.AspectList;
 import thaumcraft.aspect.AspectRegistry;
 import thaumcraft.crafting.TcRecipes;
+import thaumcraft.crafting.TcIngredient;
 import thaumcraft.research.ResearchCategories;
 import thaumcraft.wand.WandRegistry;
 import net.minecraft.world.item.ItemStack;
@@ -84,6 +85,9 @@ public final class FmGameTests {
         helper.assertTrue(ResearchCategories.getResearch("NETHERSHARDS") != null, "Nether shards entry must exist");
         helper.assertTrue(ResearchCategories.getResearch("TAINTTREE") != null, "taint tree research must exist");
         helper.assertTrue(ResearchCategories.getResearch("BLACKFLOWER") != null, "black flower research must exist");
+        helper.assertTrue(ResearchCategories.getResearch("TAINTSTONE") != null, "tainted stone research must exist");
+        helper.assertTrue(ResearchCategories.getResearch("ROD_tainted") != null, "tainted rod research must exist");
+        helper.assertTrue(ResearchCategories.getResearch("ROD_infernal") != null, "infernal rod research must exist");
         helper.assertTrue(ResearchCategories.getResearch("ARCANECAKE") != null, "arcane cake research must exist");
         helper.succeed();
     }
@@ -94,6 +98,12 @@ public final class FmGameTests {
         helper.assertTrue(TcRecipes.get("FM_BLACKFLOWER") != null, "umbral rose crucible recipe must exist");
         helper.assertTrue(TcRecipes.get("FM_TAINTSTONE") != null, "tainted stone arcane recipe must exist");
         helper.assertTrue(TcRecipes.get("FM_ARCANECAKE") != null, "Thaumic Cake infusion recipe must exist");
+        helper.assertTrue(TcRecipes.get("FM_ROD_TAINTED") != null, "tainted rod infusion recipe must exist");
+        helper.assertTrue(TcRecipes.get("FM_ROD_INFERNAL") != null, "infernal rod infusion recipe must exist");
+        helper.assertTrue(TcIngredient.item("thaumcraft:tainted_goo").exists(), "tainted goo central ingredient must exist");
+        helper.assertTrue(TcIngredient.item("thaumcraft:salis_mundus").exists(), "Salis Mundus must exist");
+        helper.assertTrue(TcIngredient.item("forbiddenmagic:tainted_rod").exists(), "tainted rod result must exist");
+        helper.assertTrue(TcIngredient.item("forbiddenmagic:infernal_rod").exists(), "infernal rod result must exist");
         helper.succeed();
     }
 
@@ -105,6 +115,10 @@ public final class FmGameTests {
             "taint fruit must carry taint aspects");
         helper.assertTrue(shard != null && shard.getAmount(FmAspects.WRATH) >= 2,
             "wrath shard must carry wrath aspects");
+        AspectList taintLog = AspectRegistry.active().getObjectTags(
+            BuiltInRegistries.ITEM.get(ForbiddenMagic.id("taint_log")));
+        helper.assertTrue(taintLog != null && taintLog.getAmount(Aspect.TAINT) >= 2,
+            "taint log block item must carry taint aspects");
         helper.succeed();
     }
 
