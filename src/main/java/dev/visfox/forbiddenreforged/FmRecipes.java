@@ -251,15 +251,29 @@ public final class FmRecipes {
                 TcIngredient.item("thaumcraft:greatwood_log")
             )
         ));
-        TcRecipes.register(new ShapelessArcaneRecipe("CRYSTALWELL", "CRYSTALWELL",
-            TcStack.of(FmItems.CRYSTALWELL.getId().toString(), 1),
-            new AspectList().add(Aspect.WATER, 1).add(Aspect.ORDER, 1),
-            List.of(
-                TcIngredient.item("thaumcraft:inkwell"),
-                TcIngredient.tag("c:dyes/black"),
-                TcIngredient.item("thaumcraft:shard"),
-                TcIngredient.item("thaumcraft:shard")
-            )));
+        if (thaumcraft.Config.researchDifficulty() == -1) {
+            TcRecipes.register(new ShapelessArcaneRecipe("CRYSTALWELL", "CRYSTALWELL",
+                TcStack.of(FmItems.CRYSTALWELL.getId().toString(), 1),
+                new AspectList().add(Aspect.WATER, 1).add(Aspect.ORDER, 1),
+                List.of(
+                    TcIngredient.item("thaumcraft:scribing_tools"),
+                    TcIngredient.tag("c:dyes/black"),
+                    TcIngredient.tag("thaumcraft:shards"),
+                    TcIngredient.tag("thaumcraft:shards")
+                )));
+        } else {
+            TcRecipes.register(new ShapelessArcaneRecipe("CRYSTALWELL", "CRYSTALWELL",
+                TcStack.of(FmItems.CRYSTALWELL.getId().toString(), 1),
+                new AspectList().add(Aspect.WATER, 1).add(Aspect.ORDER, 1),
+                List.of(
+                    TcIngredient.item("thaumcraft:scribing_tools"),
+                    TcIngredient.tag("c:dyes/black"),
+                    TcIngredient.item("thaumcraft:mixed_crystal_cluster"),
+                    TcIngredient.item("thaumcraft:balanced_shard"),
+                    TcIngredient.item("thaumcraft:balanced_shard"),
+                    TcIngredient.item("thaumcraft:balanced_shard")
+                )));
+        }
         TcRecipes.register(new ShapelessArcaneRecipe("PRIMEWELL", "PRIMEWELL",
             TcStack.of(FmItems.PRIMEWELL.getId().toString(), 1),
             new AspectList().add(Aspect.WATER, 50).add(Aspect.EARTH, 50).add(Aspect.FIRE, 50).add(Aspect.AIR, 50).add(Aspect.ORDER, 50).add(Aspect.ENTROPY, 50),
