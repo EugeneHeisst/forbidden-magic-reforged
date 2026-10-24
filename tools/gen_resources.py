@@ -192,21 +192,9 @@ def generate_blocks() -> None:
         })
     write_json(ASSETS / "blockstates" / "taint_log.json", {
         "variants": {
-            "axis=x": [
-                {"model": "forbiddenmagic:block/taint_log_horizontal", "x": 90, "y": 90, "weight": 6},
-                {"model": "forbiddenmagic:block/taint_log_gross_horizontal", "x": 90, "y": 90},
-                {"model": "forbiddenmagic:block/taint_log_gross2_horizontal", "x": 90, "y": 90},
-            ],
-            "axis=y": [
-                {"model": "forbiddenmagic:block/taint_log", "weight": 6},
-                {"model": "forbiddenmagic:block/taint_log_gross"},
-                {"model": "forbiddenmagic:block/taint_log_gross2"},
-            ],
-            "axis=z": [
-                {"model": "forbiddenmagic:block/taint_log_horizontal", "x": 90, "weight": 6},
-                {"model": "forbiddenmagic:block/taint_log_gross_horizontal", "x": 90},
-                {"model": "forbiddenmagic:block/taint_log_gross2_horizontal", "x": 90},
-            ],
+            "axis=x": {"type": "forbiddenmagic:taint_log_faces"},
+            "axis=y": {"type": "forbiddenmagic:taint_log_faces"},
+            "axis=z": {"type": "forbiddenmagic:taint_log_faces"},
         }
     })
     write_json(ASSETS / "models" / "block" / "taint_log.json", {

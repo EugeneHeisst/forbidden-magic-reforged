@@ -43,6 +43,7 @@ import dev.visfox.forbiddenreforged.ForbiddenMagic;
 import dev.visfox.forbiddenreforged.ArcaneCakeBlock;
 import dev.visfox.forbiddenreforged.FmBlocks;
 import dev.visfox.forbiddenreforged.TaintTree;
+import dev.visfox.forbiddenreforged.TaintLogTextureVariant;
 import thaumcraft.crafting.CrucibleRecipe;
 import thaumcraft.crafting.InfusionRecipe;
 import thaumcraft.crafting.TcRecipes;
@@ -62,7 +63,7 @@ public final class BlockGameTests {
         "taint_sapling_grows_a_tree",
         "umbral_plants_are_registered",
         "arcane_cake_feeds_and_keeps_slices",
-        "taint_log_uses_weighted_gross_side_models"
+        "taint_log_selects_side_textures_deterministically"
     };
 
     static {
@@ -72,7 +73,7 @@ public final class BlockGameTests {
         FUNCTIONS.register(TESTS[3], () -> BlockGameTests::taintSaplingGrowsATree);
         FUNCTIONS.register(TESTS[4], () -> BlockGameTests::umbralPlantsAreRegistered);
         FUNCTIONS.register(TESTS[5], () -> BlockGameTests::arcaneCakeFeedsAndKeepsSlices);
-        FUNCTIONS.register(TESTS[6], () -> BlockGameTests::taintLogUsesWeightedGrossSideModels);
+        FUNCTIONS.register(TESTS[6], () -> BlockGameTests::taintLogSelectsSideTexturesDeterministically);
     }
 
     private BlockGameTests() {}
@@ -182,23 +183,30 @@ public final class BlockGameTests {
         helper.succeed();
     }
 
-    private static void taintLogUsesWeightedGrossSideModels(GameTestHelper helper) {
+    private static void taintLogSelectsSideTexturesDeterministically(GameTestHelper helper) {
         try (InputStream stream = ForbiddenMagic.class.getResourceAsStream("/assets/forbiddenmagic/blockstates/taint_log.json")) {
             helper.assertTrue(stream != null, "taint log blockstate must ship with the mod");
             JsonObject root = JsonParser.parseReader(new InputStreamReader(stream, StandardCharsets.UTF_8)).getAsJsonObject();
             for (String axis : List.of("axis=x", "axis=y", "axis=z")) {
-                JsonArray variants = root.getAsJsonObject("variants").get(axis).getAsJsonArray();
-                helper.assertValueEqual(variants.size(), 3, axis + " must offer one normal and two gross models");
-                Set<String> models = new HashSet<>();
-                int totalWeight = 0;
-                for (JsonElement element : variants) {
-                    JsonObject entry = element.getAsJsonObject();
-                    models.add(entry.get("model").getAsString());
-                    totalWeight += entry.has("weight") ? entry.get("weight").getAsInt() : 1;
+                JsonObject definition = root.getAsJsonObject("variants").getAsJsonObject(axis);
+                helper.assertValueEqual(definition.get("type").getAsString(), "forbiddenmagic:taint_log_faces",
+                    axis + " must use the coordinate-aware face model");
+            }
+
+            int[] counts = new int[3];
+            for (int x = -16; x <= 16; x++) {
+                for (int z = -16; z <= 16; z++) {
+                    for (int side = 0; side < 6; side++) {
+                        int selected = TaintLogTextureVariant.select(side, x, 7, z);
+                        helper.assertTrue(selected >= 0 && selected <= 2, "face texture selector must return a known variant");
+                        helper.assertValueEqual(selected, TaintLogTextureVariant.select(side, x, 7, z),
+                            "face texture selection must be stable for a given side and position");
+                        counts[selected]++;
+                    }
                 }
-                helper.assertValueEqual(totalWeight, 8, axis + " weights must be 6+1+1");
-                helper.assertTrue(models.stream().anyMatch(model -> model.contains("taint_log_gross")), axis + " must include a gross side");
-                helper.assertTrue(models.stream().anyMatch(model -> model.contains("taint_log_gross2")), axis + " must include the second gross side");
+            }
+            for (int variant = 0; variant < counts.length; variant++) {
+                helper.assertTrue(counts[variant] > 0, "coordinate sample must exercise side-texture variant " + variant);
             }
             helper.succeed();
         } catch (IOException e) {
