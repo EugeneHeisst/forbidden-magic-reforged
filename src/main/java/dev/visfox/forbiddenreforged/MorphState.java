@@ -50,6 +50,14 @@ public record MorphState(int phase, List<ItemEnchantments> sets, List<String> na
         return new MorphState((phase + 1) % PHASES, sets, names);
     }
 
+    public int tintColor() {
+        return switch (phase) {
+            case 1 -> 0xFF0010CC;
+            case 2 -> 0xFFE5DA00;
+            default -> 0xFF980000;
+        };
+    }
+
     public ItemEnchantments currentSet() {
         return sets.get(phase);
     }

@@ -122,7 +122,14 @@ def generate_morph_items() -> None:
             },
         })
         write_json(ASSETS / "items" / f"{name}.json", {
-            "model": {"type": "minecraft:model", "model": f"forbiddenmagic:item/{name}"},
+            "model": {
+                "type": "minecraft:model",
+                "model": f"forbiddenmagic:item/{name}",
+                "tints": [
+                    {"type": "minecraft:constant", "value": 16777215},
+                    {"type": "forbiddenmagic:morph_phase"},
+                ],
+            },
         })
     print(f"morph tools: {len(MORPH_TEXTURES)} two-layer models")
 

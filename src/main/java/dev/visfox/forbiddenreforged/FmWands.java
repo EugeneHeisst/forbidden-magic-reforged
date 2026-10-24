@@ -38,6 +38,19 @@ public final class FmWands {
         WandRegistry.registerCap("orichalcum", 0.0F, List.of(), 0.0F,
             Identifier.withDefaultNamespace("command_block"), 1000, null,
             ForbiddenMagic.id("textures/model/wand_cap_orichalcum.png"));
+        WandRegistry.registerRod("neutronium", 9001, Identifier.withDefaultNamespace("bedrock"), 1000,
+            new CreativeWandUpdate(), true, false, false,
+            ForbiddenMagic.id("textures/model/wand_rod_neutronium.png"));
+        WandRegistry.registerRod("neutronium", 9002, Identifier.withDefaultNamespace("bedrock"), 1000,
+            new CreativeWandUpdate(), true, true, false,
+            ForbiddenMagic.id("textures/model/wand_rod_neutronium.png"));
+    }
+
+    private static final class CreativeWandUpdate implements RodUpdate {
+        @Override
+        public void onUpdate(ItemStack stack, Player player) {
+            Wands.fill(stack);
+        }
     }
 
     // Refills any primal below a tenth of capacity while standing in a tainted area (original TaintedWandUpdate).
