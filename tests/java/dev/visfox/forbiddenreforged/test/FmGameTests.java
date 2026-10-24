@@ -4,6 +4,7 @@ import dev.visfox.forbiddenreforged.ForbiddenMagic;
 import dev.visfox.forbiddenreforged.FmAspects;
 import dev.visfox.forbiddenreforged.FmConfig;
 import dev.visfox.forbiddenreforged.FmItems;
+import dev.visfox.forbiddenreforged.FmItemEvents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -12,6 +13,9 @@ import net.neoforged.fml.ModList;
 import thaumcraft.aspect.Aspect;
 import thaumcraft.aspect.AspectList;
 import thaumcraft.aspect.AspectRegistry;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipeType;
+import net.neoforged.neoforge.event.furnace.FurnaceFuelBurnTimeEvent;
 
 @GameTestHolder(ForbiddenMagic.MODID)
 public final class FmGameTests {
@@ -21,6 +25,17 @@ public final class FmGameTests {
     @GameTest(template = "empty", templateNamespace = "minecraft")
     public static void modLoadsAndHostIsPresent(GameTestHelper helper) {
         helper.assertTrue(ModList.get().isLoaded("thaumcraft"), "thaumcraft must be loaded");
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty", templateNamespace = "minecraft")
+    public static void taintCoalHasFuelValue(GameTestHelper helper) {
+        FurnaceFuelBurnTimeEvent event = new FurnaceFuelBurnTimeEvent(
+            new ItemStack(FmItems.TAINT_COAL.get()), 0, RecipeType.SMELTING
+        );
+        FmItemEvents.onFuel(event);
+        helper.assertTrue(event.getBurnTime() >= 1 && event.getBurnTime() <= 2400,
+            "taint coal burn time must remain in the original 1..2400 range");
         helper.succeed();
     }
 
