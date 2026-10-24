@@ -1,5 +1,12 @@
 # Upstream: патчи и установка без официального API
 
+## Текущий статус (2026-10-24)
+
+- Открыт черновой [PR #37 — Add public API for add-on aspect registration](https://github.com/notlikethiss/thaumcraft-4-reforged/pull/37), head `7877a739560c02608864742ba23dbc40de26e05f`, target `main`. Это уже отправленный запрос на публичный API, поэтому старые формулировки ниже о «неотправленном» обращении и предполагаемой форме issue относятся к прежнему плану.
+- У PR #37 нет review threads; PR остаётся Draft. В его описании указаны локальные результаты 257/257 host GameTests и 60/60 add-on GameTests. Автоматический workflow, запускающийся на pull_request, для head PR не обнаружен; эти числа не следует трактовать как проверку GitHub Actions именно для PR.
+- [PR #30 — интеграция REI](https://github.com/notlikethiss/thaumcraft-4-reforged/pull/30) тоже открыт, но это отдельная необязательная интеграция; он не заменяет аспектовый API и в этой работе не изменяется.
+
+
 - Хост: `notlikethiss/thaumcraft-4-reforged`, ветка `main`, пин `69a47a1b238e3ac15fa5d4b10e61ccb6a4a80dbf`
   (`host.sha`). Хост под All Rights Reserved; его jar проект не публикует.
 - `patches/0001-aspect-registry.patch` — `Aspect` из enum в `final class` с реестром, `WandVis` switch →
