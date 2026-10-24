@@ -32,8 +32,9 @@ public final class FmItems {
             }
         }
 
-        GLUTTONY_SHARD = ITEMS.registerSimpleItem(
+        GLUTTONY_SHARD = ITEMS.registerItem(
             "gluttony_shard",
+            Item::new,
             properties -> Registration.food(properties, 2, 0.1F)
         );
         EMERALD_FRAGMENT = ITEMS.registerSimpleItem("emerald_fragment");
