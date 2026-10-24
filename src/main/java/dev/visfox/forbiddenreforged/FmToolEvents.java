@@ -20,6 +20,7 @@ import thaumcraft.platform.Baubles;
 import thaumcraft.registry.ModBlocks;
 import thaumcraft.taint.TaintBlock;
 import thaumcraft.taint.TaintFibresBlock;
+import thaumcraft.wand.Wands;
 
 public final class FmToolEvents {
     private FmToolEvents() {
