@@ -1,7 +1,7 @@
 package dev.visfox.forbiddenreforged;
 
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.Container;
+import net.minecraft.world.Container;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Prediction;
