@@ -11,6 +11,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.util.FakePlayer;
@@ -20,6 +21,7 @@ import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.level.BlockDropsEvent;
 import thaumcraft.aspect.Aspect;
 import thaumcraft.platform.Baubles;
+import thaumcraft.wand.VisStorage;
 import thaumcraft.wand.Wands;
 import thaumcraft.registry.ModBlocks;
 import thaumcraft.taint.TaintBlock;
@@ -56,6 +58,38 @@ public final class FmToolEvents {
     public static boolean taintShardRoll(int roll, int fortune, boolean silkTouch) {
         int chance = 1 + 2 * fortune + (silkTouch ? 6 : 0);
         return roll <= chance;
+    }
+
+    public static void collarDamage(Player wearer, float amount, Entity attacker) {
+        if (FmItems.SUB_COLLAR == null) {
+            return;
+        }
+        ItemStack collar = Baubles.get(wearer, 0);
+        if (!collar.is(FmItems.SUB_COLLAR.get())) {
+            return;
+        }
+        int doses = 3 * (int) amount;
+        RandomSource random = wearer.getRandom();
+        if (attacker instanceof Player dominator) {
+            int chance = 1;
+            if (dominator.getMainHandItem().is(FmItems.RIDING_CROP.get())) {
+                doses += 3;
+                chance += 3;
+            }
+            if (wearer.level().dimension() == Level.NETHER && random.nextInt(30) < chance) {
+                ItemEntity drop = new ItemEntity(wearer.level(), wearer.getX(), wearer.getY(), wearer.getZ(),
+                    new ItemStack(FmItems.DEADLY_SHARDS.get("lust").get()));
+                drop.setPickUpDelay(10);
+                drop.setDeltaMovement(drop.getDeltaMovement().add(
+                    random.nextFloat() * 0.05,
+                    (random.nextFloat() - random.nextFloat()) * 0.1,
+                    (random.nextFloat() - random.nextFloat()) * 0.1));
+                wearer.level().addFreshEntity(drop);
+            }
+        }
+        for (int dose = 0; dose < doses; dose++) {
+            VisStorage.addRealVis(collar, TAINTED_PRIMALS[random.nextInt(TAINTED_PRIMALS.length)], 1, true);
+        }
     }
 
     public static String wandTooltipKind(ItemStack stack) {

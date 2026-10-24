@@ -23,6 +23,10 @@ public final class FmComponents {
         COMPONENTS.registerComponentType("profane_contract", builder -> builder
             .persistent(Codec.INT)
             .networkSynchronized(ByteBufCodecs.INT));
+    public static final Supplier<DataComponentType<String>> COLLAR_OWNER =
+        COMPONENTS.registerComponentType("collar_owner", builder -> builder
+            .persistent(Codec.STRING)
+            .networkSynchronized(ByteBufCodecs.STRING_UTF8));
 
     private FmComponents() {
     }

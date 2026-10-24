@@ -245,6 +245,7 @@ public final class FmEnchantmentEffects {
 
     private static void onIncomingDamage(LivingIncomingDamageEvent event) {
         if (event.getEntity() instanceof Player wearer && !wearer.level().isClientSide()) {
+            FmToolEvents.collarDamage(wearer, event.getAmount(), event.getSource().getEntity());
             ItemStack held = wearer.getMainHandItem();
             if (Wands.isWand(held)) {
                 boolean fireOrWither = event.getSource().is(DamageTypeTags.IS_FIRE)
