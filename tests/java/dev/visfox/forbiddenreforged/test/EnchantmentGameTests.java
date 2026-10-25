@@ -269,8 +269,8 @@ public final class EnchantmentGameTests {
                     "impact clears the full X/Z plane for " + face);
                 helper.assertFalse(helper.getLevel().getBlockState(center.above()).isAir(),
                     "impact leaves blocks along the Y axis for " + face);
-                helper.assertFalse(helper.getLevel().getBlockState(center.offset(0, 0, 1)).isAir(),
-                    "impact does not break the perpendicular plane for " + face);
+                helper.assertFalse(helper.getLevel().getBlockState(center.offset(0, 1, 0)).isAir(),
+                    "impact leaves blocks along the Y axis outside the X/Z plane for " + face);
             } else if (face.getAxis() == Direction.Axis.X) {
                 helper.assertTrue(helper.getLevel().getBlockState(center.offset(0, 1, 0)).isAir(),
                     "impact follows " + face + " and breaks the Y/Z plane");
