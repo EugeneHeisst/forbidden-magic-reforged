@@ -15,7 +15,7 @@
 - Скверное дерево/саженец восстановлены по оригинальному генератору; headless-тесты покрывают стадии, форму кроны и поддержку листвы. Визуальная проверка в клиенте остаётся открытой.
 - **Upstream обновлён:** `host.sha` передвинут с `69a47a1` на актуальный `cf0c421` (11 upstream-коммитов). В частности, автор закрыл [issue #38](https://github.com/notlikethiss/thaumcraft-4-reforged/issues/38) коммитом [`cf0c421`](https://github.com/notlikethiss/thaumcraft-4-reforged/commit/cf0c42199d01fdfcd99ee167224f7a1b4a4427a5): tainted-land worldgen больше не размещает деревья над водой; добавлены три host GameTest. Это исправление **мировой генерации деревьев Thaumcraft**, не логики нашего FM-саженца. На обновлённом host наш `0005` применяется, host и addon собираются, 92/92 addon GameTest проходят в обоих режимах; см. [CI #165](https://github.com/MxxFoxx2/forbidden-magic-reforged/actions/runs/40188998514).
 
-[Host PR #37](https://github.com/notlikethiss/thaumcraft-4-reforged/pull/37) на момент проверки остаётся открытым **Draft**. Он добавляет регистрацию аспектов аддонов и слияние аспектов сущностей; taint recognition API в нём не заявлен. Block aspect targets пока поставляются нашим локальным патчем `0005`; при обновлении upstream нужно проверять его применимость и сохранение теста портала.
+[Host PR #37](https://github.com/notlikethiss/thaumcraft-4-reforged/pull/37) остаётся открытым, но уже не Draft. Он добавляет регистрацию аспектов аддонов и слияние аспектов сущностей; taint recognition API в нём не заявлен. Block aspect targets пока поставляются нашим локальным патчем `0005`; при обновлении upstream нужно проверять его применимость и сохранение теста портала.
 
 ## Незакрытые ручные проверки
 
