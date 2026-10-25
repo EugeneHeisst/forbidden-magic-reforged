@@ -4,16 +4,16 @@ Date: Wed, 21 Oct 2026 11:38:25 +0300
 Subject: [PATCH] aspect registry
 
 ---
- src/main/java/thaumcraft/aspect/Aspect.java   | 214 +++++++++++++-------
+ src/main/java/thaumcraft/aspect/Aspect.java   | 210 +++++++++++++-------
  .../java/thaumcraft/entity/AspectOrb.java     |   4 +-
  src/main/java/thaumcraft/wand/WandVis.java    |  56 +++--
- 3 files changed, 178 insertions(+), 96 deletions(-)
+ 3 files changed, 174 insertions(+), 96 deletions(-)
 
 diff --git a/src/main/java/thaumcraft/aspect/Aspect.java b/src/main/java/thaumcraft/aspect/Aspect.java
 index 859be01..78e2b88 100644
 --- a/src/main/java/thaumcraft/aspect/Aspect.java
 +++ b/src/main/java/thaumcraft/aspect/Aspect.java
-@@ -3,7 +3,7 @@ public enum Aspect implements StringRepresentable {
+@@ -3,7 +3,7 @@ package thaumcraft.aspect;
  import com.mojang.serialization.Codec;
  import io.netty.buffer.ByteBuf;
  import java.util.ArrayList;
@@ -141,7 +141,7 @@ index 859be01..78e2b88 100644
  
      private final String tag;
      private final int color;
-@@ -81,21 +77,80 @@ public enum Aspect implements StringRepresentable {
+@@ -81,21 +77,76 @@ public enum Aspect implements StringRepresentable {
      private final int blend;
      private final Identifier image;
  
@@ -229,7 +229,7 @@ index 859be01..78e2b88 100644
      }
  
      public String getTag() {
-@@ -139,16 +189,23 @@ public enum Aspect implements StringRepresentable {
+@@ -139,16 +190,23 @@ public enum Aspect implements StringRepresentable {
          return tag;
      }
  
