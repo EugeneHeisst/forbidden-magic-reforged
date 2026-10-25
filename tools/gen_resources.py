@@ -24,6 +24,8 @@ ITEM_TEXTURES = {
     "black_dye": "black_dye",
     "taint_fruit": "taint_fruit",
     "ring_nutrition": "ring_nutrition",
+    "alchemical_cap": "wand_cap_alchemical",
+    "equivalent_rod": "wand_rod_equivalent",
     "tainted_rod": "tainted_rod",
     "infernal_rod": "infernal_rod",
     "witchwood_rod": "witchwood_rod",

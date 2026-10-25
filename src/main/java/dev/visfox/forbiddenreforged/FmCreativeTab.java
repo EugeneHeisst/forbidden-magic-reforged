@@ -54,6 +54,7 @@ public final class FmCreativeTab {
     private static void addCreativeWands(List<ItemStack> stacks) {
         addWand(stacks, WandRegistry.CAP_THAUMIUM, "tainted");
         addWand(stacks, WandRegistry.CAP_THAUMIUM, "infernal");
+        addWand(stacks, WandRegistry.CAP_VOID, "equivalent");
 
         WandCap orichalcum = WandRegistry.findCap("orichalcum");
         WandRod neutronium = WandRegistry.findRod("neutronium");

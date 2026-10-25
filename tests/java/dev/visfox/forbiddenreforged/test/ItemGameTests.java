@@ -82,6 +82,7 @@ import thaumcraft.research.ResearchPage;
 import thaumcraft.platform.Baubles;
 import thaumcraft.wand.VisStorage;
 import thaumcraft.wand.WandRegistry;
+import thaumcraft.wand.WandCap;
 import thaumcraft.wand.WandRod;
 import thaumcraft.wand.Wands;
 import thaumcraft.wand.WandTriggers;
@@ -122,7 +123,8 @@ public final class ItemGameTests {
         "riding_crop_effects_match_original",
         "heretic_trades_match_original_listing",
         "witchwood_requires_ars_magica",
-        "wrath_shard_formula_matches_original"
+        "wrath_shard_formula_matches_original",
+        "alchemical_cap_and_equivalent_rod_match_original"
     };
 
     static {
@@ -157,6 +159,7 @@ public final class ItemGameTests {
         FUNCTIONS.register(TESTS[28], () -> ItemGameTests::hereticTradesMatchOriginalListing);
         FUNCTIONS.register(TESTS[29], () -> ItemGameTests::witchwoodRequiresArsMagica);
         FUNCTIONS.register(TESTS[30], () -> ItemGameTests::wrathShardFormulaMatchesOriginal);
+        FUNCTIONS.register(TESTS[31], () -> ItemGameTests::alchemicalCapAndEquivalentRodMatchOriginal);
     }
 
     private ItemGameTests() {}
@@ -329,6 +332,46 @@ public final class ItemGameTests {
         JsonObject despair = readJson(helper, "/assets/forbiddenmagic/models/item/lust_shard_despair.json");
         helper.assertValueEqual(despair.getAsJsonObject("textures").get("layer0").getAsString(), "forbiddenmagic:item/despair_shard", "despair model uses the despair texture");
         helper.assertTrue(ForbiddenMagic.class.getResourceAsStream("/assets/forbiddenmagic/textures/item/despair_shard.png") != null, "despair texture ships with the mod");
+        helper.succeed();
+    }
+
+    private static void alchemicalCapAndEquivalentRodMatchOriginal(GameTestHelper helper) {
+        WandCap cap = WandRegistry.findCap("alchemical");
+        helper.assertTrue(cap != null, "alchemical wand cap is registered");
+        if (cap != null) {
+            helper.assertValueEqual(cap.baseCostModifier(), 0.9F, "alchemical cap base vis discount");
+            helper.assertTrue(cap.specialAspects().contains(Aspect.WATER), "water has the special alchemical discount");
+            helper.assertValueEqual(cap.getCostModifier(Aspect.WATER), 0.8F, "alchemical water discount");
+            helper.assertValueEqual(cap.craftCost(), 7, "alchemical cap craft cost");
+            helper.assertValueEqual(cap.item(), ForbiddenMagic.id("alchemical_cap"), "alchemical cap uses its component item");
+            helper.assertValueEqual(cap.texture(), ForbiddenMagic.id("textures/model/wand_cap_alchemical.png"), "alchemical cap texture");
+        }
+
+        var equivalent = WandRegistry.findRod("equivalent");
+        helper.assertTrue(equivalent != null, "equivalent wand rod is registered");
+        if (equivalent != null) {
+            helper.assertValueEqual(equivalent.capacity(), 100, "equivalent rod capacity");
+            helper.assertValueEqual(equivalent.craftCost(), 12, "equivalent rod craft cost");
+            helper.assertValueEqual(equivalent.item(), ForbiddenMagic.id("equivalent_rod"), "equivalent rod has a stable component item");
+            helper.assertFalse(equivalent.staff(), "equivalent rod is not a staff");
+            helper.assertFalse(equivalent.glowing(), "equivalent rod does not glow");
+            helper.assertValueEqual(equivalent.texture(), ForbiddenMagic.id("textures/model/wand_rod_equivalent.png"), "equivalent rod texture");
+        }
+
+        helper.assertTrue(FmItems.ALCHEMICAL_CAP.isBound() && FmItems.EQUIVALENT_ROD.isBound(),
+            "both wand component items are registered");
+        helper.assertTrue(ForbiddenMagic.class.getResourceAsStream("/assets/forbiddenmagic/textures/model/wand_cap_alchemical.png") != null,
+            "alchemical cap wand texture ships with the mod");
+        helper.assertTrue(ForbiddenMagic.class.getResourceAsStream("/assets/forbiddenmagic/textures/model/wand_rod_equivalent.png") != null,
+            "equivalent rod wand texture ships with the mod");
+        ItemStack equivalentWand = equivalent == null ? ItemStack.EMPTY : Wands.create(WandRegistry.CAP_VOID, equivalent, false);
+        helper.assertTrue(Wands.isWand(equivalentWand)
+            && Wands.getCap(equivalentWand).tag().equals("void")
+            && Wands.getRod(equivalentWand).tag().equals("equivalent"),
+            "equivalent creative wand uses the void cap and equivalent rod");
+        helper.assertTrue(FmCreativeTab.stacks().stream().anyMatch(stack -> Wands.isWand(stack)
+            && Wands.getCap(stack).tag().equals("void") && Wands.getRod(stack).tag().equals("equivalent")),
+            "equivalent wand is present in the creative tab");
         helper.succeed();
     }
 

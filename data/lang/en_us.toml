@@ -30,6 +30,8 @@ riding_crop = "Riding Crop"
 black_dye = "Black Dye"
 taint_fruit = "Tainted Fruit"
 ring_nutrition = "Ring of Nutrition"
+alchemical_cap = "Alchemical Wand Cap"
+equivalent_rod = "Equivalent Wand Rod"
 tainted_rod = "Tainted Rod"
 infernal_rod = "Infernal Rod"
 witchwood_rod = "Witchwood Rod"
@@ -41,6 +43,12 @@ crystalwell = "Crystal Scribing Tools"
 primewell = "Primal Scribing Tools"
 blink_focus = "Wand Focus: Blink"
 sub_collar = "Collar of Pain"
+
+[item.Wand.alchemical]
+cap = "Alchemical"
+
+[item.Wand.equivalent]
+rod = "Equivalent"
 
 [item.Wand.tainted]
 rod = "Tainted"

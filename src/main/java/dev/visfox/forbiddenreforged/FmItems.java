@@ -43,6 +43,8 @@ public final class FmItems {
     public static final DeferredItem<Item> BLACK_DYE;
     public static final DeferredItem<Item> TAINT_FRUIT;
     public static final DeferredItem<Item> RING_NUTRITION;
+    public static final DeferredItem<Item> ALCHEMICAL_CAP;
+    public static final DeferredItem<Item> EQUIVALENT_ROD;
     public static final DeferredItem<Item> TAINTED_ROD;
     public static final DeferredItem<Item> INFERNAL_ROD;
     public static final @Nullable DeferredItem<Item> WITCHWOOD_ROD;
@@ -95,6 +97,8 @@ public final class FmItems {
             properties -> properties.stacksTo(64));
         RING_NUTRITION = ITEMS.registerItem("ring_nutrition", RingNutritionItem::new,
             properties -> properties.stacksTo(1));
+        ALCHEMICAL_CAP = ITEMS.registerSimpleItem("alchemical_cap");
+        EQUIVALENT_ROD = ITEMS.registerSimpleItem("equivalent_rod");
         TAINTED_ROD = ITEMS.registerSimpleItem("tainted_rod");
         INFERNAL_ROD = ITEMS.registerSimpleItem("infernal_rod");
         if (ModList.get().isLoaded("arsmagica2")) {

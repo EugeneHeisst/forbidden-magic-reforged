@@ -38,6 +38,12 @@ public final class FmWands {
         WandRegistry.registerCap("orichalcum", 0.0F, List.of(), 0.0F,
             Identifier.withDefaultNamespace("command_block"), 1000, null,
             ForbiddenMagic.id("textures/model/wand_cap_orichalcum.png"));
+        WandRegistry.registerCap("alchemical", 0.9F, List.of(Aspect.WATER), 0.8F,
+            ForbiddenMagic.id("alchemical_cap"), 7, null,
+            ForbiddenMagic.id("textures/model/wand_cap_alchemical.png"));
+        WandRegistry.registerRod("equivalent", 100, ForbiddenMagic.id("equivalent_rod"), 12,
+            null, false, false, false,
+            ForbiddenMagic.id("textures/model/wand_rod_equivalent.png"));
         WandRegistry.registerRod("neutronium", 9001, Identifier.withDefaultNamespace("bedrock"), 1000,
             new CreativeWandUpdate(), true, false, false,
             ForbiddenMagic.id("textures/model/wand_rod_neutronium.png"));
