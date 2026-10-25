@@ -26,6 +26,7 @@
 - **Ring of Nutrition:** возвращён арканный рецепт 3×3, стоимость ENTROPY 10 / WATER 20 / EARTH 20, заготовка mundane ring и три осколка Gluttony. В режиме Hardcore алмаз заменяется блоком Nether Star. Страница рецепта возвращена в исследование.
 - **Pandemonium:** выбор мобов ограничен враждебными существами (`Enemy`), как оригинальный `IMob`, вместо всех `Mob`.
 - **Аспекты:** восстановлены явные исходные назначения для emerald fragment, black dye, umbral rose, riding crop, taint fruit, taint coal, taint leaves, taint log, taint planks и taint stone bricks. Riding crop по-прежнему зависит от настройки Lust.
+- **Taintstone recipe:** восстановлены оба исходных варианта ингредиента `resourceTaint`: FM Taint Shard и Thaumcraft Tainted Goo (`ItemResource` meta 11 / Taint Slime в оригинале). Центральная ячейка принимает их через `forbiddenmagic:taint_ingredients`; GameTest проверяет оба варианта.
 - **Taint Coal fuel duration:** топливо использует `minecraft:uniform` с диапазоном 1–2400 тиков — исходный случайный диапазон вместо раннего приближения постоянными 1200 тиками. GameTest `taint_coal_burn_time_varies_within_original_range` проверяет границы и то, что повторные выборки не сводятся к константе.
 - **Heretic:** восстановлены варианты торговли с осколками Wrath/Lust, Profane Wand и Fire Focus; исправлены диапазоны количеств в предложениях Greed, Gluttony, ghast tear и glowstone. Все девять предложений выдаются сразу на первом уровне (уровни 2–5 пустые), как плоский список оригинала; `max_uses` 7 у обычных и 1 у Profane Wand/Fire Focus, опыт за сделки 0. Для режима без Lust используется отдельный пул из восьми предложений.
 - **Конфигурация Capitalist:** восстановлен переключатель `general.greedy_ench` — скрывает рецепт и исследование зачарования и отключает его эффект.
@@ -50,7 +51,6 @@
 - **Silverfish / Extreme Hills:** старый `BiomeGenBase.extremeHills` сопоставлен с `minecraft:windswept_hills`. Точного аналога старого биома нет; это ограниченная аппроксимация, а не полное равенство биомов.
 - **Wrath shard drop chance:** расчёт повторяет оригинал: база 2, вклад даёт только меч (полный урон меча), sharpness/power, fire aspect/flame для не-иммунных к огню, smite/bane по тегам целей, focus potency у жезла; гейт — враждебные мобы (`Enemy` как современный аналог `IMob`), у боссов дополнительно pride. Инструменты и жезлы вклада урона не дают, как в оригинале.
 - **Последний кусок Arcane Cake:** bounding box ограничивается современным кодом, чтобы не допустить вырожденной геометрии старого расчёта. Это исправление старого edge case, а не буквальное воспроизведение бага.
-- **Taintstone recipe:** центральная позиция принимает FM Taint Shard через тег `forbiddenmagic:taint_shards`. Второй оригинальный вариант с `itemResource` meta 11 отсутствует, поскольку у хоста нет такого предмета/мета-варианта.
 - **Mob Crystal:** хранение namespaced entity ID намеренно не воспроизводит старые имена вроде `Pig`; старые сохранённые данные требуют отдельной миграции, если будет заявлена совместимость с ними.
 
 ## Локализация и описания исследовательских страниц
