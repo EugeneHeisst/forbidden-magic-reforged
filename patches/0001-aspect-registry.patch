@@ -13,7 +13,7 @@ diff --git a/src/main/java/thaumcraft/aspect/Aspect.java b/src/main/java/thaumcr
 index 859be01..78e2b88 100644
 --- a/src/main/java/thaumcraft/aspect/Aspect.java
 +++ b/src/main/java/thaumcraft/aspect/Aspect.java
-@@ -3,7 +3,7 @@ package thaumcraft.aspect;
+@@ -3,7 +3,7 @@ public enum Aspect implements StringRepresentable {
  import com.mojang.serialization.Codec;
  import io.netty.buffer.ByteBuf;
  import java.util.ArrayList;
@@ -191,11 +191,11 @@ index 859be01..78e2b88 100644
 +        return aspect;
 +    }
 +
-+    public static Aspect[] values() {
++    public static synchronized Aspect[] values() {
 +        return BY_TAG.values().toArray(new Aspect[0]);
 +    }
 +
-+    public static int count() {
++    public static synchronized int count() {
 +        return BY_TAG.size();
 +    }
 +
@@ -204,26 +204,23 @@ index 859be01..78e2b88 100644
 +    }
 +
 +    public int ordinal() {
-+        Integer index = null;
-+        int position = 0;
-+        for (String key : BY_TAG.keySet()) {
-+            if (key.equals(tag)) {
-+                index = position;
-+                break;
++        Aspect[] snapshot = values();
++        for (int index = 0; index < snapshot.length; index++) {
++            if (snapshot[index] == this) {
++                return index;
 +            }
-+            position++;
 +        }
-+        return index == null ? -1 : index;
++        return -1;
 +    }
 +
-+    public static @Nullable Aspect byOrdinal(int ordinal) {
++    public static synchronized @Nullable Aspect byOrdinal(int ordinal) {
 +        if (ordinal < 0 || ordinal >= BY_TAG.size()) {
 +            return null;
 +        }
 +        return values()[ordinal];
 +    }
 +
-+    public static Aspect byTagOrThrow(String tag) {
++    public static synchronized Aspect byTagOrThrow(String tag) {
 +        Aspect aspect = BY_TAG.get(tag);
 +        if (aspect == null) {
 +            throw new IllegalArgumentException("Unknown aspect " + tag);
@@ -259,7 +256,7 @@ index 859be01..78e2b88 100644
 +        return tag;
 +    }
 +
-+    public static @Nullable Aspect getAspect(String tag) {
++    public static synchronized @Nullable Aspect getAspect(String tag) {
 +        return BY_TAG.get(tag);
      }
  
