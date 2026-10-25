@@ -30,6 +30,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
@@ -50,6 +51,7 @@ import thaumcraft.crafting.TcRecipes;
 import thaumcraft.aspect.Aspect;
 import thaumcraft.research.ResearchCategories;
 import thaumcraft.research.ResearchItem;
+import thaumcraft.taint.TaintSpread;
 
 @EventBusSubscriber(modid = ForbiddenMagic.MODID)
 public final class BlockGameTests {
@@ -59,6 +61,7 @@ public final class BlockGameTests {
     private static final String[] TESTS = {
         "taint_material_blocks_are_registered",
         "taint_blocks_carry_tool_tags",
+        "taint_materials_resist_fibrous_taint",
         "blocks_drop_themselves",
         "taint_sapling_grows_a_tree",
         "umbral_plants_are_registered",
@@ -69,7 +72,8 @@ public final class BlockGameTests {
     static {
         FUNCTIONS.register(TESTS[0], () -> BlockGameTests::taintMaterialBlocksAreRegistered);
         FUNCTIONS.register(TESTS[1], () -> BlockGameTests::taintBlocksCarryToolTags);
-        FUNCTIONS.register(TESTS[2], () -> BlockGameTests::blocksDropThemselves);
+        FUNCTIONS.register(TESTS[2], () -> BlockGameTests::taintMaterialsResistFibrousTaint);
+        FUNCTIONS.register(TESTS[3], () -> BlockGameTests::blocksDropThemselves);
         FUNCTIONS.register(TESTS[3], () -> BlockGameTests::taintSaplingGrowsATree);
         FUNCTIONS.register(TESTS[4], () -> BlockGameTests::umbralPlantsAreRegistered);
         FUNCTIONS.register(TESTS[5], () -> BlockGameTests::arcaneCakeFeedsAndKeepsSlices);
@@ -125,6 +129,36 @@ public final class BlockGameTests {
         helper.assertTrue(BuiltInRegistries.BLOCK.wrapAsHolder(FmBlocks.TAINT_PLANKS.get()).is(axe), "taint planks mine with an axe");
         helper.assertTrue(BuiltInRegistries.BLOCK.wrapAsHolder(FmBlocks.TAINT_STONE_SMOOTH.get()).is(pickaxe), "taint stone mines with a pickaxe");
         helper.assertTrue(BuiltInRegistries.BLOCK.wrapAsHolder(FmBlocks.STAR_BLOCK.get()).is(beacon), "star block is a beacon base");
+        helper.succeed();
+    }
+
+    private static void taintMaterialsResistFibrousTaint(GameTestHelper helper) {
+        var level = helper.getLevel();
+        BlockPos pos = helper.absolutePos(new BlockPos(3, 3, 3));
+        for (Block block : List.of(
+            FmBlocks.TAINT_LOG.get(),
+            FmBlocks.TAINT_PLANKS.get(),
+            FmBlocks.TAINT_STONE_SMOOTH.get(),
+            FmBlocks.TAINT_STONE_BRICK.get()
+        )) {
+            level.setBlockAndUpdate(pos, block.defaultBlockState());
+            level.setBlockAndUpdate(pos.above(), Blocks.STONE.defaultBlockState());
+            helper.assertFalse(TaintSpread.spreadFibres(level, pos),
+                BuiltInRegistries.BLOCK.getKey(block) + " must not be replaced by fibrous taint");
+            helper.assertTrue(level.getBlockState(pos).is(block),
+                BuiltInRegistries.BLOCK.getKey(block) + " remains intact after a spread attempt");
+        }
+
+        helper.assertFalse(FmBlocks.TAINT_LOG.get().defaultBlockState().is(BlockTags.LOGS),
+            "taint log must not enter the host's vanilla-log crusting path");
+        helper.assertFalse(FmBlocks.TAINT_PLANKS.get().defaultBlockState().is(BlockTags.LOGS),
+            "taint planks must not enter the host's vanilla-log crusting path");
+        for (Block block : List.of(FmBlocks.TAINT_PLANKS.get(), FmBlocks.TAINT_STONE_SMOOTH.get(), FmBlocks.TAINT_STONE_BRICK.get())) {
+            var state = block.defaultBlockState();
+            helper.assertFalse(state.is(BlockTags.DIRT) || state.is(BlockTags.SAND)
+                || state.is(Blocks.CLAY) || state.is(Blocks.GRASS_BLOCK),
+                BuiltInRegistries.BLOCK.getKey(block) + " must not enter the host's soil conversion path");
+        }
         helper.succeed();
     }
 
