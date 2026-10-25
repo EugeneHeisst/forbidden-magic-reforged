@@ -5,6 +5,7 @@ import io.netty.channel.embedded.EmbeddedChannel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -30,6 +31,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.GameType;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModList;
@@ -50,6 +52,7 @@ import thaumcraft.aspect.AspectList;
 import thaumcraft.aspect.AspectRegistry;
 import thaumcraft.research.ResearchCategories;
 import thaumcraft.research.ResearchItem;
+import thaumcraft.research.ScanManager;
 
 @EventBusSubscriber(modid = ForbiddenMagic.MODID)
 public final class AspectGameTests {
@@ -186,6 +189,10 @@ public final class AspectGameTests {
                 if (BuiltInRegistries.ENTITY_TYPE.getOptional(Identifier.parse(target.substring("entity:".length()))).isEmpty()) {
                     unresolved.add(target);
                 }
+            } else if (target.startsWith("block:")) {
+                if (BuiltInRegistries.BLOCK.getOptional(Identifier.parse(target.substring("block:".length()))).isEmpty()) {
+                    unresolved.add(target);
+                }
             } else if (target.startsWith("#")) {
                 TagKey<Item> tag = TagKey.create(Registries.ITEM, Identifier.parse(target.substring(1)));
                 boolean found = false;
@@ -286,6 +293,19 @@ public final class AspectGameTests {
                     && crop.getAmount(Aspect.WEAPON) == 1,
                 "riding crop keeps the original aspect list when lust is enabled");
         }
+        BlockPos portalPos = helper.absolutePos(new BlockPos(3, 3, 3));
+        helper.getLevel().setBlockAndUpdate(portalPos, Blocks.NETHER_PORTAL.defaultBlockState());
+        ScanManager.Target portal = ScanManager.resolveBlock(helper.getLevel(), portalPos);
+        helper.assertTrue(portal != null, "the Nether Portal must be a scan target");
+        if (portal != null) {
+            helper.assertValueEqual(portal.key(), "block:minecraft:nether_portal", "the portal scan target must use its block identity");
+            helper.assertTrue(portal.aspects() != null, "the portal must have registered aspects");
+            if (portal.aspects() != null) {
+                helper.assertValueEqual(portal.aspects().getAmount(FmAspects.NETHER), 4,
+                    "the original NETHER 4 aspect assignment belongs to the portal block, not obsidian");
+            }
+        }
+
         helper.succeed();
     }
 

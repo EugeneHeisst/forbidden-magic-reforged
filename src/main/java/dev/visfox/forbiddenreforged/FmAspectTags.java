@@ -31,7 +31,8 @@ public final class FmAspectTags {
         void apply() {
             DECLARED.clear();
             merge("minecraft:netherrack", tags().add(FmAspects.NETHER, 1));
-            merge("minecraft:obsidian", tags().add(FmAspects.NETHER, 4));
+            DECLARED.add("block:minecraft:nether_portal");
+            block("minecraft:nether_portal", tags().add(FmAspects.NETHER, 4));
             DECLARED.add("#c:ores/quartz");
             register("#c:ores/quartz", tags().add(Aspect.CRYSTAL, 3).add(FmAspects.NETHER, 2));
             merge("minecraft:nether_star", tags().add(FmAspects.NETHER, 8).add(FmAspects.PRIDE, 8));
