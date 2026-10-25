@@ -248,19 +248,45 @@ public final class EnchantmentGameTests {
         player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(FmItems.MORPH_PICKAXE.get()));
         ItemStack stack = player.getMainHandItem();
         stack.enchant(helper.getLevel().registryAccess().lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(FmEnchantments.IMPACT), 1);
-        for (int x = -1; x <= 1; x++) {
-            for (int y = -1; y <= 1; y++) {
-                for (int z = -1; z <= 1; z++) {
-                    helper.getLevel().setBlockAndUpdate(center.offset(x, y, z), Blocks.STONE.defaultBlockState());
+
+        for (Direction face : Direction.values()) {
+            for (int x = -1; x <= 1; x++) {
+                for (int y = -1; y <= 1; y++) {
+                    for (int z = -1; z <= 1; z++) {
+                        helper.getLevel().setBlockAndUpdate(center.offset(x, y, z), Blocks.STONE.defaultBlockState());
+                    }
                 }
             }
+
+            NeoForge.EVENT_BUS.post(new PlayerInteractEvent.LeftClickBlock(
+                player, center, face, PlayerInteractEvent.LeftClickBlock.Action.START));
+            player.gameMode.destroyBlock(center);
+
+            if (face.getAxis() == Direction.Axis.Y) {
+                helper.assertTrue(helper.getLevel().getBlockState(center.offset(1, 0, 0)).isAir(),
+                    "impact follows " + face + " and breaks the X/Z plane");
+                helper.assertTrue(helper.getLevel().getBlockState(center.offset(1, 0, -1)).isAir(),
+                    "impact clears the full X/Z plane for " + face);
+                helper.assertFalse(helper.getLevel().getBlockState(center.above()).isAir(),
+                    "impact leaves blocks along the Y axis for " + face);
+                helper.assertFalse(helper.getLevel().getBlockState(center.offset(0, 0, 1)).isAir(),
+                    "impact does not break the perpendicular plane for " + face);
+            } else if (face.getAxis() == Direction.Axis.X) {
+                helper.assertTrue(helper.getLevel().getBlockState(center.offset(0, 1, 0)).isAir(),
+                    "impact follows " + face + " and breaks the Y/Z plane");
+                helper.assertTrue(helper.getLevel().getBlockState(center.offset(0, 1, -1)).isAir(),
+                    "impact clears the full Y/Z plane for " + face);
+                helper.assertFalse(helper.getLevel().getBlockState(center.east()).isAir(),
+                    "impact leaves blocks along the X axis for " + face);
+            } else {
+                helper.assertTrue(helper.getLevel().getBlockState(center.offset(1, 0, 0)).isAir(),
+                    "impact follows " + face + " and breaks the X/Y plane");
+                helper.assertTrue(helper.getLevel().getBlockState(center.offset(1, 1, 0)).isAir(),
+                    "impact clears the full X/Y plane for " + face);
+                helper.assertFalse(helper.getLevel().getBlockState(center.south()).isAir(),
+                    "impact leaves blocks along the Z axis for " + face);
+            }
         }
-        NeoForge.EVENT_BUS.post(new PlayerInteractEvent.LeftClickBlock(player, center, Direction.UP, PlayerInteractEvent.LeftClickBlock.Action.START));
-        player.gameMode.destroyBlock(center);
-        helper.assertTrue(helper.getLevel().getBlockState(center.offset(1, 0, 0)).isAir(), "impact breaks the horizontal plane around the struck block");
-        helper.assertTrue(helper.getLevel().getBlockState(center.offset(1, 0, -1)).isAir(), "impact breaks the whole three by three plane");
-        helper.assertFalse(helper.getLevel().getBlockState(center.above()).isAir(), "impact stays below the struck face");
-        helper.assertFalse(helper.getLevel().getBlockState(center.offset(0, 1, 0)).isAir(), "impact stays out of the vertical plane");
         helper.succeed();
     }
 
