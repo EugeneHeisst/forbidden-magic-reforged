@@ -177,11 +177,19 @@ public final class BlockGameTests {
     }
 
     private static void taintSaplingGrowsATree(GameTestHelper helper) {
+        var level = helper.getLevel();
         BlockPos soil = helper.absolutePos(new BlockPos(2, 4, 2));
-        helper.getLevel().setBlockAndUpdate(soil, Blocks.DIRT.defaultBlockState());
+        level.setBlockAndUpdate(soil, Blocks.DIRT.defaultBlockState());
         BlockPos sapling = soil.above();
-        helper.getLevel().setBlockAndUpdate(sapling, FmBlocks.TAINT_SAPLING.get().defaultBlockState());
-        boolean grown = TaintTree.grow(helper.getLevel(), sapling, RandomSource.create(3L));
+        for (int y = 1; y <= 8; y++) {
+            for (int x = -2; x <= 2; x++) {
+                for (int z = -2; z <= 2; z++) {
+                    level.setBlockAndUpdate(sapling.above(y).offset(x, 0, z), Blocks.AIR.defaultBlockState());
+                }
+            }
+        }
+        level.setBlockAndUpdate(sapling, FmBlocks.TAINT_SAPLING.get().defaultBlockState());
+        boolean grown = TaintTree.grow(level, sapling, RandomSource.create(3L));
         helper.assertTrue(grown, "tree must grow on open ground");
         helper.assertTrue(helper.getLevel().getBlockState(sapling).is(FmBlocks.TAINT_LOG.get()), "trunk replaces the sapling");
         boolean canopy = false;
