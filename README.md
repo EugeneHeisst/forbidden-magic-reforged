@@ -1,69 +1,56 @@
 # Forbidden Magic: Reforged
 
-Порт Forbidden Magic 0.574 (Minecraft 1.7.10) на Thaumcraft 4: Reforged 1.2 (MC 26.3). Переносит семь аспектов грехов, осколки, зачарования, хамелеоновы инструменты, скверные материалы, кристалл моба и Клетку Гнева — с теми же числами, рецептами и текстами, что в оригинале.
+Порт Forbidden Magic 0.574 (Minecraft 1.7.10) на Thaumcraft 4: Reforged 1.2 для Minecraft 26.3. Переносит семь аспектов грехов, осколки, зачарования, хамелеоновы инструменты, материалы скверны, Mob Crystal и Wrath Cage.
 
 ## Статус
 
-- Хост: Thaumcraft 4: Reforged, MC 26.3, версия **1.2** (с аспектовым API из [upstream-запроса](docs/upstream.md)); ветка 1.21.1 — второй таргет, не начата.
-- Верность: порт 1:1 с оригиналом, кроме пунктов в [docs/fidelity.md](docs/fidelity.md). Отличий, не перечисленных там, нет.
-- Баги и отличия от оригинала — в issue этого репозитория, не в апстрим хоста.
-- Оригинальный хост 1.2 пока не опубликован: см. «Установка».
+- Основной таргет — Minecraft 26.3 / Java 25. Порт на 1.21.1 отложен до завершения основного таргета.
+- Паритет не объявлен завершённым. Текущие пробелы и ограничения записаны в [roadmap](docs/roadmap.md), проверенные отличия — в [fidelity ledger](docs/fidelity.md).
+- Хостовый PR с публичным API аспектов всё ещё Draft: [Thaumcraft 4: Reforged #37](https://github.com/notlikethiss/thaumcraft-4-reforged/pull/37). Для сборки сейчас используется закреплённый и локально пропатченный хост.
 
 ## Установка
 
-### Для игроков
+Публичный jar аддона не заработает со стоковым хостом, пока нужный API не попадёт в опубликованный Thaumcraft 4: Reforged. Хост имеет лицензию All Rights Reserved; его jar не распространяется этим проектом.
 
-Отдельный jar сегодня **не заработает на стоковом хосте**: нужен хост с аспектовым API (версия 1.2), а он ещё не вышел. Пока есть два пути:
+## Сборка разработчика
 
-1. Дождаться, пока API появится в релизе хоста, и поставить `forbidden-magic-*.jar` рядом с ним.
-2. Собрать хост самому по инструкции ниже — это персональная сборка, готовый jar хоста никуда не выкладывается (хост — All Rights Reserved).
+Нужны Git, Python 3, JDK 25 и интернет-доступ к репозиториям. Клонируй хост рядом с этим репозиторием, как ожидает `tools/prepare_host.py`:
 
-### Для разработчиков
-
-```bash
-git clone <thaumcraft-4-reforged> ../thaumcraft-4-reforged
+```powershell
+git clone https://github.com/notlikethiss/thaumcraft-4-reforged.git ../thaumcraft-4-reforged
 python tools/prepare_host.py
-./gradlew build
+Push-Location host
+.\gradlew.bat build publish --no-daemon
+Pop-Location
+.\gradlew.bat build --no-daemon
+.\gradlew.bat runGameTestServer --no-daemon
 ```
 
-`prepare_host.py` собирает копию хоста из `patches/*.patch`; без этой серии порт не загрузится.
+На Linux/macOS команды Gradle те же по порядку, но используются `./gradlew` и `python3`. `prepare_host.py` создаёт локальную копию хоста и применяет `patches/*.patch`; не редактируй `host/` вручную.
 
-Артефакт: `build/libs/forbidden-magic-0.574-26.3-port.0.1.0.jar`
+CI выполняет сборку и публикацию хоста в локальный Maven, сборку аддона, проверку происхождения JAR и два прогона GameTest — с включённым и отключённым `no_lust`. Визуальные проверки требуют `runClient`.
 
-Проверка перед релизом: `./gradlew build` и `./gradlew runGameTestServer`; визуальная проверка — `./gradlew runClient`.
+Артефакт: `build/libs/forbidden-magic-0.574-26.3-port.0.1.0.jar`.
 
 ## Использование
 
-Открой Thaumonomicon — категория **FORBIDDEN** открывается с исследования «Сетевые осколки». Осколки грехов получаются по исходным правилам: гнев за убийства, гордость с боссов, лень при смерти без игрока, прожорливость после еды в Незере, жадность при добыче кварцевой руды с Fortune и зависть с зомбифицированных пиглинов, появившихся с этим осколком. Хамелеоновы инструменты переключают наборы зачарований по Shift + ПКМ.
+Открой Thaumonomicon — категория **FORBIDDEN** открывается с исследованием «Сетевые осколки». Хамелеоновы инструменты переключают наборы зачарований по Shift + ПКМ.
 
-Конфиг `config/forbiddenmagic-startup.toml`: `no_lust = true` убирает аспект luxuria и связанные рецепты;
-`silverfish_emeralds = false` отключает изумрудные самородки с чешуйниц, а
-`emerald_transmutation = false` отключает исследование и алхимическую трансмутацию изумрудных самородков.
+Конфиг `config/forbiddenmagic-startup.toml`: `no_lust = true` отключает Luxuria и связанные с Lust рецепты; `silverfish_emeralds = false` отключает изумрудные самородки с чешуйниц; `emerald_transmutation = false` отключает исследование и алхимическую трансмутацию самородков.
 
-## Структура проекта
+## Структура
 
-```
-src/          Исходный код и ресурсы
-tests/        GameTest-тесты
-docs/         Документация (fidelity, roadmap, verification)
-data/         Исходные данные (lang, id_map)
-tools/        Скрипты сборки и генерации
-patches/      Патчи к хосту
-```
+- `src/` — код и ресурсы.
+- `tests/` — GameTest.
+- `data/` и `tools/` — источники данных и генераторы.
+- `patches/` — локальные патчи хоста.
+- `docs/fidelity.md`, `docs/roadmap.md`, `docs/verification.md` — паритет, оставшиеся задачи и подтверждение проверок.
 
-## Авторы
+## Авторы и лицензии
 
-- **SpitefulFox** — оригинальный Forbidden Magic (WTFPL)
-- **notlikethiss** — Thaumcraft 4: Reforged (All Rights Reserved)
-- **Azanor** — Thaumcraft 4.2.3.5
-- **MxxFoxx2** — порт (MIT)
+- **SpitefulFox** — оригинальный Forbidden Magic 0.574 (WTFPL).
+- **notlikethiss** — Thaumcraft 4: Reforged (All Rights Reserved).
+- **Azanor** — Thaumcraft 4.2.3.5.
+- **MxxFoxx2** — порт (MIT).
 
-Разработка велась с участием ИИ; ответственность за содержимое остаётся за автором порта.
-
-**Лицензия:** код порта — MIT; оригинал — WTFPL; хост — All Rights Reserved. Подробности в `LICENSE` и `NOTICE`.
-
-Регулярных обновлений не обещаем. Баг-репорты полезны; исправления — по возможности.
-
----
-
-Полный список реализованного и отложенного — в `docs/roadmap.md`. Отличия от оригинала — в `docs/fidelity.md`.
+Код порта распространяется по MIT; оригинал и хост имеют собственные лицензии. Подробности — в `LICENSE` и `NOTICE`.
