@@ -60,6 +60,9 @@ jobs:
           chmod +x gradlew
           ./gradlew build --no-daemon
 
+      - name: Verify mod artifact provenance
+        run: python3 tools/check_provenance.py
+
       - name: Run GameTests with Luxuria enabled
         run: ./gradlew runGameTestServer --no-daemon
 
