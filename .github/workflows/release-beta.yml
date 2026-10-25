@@ -82,8 +82,22 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "0.1.0-beta.1" build/libs/forbidden-magic-0.574-26.3-port.0.1.0-beta.1.jar \
-            --target "$GITHUB_SHA" \
-            --prerelease \
-            --title "Forbidden Magic: Reforged 0.1.0-beta.1 (Minecraft 26.3)" \
-            --notes-file docs/releases/0.1.0-beta.1.md
+          set -euo pipefail
+          TAG="0.1.0-beta.1"
+          JAR="build/libs/forbidden-magic-0.574-26.3-port.0.1.0-beta.1.jar"
+          NOTES="docs/releases/0.1.0-beta.1.md"
+          test -s "$JAR"
+          test -s "$NOTES"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "$JAR" --clobber
+            gh release edit "$TAG" \
+              --title "Forbidden Magic: Reforged 0.1.0-beta.1 (Minecraft 26.3)" \
+              --notes-file "$NOTES" \
+              --prerelease
+          else
+            gh release create "$TAG" "$JAR" \
+              --target "$GITHUB_SHA" \
+              --prerelease \
+              --title "Forbidden Magic: Reforged 0.1.0-beta.1 (Minecraft 26.3)" \
+              --notes-file "$NOTES"
+          fi
