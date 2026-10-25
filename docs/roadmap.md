@@ -25,7 +25,8 @@ PR #37 добавляет публичный API регистрации аспе
 
 Основные серии контента и fidelity исправлений включены в `main`, включая creative-wand family,
 текстуры сторон tainted log, Nether shard drops, поведение taint-инструментов и Skull Axe,
-emerald fragments / transmutation, подсказки жезлов, warp и координаты исследований. Подробности и
+emerald fragments / transmutation, оба исходных ингредиента рецепта Taintstone, подсказки жезлов,
+warp и координаты исследований. Подробности и
 границы доказанности — в [fidelity.md](fidelity.md); текущие замеры — в [verification.md](verification.md).
 
 Текущий `main` и `dev` содержат одинаковое дерево файлов на момент проверки 2026-10-25. Новые
@@ -39,14 +40,11 @@ emerald fragments / transmutation, подсказки жезлов, warp и ко
 2. **Aspect scan для Nether Portal.** Оригинал назначает NETHER 4 блоку `minecraft:portal`; текущий
    API аспектов хоста поддерживает item targets, поэтому обсидиан служит прокси. Требуется block/state
    target API в хосте или другое upstream-согласованное решение.
-3. **Taintstone recipe.** Второй вариант оригинала использовал `itemResource` meta 11, которого нет в
-   современном хосте. Текущий рецепт через тег FM Taint Shard сохранён; точный эквивалент зависит от
-   решения, какой современный предмет соответствует старому варианту.
-4. **Silverfish / Extreme Hills.** Повышенный шанс осколка сопоставлен с `minecraft:windswept_hills`.
+3. **Silverfish / Extreme Hills.** Повышенный шанс осколка сопоставлен с `minecraft:windswept_hills`.
    Это осознанное приближение, а не точное равенство старой карте биомов.
-5. **Миграция Mob Crystal.** Компонент хранит namespaced entity ID; старые сохранённые данные не
+4. **Миграция Mob Crystal.** Компонент хранит namespaced entity ID; старые сохранённые данные не
    мигрируются. Миграция нужна, если проект будет заявлять совместимость с уже существующими мирами.
-6. **Witchwood / внешние интеграции.** Blood Magic, Botania, Ars Magica 2 и CoFH не портированы под
+5. **Witchwood / внешние интеграции.** Blood Magic, Botania, Ars Magica 2 и CoFH не портированы под
    26.3; соответствующий контент остаётся вне scope до появления совместимых зависимостей.
 
 Событие урона `thaumcraft:taint` для Tainted Wand **уже реализовано** и описано в fidelity.md:
@@ -54,6 +52,11 @@ emerald fragments / transmutation, подсказки жезлов, warp и ко
 задача roadmap. Случайный диапазон горения Taint Coal (1–2400) также уже реализован через
 `minecraft:uniform` в `context_int_provider/taint_coal_burn.json` и покрыт GameTest
 `taint_coal_burn_time_varies_within_original_range`.
+
+Вторая исходная вариация Taintstone закрыта: `itemResource` meta 11 в Thaumcraft 4.2 — Taint Slime
+(современный предмет хоста — `thaumcraft:tainted_goo`). Она добавлена в тег
+`forbiddenmagic:taint_ingredients` вместе с FM Taint Shard; GameTest проверяет оба предмета как
+валидный центральный ингредиент рецепта.
 
 ## Визуальный гейт — требует реального клиента
 
