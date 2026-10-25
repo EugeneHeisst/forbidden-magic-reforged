@@ -262,7 +262,11 @@ public final class RecipeGameTests {
         helper.assertValueEqual(result.getCount(), 9, "arcane recipe yields nine blocks");
         helper.assertValueEqual(recipe.aspects().getAmount(Aspect.ENTROPY), 2, "taint stone entropy cost");
         helper.assertValueEqual(recipe.aspects().getAmount(Aspect.ORDER), 1, "taint stone order cost");
-        helper.assertTrue(recipe.grid().get(4).test(new ItemStack(FmItems.DEADLY_SHARDS.get("taint").get())), "centre slot takes a taint shard");
+        helper.assertTrue(recipe.grid().get(4).test(new ItemStack(FmItems.DEADLY_SHARDS.get("taint").get())), "centre slot takes a Forbidden Magic taint shard");
+        helper.assertTrue(recipe.grid().get(4).test(new ItemStack(ModItems.TAINTED_GOO.get())), "centre slot also takes the modern equivalent of original Thaumcraft ItemResource meta 11 (Taint Slime/Tainted Goo)");
+        TagKey<Item> taintIngredients = TagKey.create(Registries.ITEM, Identifier.parse("forbiddenmagic:taint_ingredients"));
+        helper.assertTrue(new ItemStack(FmItems.DEADLY_SHARDS.get("taint").get()).is(taintIngredients), "Forbidden Magic taint shard is tagged as a taint ingredient");
+        helper.assertTrue(new ItemStack(ModItems.TAINTED_GOO.get()).is(taintIngredients), "Thaumcraft tainted goo is tagged as a taint ingredient");
         for (int slot : new int[]{0, 1, 2, 3, 5, 6, 7, 8}) {
             helper.assertTrue(recipe.grid().get(slot).test(new ItemStack(Items.STONE)), "slot " + slot + " takes plain stone");
         }

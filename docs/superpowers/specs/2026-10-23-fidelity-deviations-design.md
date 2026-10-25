@@ -20,7 +20,25 @@ items that do not exist in the original. Everything below was checked against `.
 - **Spork is a texture swap, not a new item.** `ItemDiabolistFork.registerIcons` picks `forbidden:spork`
   when `Config.spork` is on; the name change comes from `ForbiddenItems`. One icon branch, no new content.
 
-## B. Open and real — with the exact original reference
+## Актуализация статуса — 2026-10-25
+
+Раздел B ниже сохраняет список расхождений, открытых на момент составления 2026-10-23; это **исторический
+срез**, а не текущий backlog. Состояние после последующих изменений:
+
+| Пункт | Текущий статус | Проверяемое подтверждение / остаток |
+|---|---|---|
+| Spork icon | Реализовано | Условная модель `forbiddenmagic:spork`; GameTest проверяет ресурс модели. |
+| Lust → despair при `no_lust` | Реализовано | Условная модель осколка и отдельный тест конфигурации/аспекта; `LUST`/`luxuria` отсутствуют при отключённой Lust. |
+| Impact plane | Реализовано; тест усилен в этом PR | `ToolHarvest.getFace` задаёт ориентацию; GameTest проходит все шесть направлений и проверяет, что ломается нужная плоскость. Ожидает CI на текущей ветке. |
+| Phase colour overlay | Реализовано | `MorphState.tintColor` и tint source проверены GameTest; клиентский рендер всё ещё требует `runClient`. |
+| Tainted log textures | Реализовано в коде и данных | Алгоритм выбирает варианты сторон; GameTest покрывает математику/ресурсы. Реальный вид ориентаций требует `runClient`. |
+| TAINTSTONE | Реализовано; тест усилен в этом PR | Тег принимает FM Taint Shard и современный эквивалент старого `ItemResource` meta 11 — `thaumcraft:tainted_goo`; проверяется GameTest на текущей ветке. |
+| Taint coal burn time | Реализовано | `minecraft:uniform` с диапазоном 1–2400; GameTest покрывает границы и отсутствие константы. |
+| Creative wand family | Реализовано в регистрации и данных | GameTest проверяет род/посох, вместимость 9001/9002, пополнение vis и текстуру. Ручная проверка предметов/моделей в игре остаётся. |
+
+Обозначенные клиентские проверки нельзя считать пройденными по одному только headless CI.
+
+## B. Historical open items on 2026-10-23 (superseded by the status above)
 
 1. **Spork icon.** `ItemDiabolistFork`: `icon = Config.spork ? forbidden:spork : forbidden:fork`.
    Port: name only. Needs the texture copied from the original and selected per config.
