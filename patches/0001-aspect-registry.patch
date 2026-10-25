@@ -4,10 +4,10 @@ Date: Wed, 21 Oct 2026 11:38:25 +0300
 Subject: [PATCH] aspect registry
 
 ---
- src/main/java/thaumcraft/aspect/Aspect.java   | 209 +++++++++++-------
+ src/main/java/thaumcraft/aspect/Aspect.java   | 213 +++++++++++++-------
  .../java/thaumcraft/entity/AspectOrb.java     |   4 +-
  src/main/java/thaumcraft/wand/WandVis.java    |  56 +++--
- 3 files changed, 173 insertions(+), 96 deletions(-)
+ 3 files changed, 177 insertions(+), 96 deletions(-)
 
 diff --git a/src/main/java/thaumcraft/aspect/Aspect.java b/src/main/java/thaumcraft/aspect/Aspect.java
 index 859be01..78e2b88 100644
@@ -141,7 +141,7 @@ index 859be01..78e2b88 100644
  
      private final String tag;
      private final int color;
-@@ -81,21 +77,75 @@ public enum Aspect implements StringRepresentable {
+@@ -81,21 +77,79 @@ public enum Aspect implements StringRepresentable {
      private final int blend;
      private final Identifier image;
  
@@ -176,10 +176,15 @@ index 859be01..78e2b88 100644
 +        return aspect;
 +    }
 +
-+    public static Aspect register(String tag, int color, Aspect @Nullable [] components, int blend, @Nullable Identifier image) {
-+        Aspect existing = BY_TAG.get(tag);
-+        if (existing != null) {
-+            return existing;
++    public static synchronized Aspect register(String tag, int color, Aspect @Nullable [] components, int blend, @Nullable Identifier image) {
++        if (tag == null || tag.isBlank()) {
++            throw new IllegalArgumentException("Aspect tag must not be blank");
++        }
++        if (components == null || components.length != 2 || components[0] == null || components[1] == null || image == null) {
++            throw new IllegalArgumentException("Add-on aspects require exactly two components and a texture");
++        }
++        if (BY_TAG.containsKey(tag)) {
++            throw new IllegalArgumentException(tag + " already registered!");
 +        }
 +        Aspect aspect = new Aspect(tag, color, null, components, blend, image);
 +        BY_TAG.put(tag, aspect);
