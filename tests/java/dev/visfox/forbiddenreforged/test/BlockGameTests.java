@@ -74,10 +74,10 @@ public final class BlockGameTests {
         FUNCTIONS.register(TESTS[1], () -> BlockGameTests::taintBlocksCarryToolTags);
         FUNCTIONS.register(TESTS[2], () -> BlockGameTests::taintMaterialsResistFibrousTaint);
         FUNCTIONS.register(TESTS[3], () -> BlockGameTests::blocksDropThemselves);
-        FUNCTIONS.register(TESTS[3], () -> BlockGameTests::taintSaplingGrowsATree);
-        FUNCTIONS.register(TESTS[4], () -> BlockGameTests::umbralPlantsAreRegistered);
-        FUNCTIONS.register(TESTS[5], () -> BlockGameTests::arcaneCakeFeedsAndKeepsSlices);
-        FUNCTIONS.register(TESTS[6], () -> BlockGameTests::taintLogSelectsSideTexturesDeterministically);
+        FUNCTIONS.register(TESTS[4], () -> BlockGameTests::taintSaplingGrowsATree);
+        FUNCTIONS.register(TESTS[5], () -> BlockGameTests::umbralPlantsAreRegistered);
+        FUNCTIONS.register(TESTS[6], () -> BlockGameTests::arcaneCakeFeedsAndKeepsSlices);
+        FUNCTIONS.register(TESTS[7], () -> BlockGameTests::taintLogSelectsSideTexturesDeterministically);
     }
 
     private BlockGameTests() {}
