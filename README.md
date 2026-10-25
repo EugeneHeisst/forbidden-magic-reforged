@@ -6,7 +6,8 @@
 
 - Основной таргет — Minecraft 26.3 / Java 25. Порт на 1.21.1 отложен до завершения основного таргета.
 - Паритет не объявлен завершённым. Текущие пробелы и ограничения записаны в [roadmap](docs/roadmap.md), проверенные отличия — в [fidelity ledger](docs/fidelity.md).
-- Хостовый PR с публичным API аспектов всё ещё Draft: [Thaumcraft 4: Reforged #37](https://github.com/notlikethiss/thaumcraft-4-reforged/pull/37). Для сборки сейчас используется закреплённый и локально пропатченный хост.
+- Первая экспериментальная beta: [0.1.0-beta.1](https://github.com/MxxFoxx2/forbidden-magic-reforged/releases/tag/0.1.0-beta.1). Это prerelease для тестирования, не заявление о полном паритете.
+- [Thaumcraft 4: Reforged #37](https://github.com/notlikethiss/thaumcraft-4-reforged/pull/37) остаётся открытым; нужный публичный API ещё не попал в upstream-релиз. Для сборки и тестирования используется закреплённый и локально пропатченный хост.
 
 ## Установка
 
@@ -30,7 +31,7 @@ Pop-Location
 
 CI выполняет сборку и публикацию хоста в локальный Maven, сборку аддона, проверку происхождения JAR и два прогона GameTest — с включённым и отключённым `no_lust`. Визуальные проверки требуют `runClient`.
 
-Артефакт: `build/libs/forbidden-magic-0.574-26.3-port.0.1.0.jar`.
+Артефакт: `build/libs/forbidden-magic-0.574-26.3-port.0.1.0-beta.1.jar`.
 
 ## Использование
 
