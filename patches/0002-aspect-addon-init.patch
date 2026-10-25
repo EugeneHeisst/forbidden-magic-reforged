@@ -7,8 +7,8 @@ Subject: [PATCH] add-on aspect hook
  .../java/thaumcraft/aspect/AddonAspects.java  | 35 +++++++++++++++++++
  .../thaumcraft/aspect/AspectRegistrar.java    |  7 ++++
  .../thaumcraft/aspect/AspectRegistry.java     | 17 +++++++++
- .../java/thaumcraft/aspect/AspectSync.java    |  1 +
- 4 files changed, 60 insertions(+)
+ src/main/java/thaumcraft/Thaumcraft.java       |  6 ++++++
+ 4 files changed, 65 insertions(+)
  create mode 100644 src/main/java/thaumcraft/aspect/AddonAspects.java
 
 diff --git a/src/main/java/thaumcraft/aspect/AddonAspects.java b/src/main/java/thaumcraft/aspect/AddonAspects.java
@@ -37,14 +37,14 @@ index 0000000..7915098
 +        Aspect register(String tag, int color, Aspect @Nullable [] components, int blend, @Nullable Identifier texture);
 +    }
 +
-+    public static void addRegistrar(Consumer<Addon> registrar) {
++    public static synchronized void addRegistrar(Consumer<Addon> registrar) {
 +        REGISTRARS.add(registrar);
 +        if (initialised) {
 +            registrar.accept(API);
 +        }
 +    }
 +
-+    public static void init() {
++    public static synchronized void init() {
 +        if (initialised) {
 +            return;
 +        }
@@ -98,18 +98,35 @@ index 4d0a345..e444f2e 100644
      public @Nullable AspectList getEntityTags(Entity entity) {
          List<EntityAspects> candidates = entities.get(entity.getType());
          if (candidates == null) {
-diff --git a/src/main/java/thaumcraft/aspect/AspectSync.java b/src/main/java/thaumcraft/aspect/AspectSync.java
-index 2ea28c1..608cbbc 100644
---- a/src/main/java/thaumcraft/aspect/AspectSync.java
-+++ b/src/main/java/thaumcraft/aspect/AspectSync.java
-@@ -41,6 +41,7 @@ public final class AspectSync {
-     public static void rebuild(MinecraftServer server) {
-         long start = System.currentTimeMillis();
-         AspectRegistry registry = new AspectRegistry(server);
+diff --git a/src/main/java/thaumcraft/Thaumcraft.java b/src/main/java/thaumcraft/Thaumcraft.java
+--- a/src/main/java/thaumcraft/Thaumcraft.java
++++ b/src/main/java/thaumcraft/Thaumcraft.java
+@@ -5,8 +5,10 @@ import net.neoforged.fml.ModContainer;
+ import net.neoforged.fml.common.Mod;
+ import net.neoforged.fml.config.ModConfig;
++import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+ import org.slf4j.Logger;
++import thaumcraft.aspect.AddonAspects;
+ import thaumcraft.aspect.AspectKeys;
+@@ -57,6 +59,7 @@ public class Thaumcraft {
+     public static final Logger LOGGER = LogUtils.getLogger();
+
+     public Thaumcraft(IEventBus modEventBus, ModContainer modContainer) {
++        modEventBus.addListener(this::commonSetup);
+         modContainer.registerConfig(ModConfig.Type.SYNCED, Config.SPEC);
+         modContainer.registerConfig(ModConfig.Type.STARTUP, StartupConfig.SPEC);
+@@ -130,6 +133,10 @@ public class Thaumcraft {
+         thaumcraft.test.OreGenerationGameTests.register(modEventBus);
+     }
+
++    private void commonSetup(FMLCommonSetupEvent event) {
 +        AddonAspects.init();
-         ModernAspects modern = new ModernAspects(registry);
-         modern.registerBase();
-         new ConfigAspects(registry).registerAll();
++    }
++
+     public static Identifier id(String path) {
+         return Identifier.fromNamespaceAndPath(MODID, path);
+     }
+
 -- 
 2.52.0.windows.1
 
