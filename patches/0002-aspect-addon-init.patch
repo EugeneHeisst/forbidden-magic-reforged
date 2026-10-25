@@ -101,31 +101,25 @@ index 4d0a345..e444f2e 100644
 diff --git a/src/main/java/thaumcraft/Thaumcraft.java b/src/main/java/thaumcraft/Thaumcraft.java
 --- a/src/main/java/thaumcraft/Thaumcraft.java
 +++ b/src/main/java/thaumcraft/Thaumcraft.java
-@@ -5,8 +5,10 @@ import net.neoforged.fml.ModContainer;
+@@ -6,5 +6,7 @@
+ import net.neoforged.fml.ModContainer;
  import net.neoforged.fml.common.Mod;
  import net.neoforged.fml.config.ModConfig;
 +import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
  import org.slf4j.Logger;
 +import thaumcraft.aspect.AddonAspects;
  import thaumcraft.aspect.AspectKeys;
-@@ -57,6 +59,7 @@ public class Thaumcraft {
-     public static final Logger LOGGER = LogUtils.getLogger();
-
+@@ -58,3 +60,4 @@
      public Thaumcraft(IEventBus modEventBus, ModContainer modContainer) {
 +        modEventBus.addListener(this::commonSetup);
          modContainer.registerConfig(ModConfig.Type.SYNCED, Config.SPEC);
          modContainer.registerConfig(ModConfig.Type.STARTUP, StartupConfig.SPEC);
-@@ -130,6 +133,10 @@ public class Thaumcraft {
-         thaumcraft.test.OreGenerationGameTests.register(modEventBus);
-     }
-
+@@ -130,1 +133,5 @@
+     public static Identifier id(String path) {
 +    private void commonSetup(FMLCommonSetupEvent event) {
 +        AddonAspects.init();
 +    }
 +
-     public static Identifier id(String path) {
-         return Identifier.fromNamespaceAndPath(MODID, path);
-     }
 
 -- 
 2.52.0.windows.1
