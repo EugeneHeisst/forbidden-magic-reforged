@@ -164,7 +164,7 @@ public final class BlockGameTests {
 
     private static void blocksDropThemselves(GameTestHelper helper) {
         var level = helper.getLevel();
-        BlockPos pos = new BlockPos(0, 4, 0);
+        BlockPos pos = helper.absolutePos(new BlockPos(0, 4, 0));
         for (var block : List.of(
             FmBlocks.TAINT_LOG.get(), FmBlocks.TAINT_PLANKS.get(),
             FmBlocks.TAINT_STONE_SMOOTH.get(), FmBlocks.TAINT_STONE_BRICK.get(),
@@ -177,7 +177,7 @@ public final class BlockGameTests {
     }
 
     private static void taintSaplingGrowsATree(GameTestHelper helper) {
-        BlockPos soil = new BlockPos(2, 4, 2);
+        BlockPos soil = helper.absolutePos(new BlockPos(2, 4, 2));
         helper.getLevel().setBlockAndUpdate(soil, Blocks.DIRT.defaultBlockState());
         BlockPos sapling = soil.above();
         helper.getLevel().setBlockAndUpdate(sapling, FmBlocks.TAINT_SAPLING.get().defaultBlockState());
@@ -205,7 +205,7 @@ public final class BlockGameTests {
 
     private static void arcaneCakeFeedsAndKeepsSlices(GameTestHelper helper) {
         var level = helper.getLevel();
-        BlockPos pos = new BlockPos(4, 4, 4);
+        BlockPos pos = helper.absolutePos(new BlockPos(4, 4, 4));
         level.setBlockAndUpdate(pos, FmBlocks.ARCANE_CAKE.get().defaultBlockState());
         helper.assertTrue(ResearchCategories.getResearch("ARCANECAKE") != null, "cake research exists");
         helper.assertTrue(TcRecipes.get("ARCANECAKE") instanceof InfusionRecipe, "cake recipe exists");
