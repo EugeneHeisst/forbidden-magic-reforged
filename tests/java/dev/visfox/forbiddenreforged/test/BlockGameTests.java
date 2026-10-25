@@ -203,8 +203,8 @@ public final class BlockGameTests {
         var level = helper.getLevel();
         BlockPos log = helper.absolutePos(new BlockPos(2, 4, 2));
         BlockPos leaves = log.east();
-        level.setBlockAndUpdate(log, FmBlocks.TAINT_LOG.get().defaultBlockState());
         level.setBlockAndUpdate(leaves, FmBlocks.TAINT_LEAVES.get().defaultBlockState());
+        level.setBlockAndUpdate(log, FmBlocks.TAINT_LOG.get().defaultBlockState());
         helper.runAfterDelay(2, () -> {
             BlockState leafState = level.getBlockState(leaves);
             helper.assertTrue(leafState.is(FmBlocks.TAINT_LEAVES.get()), "taint leaves remain next to a taint log");
