@@ -4,10 +4,10 @@ Date: Wed, 21 Oct 2026 11:38:25 +0300
 Subject: [PATCH] aspect registry
 
 ---
- src/main/java/thaumcraft/aspect/Aspect.java   | 210 +++++++++++++-------
+ src/main/java/thaumcraft/aspect/Aspect.java   | 211 +++++++++++++-------
  .../java/thaumcraft/entity/AspectOrb.java     |   4 +-
- src/main/java/thaumcraft/wand/WandVis.java    |  56 +++--
- 3 files changed, 174 insertions(+), 96 deletions(-)
+ src/main/java/thaumcraft/wand/WandVis.java    |  57 +++--
+ 3 files changed, 175 insertions(+), 97 deletions(-)
 
 diff --git a/src/main/java/thaumcraft/aspect/Aspect.java b/src/main/java/thaumcraft/aspect/Aspect.java
 index 859be01..78e2b88 100644
