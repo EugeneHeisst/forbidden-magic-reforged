@@ -230,7 +230,13 @@ PLANT_MODELS = {
 
 def generate_plants() -> None:
     for name, (parent, texture) in sorted(PLANT_MODELS.items()):
-        write_json(ASSETS / "blockstates" / f"{name}.json", {"variants": {"": {"model": f"forbiddenmagic:block/{name}"}}})
+        variants = (
+            {"stage=0": {"model": f"forbiddenmagic:block/{name}"},
+             "stage=1": {"model": f"forbiddenmagic:block/{name}"}}
+            if name == "taint_sapling"
+            else {"": {"model": f"forbiddenmagic:block/{name}"}}
+        )
+        write_json(ASSETS / "blockstates" / f"{name}.json", {"variants": variants})
         model = {
             "parent": f"minecraft:block/{parent}",
             "render_type": "minecraft:cutout",

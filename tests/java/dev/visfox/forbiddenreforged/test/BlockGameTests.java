@@ -36,6 +36,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.LeavesBlock;
+import net.minecraft.world.level.block.SaplingBlock;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.RegisterGameTestsEvent;
@@ -63,6 +65,8 @@ public final class BlockGameTests {
         "taint_blocks_carry_tool_tags",
         "taint_materials_resist_fibrous_taint",
         "blocks_drop_themselves",
+        "taint_sapling_advances_stage_before_growth",
+        "taint_leaves_use_taint_log_as_decay_support",
         "taint_sapling_grows_a_tree",
         "umbral_plants_are_registered",
         "arcane_cake_feeds_and_keeps_slices",
@@ -74,10 +78,12 @@ public final class BlockGameTests {
         FUNCTIONS.register(TESTS[1], () -> BlockGameTests::taintBlocksCarryToolTags);
         FUNCTIONS.register(TESTS[2], () -> BlockGameTests::taintMaterialsResistFibrousTaint);
         FUNCTIONS.register(TESTS[3], () -> BlockGameTests::blocksDropThemselves);
-        FUNCTIONS.register(TESTS[4], () -> BlockGameTests::taintSaplingGrowsATree);
-        FUNCTIONS.register(TESTS[5], () -> BlockGameTests::umbralPlantsAreRegistered);
-        FUNCTIONS.register(TESTS[6], () -> BlockGameTests::arcaneCakeFeedsAndKeepsSlices);
-        FUNCTIONS.register(TESTS[7], () -> BlockGameTests::taintLogSelectsSideTexturesDeterministically);
+        FUNCTIONS.register(TESTS[4], () -> BlockGameTests::taintSaplingAdvancesStageBeforeGrowth);
+        FUNCTIONS.register(TESTS[5], () -> BlockGameTests::taintLeavesUseTaintLogAsDecaySupport);
+        FUNCTIONS.register(TESTS[6], () -> BlockGameTests::taintSaplingGrowsATree);
+        FUNCTIONS.register(TESTS[7], () -> BlockGameTests::umbralPlantsAreRegistered);
+        FUNCTIONS.register(TESTS[8], () -> BlockGameTests::arcaneCakeFeedsAndKeepsSlices);
+        FUNCTIONS.register(TESTS[9], () -> BlockGameTests::taintLogSelectsSideTexturesDeterministically);
     }
 
     private BlockGameTests() {}
@@ -151,6 +157,8 @@ public final class BlockGameTests {
 
         helper.assertFalse(FmBlocks.TAINT_LOG.get().defaultBlockState().is(BlockTags.LOGS),
             "taint log must not enter the host's vanilla-log crusting path");
+        helper.assertTrue(BuiltInRegistries.BLOCK.wrapAsHolder(FmBlocks.TAINT_LOG.get()).is(BlockTags.PREVENTS_NEARBY_LEAF_DECAY),
+            "taint log supports taint leaves without entering the vanilla logs tag");
         helper.assertFalse(FmBlocks.TAINT_PLANKS.get().defaultBlockState().is(BlockTags.LOGS),
             "taint planks must not enter the host's vanilla-log crusting path");
         for (Block block : List.of(FmBlocks.TAINT_PLANKS.get(), FmBlocks.TAINT_STONE_SMOOTH.get(), FmBlocks.TAINT_STONE_BRICK.get())) {
@@ -176,6 +184,34 @@ public final class BlockGameTests {
         helper.succeed();
     }
 
+    private static void taintSaplingAdvancesStageBeforeGrowth(GameTestHelper helper) {
+        var level = helper.getLevel();
+        BlockPos soil = helper.absolutePos(new BlockPos(2, 4, 2));
+        level.setBlockAndUpdate(soil, Blocks.DIRT.defaultBlockState());
+        BlockPos sapling = soil.above();
+        BlockState state = FmBlocks.TAINT_SAPLING.get().defaultBlockState();
+        level.setBlockAndUpdate(sapling, state);
+        FmBlocks.TAINT_SAPLING.get().advanceTree(level, sapling, state, RandomSource.create(3L));
+        BlockState staged = level.getBlockState(sapling);
+        helper.assertTrue(staged.is(FmBlocks.TAINT_SAPLING.get()), "first growth stage keeps the sapling");
+        helper.assertValueEqual(staged.getValue(SaplingBlock.STAGE), 1, "first growth stage sets the native sapling stage");
+        helper.succeed();
+    }
+
+    private static void taintLeavesUseTaintLogAsDecaySupport(GameTestHelper helper) {
+        var level = helper.getLevel();
+        BlockPos log = helper.absolutePos(new BlockPos(2, 4, 2));
+        BlockPos leaves = log.east();
+        level.setBlockAndUpdate(log, FmBlocks.TAINT_LOG.get().defaultBlockState());
+        level.setBlockAndUpdate(leaves, FmBlocks.TAINT_LEAVES.get().defaultBlockState());
+        helper.runAfterDelay(2, () -> {
+            BlockState leafState = level.getBlockState(leaves);
+            helper.assertTrue(leafState.is(FmBlocks.TAINT_LEAVES.get()), "taint leaves remain next to a taint log");
+            helper.assertValueEqual(leafState.getValue(LeavesBlock.DISTANCE), 1, "taint log sets leaf support distance to one");
+            helper.succeed();
+        });
+    }
+
     private static void taintSaplingGrowsATree(GameTestHelper helper) {
         var level = helper.getLevel();
         BlockPos soil = helper.absolutePos(new BlockPos(2, 4, 2));
@@ -188,18 +224,33 @@ public final class BlockGameTests {
                 }
             }
         }
-        level.setBlockAndUpdate(sapling, FmBlocks.TAINT_SAPLING.get().defaultBlockState());
-        boolean grown = TaintTree.grow(level, sapling, RandomSource.create(3L));
-        helper.assertTrue(grown, "tree must grow on open ground");
-        helper.assertTrue(helper.getLevel().getBlockState(sapling).is(FmBlocks.TAINT_LOG.get()), "trunk replaces the sapling");
-        boolean canopy = false;
-        for (BlockPos cursor : BlockPos.betweenClosed(sapling.above(2).offset(-2, 0, -2), sapling.above(7).offset(2, 0, 2))) {
-            if (helper.getLevel().getBlockState(cursor).is(FmBlocks.TAINT_LEAVES.get())) {
-                canopy = true;
-                break;
+        BlockState stagedSapling = FmBlocks.TAINT_SAPLING.get().defaultBlockState().setValue(SaplingBlock.STAGE, 1);
+        level.setBlockAndUpdate(sapling, stagedSapling);
+        FmBlocks.TAINT_SAPLING.get().advanceTree(level, sapling, stagedSapling, RandomSource.create(3L));
+        helper.assertTrue(level.getBlockState(sapling).is(FmBlocks.TAINT_LOG.get()), "trunk base replaces the sapling");
+
+        int canopyHeight = 0;
+        for (int y = 1; y <= 8; y++) {
+            for (int x = -2; x <= 2; x++) {
+                for (int z = -2; z <= 2; z++) {
+                    BlockPos cursor = sapling.above(y).offset(x, 0, z);
+                    if (level.getBlockState(cursor).is(FmBlocks.TAINT_LEAVES.get())) {
+                        canopyHeight = Math.max(canopyHeight, y);
+                    }
+                }
             }
         }
-        helper.assertTrue(canopy, "canopy sits above the trunk");
+        helper.assertTrue(canopyHeight >= 4 && canopyHeight <= 6, "taint tree crown height is four to six blocks");
+        helper.assertTrue(level.getBlockState(sapling.above(canopyHeight - 3).offset(2, 0, 0)).is(FmBlocks.TAINT_LEAVES.get()),
+            "lower crown layer has radius two");
+        helper.assertTrue(level.getBlockState(sapling.above(canopyHeight - 2).offset(2, 0, 0)).is(FmBlocks.TAINT_LEAVES.get()),
+            "second crown layer has radius two");
+        helper.assertTrue(level.getBlockState(sapling.above(canopyHeight - 1).offset(1, 0, 0)).is(FmBlocks.TAINT_LEAVES.get()),
+            "upper crown layer has radius one");
+        helper.assertTrue(level.getBlockState(sapling.above(canopyHeight).offset(1, 0, 0)).is(FmBlocks.TAINT_LEAVES.get()),
+            "top crown layer has radius one");
+        helper.assertTrue(level.getBlockState(sapling.above(canopyHeight).offset(1, 0, 1)).isAir(),
+            "top crown corners remain empty as in the original generator");
         helper.succeed();
     }
 
