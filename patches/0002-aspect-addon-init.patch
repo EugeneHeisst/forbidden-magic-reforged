@@ -109,17 +109,17 @@ diff --git a/src/main/java/thaumcraft/Thaumcraft.java b/src/main/java/thaumcraft
  import org.slf4j.Logger;
 +import thaumcraft.aspect.AddonAspects;
  import thaumcraft.aspect.AspectKeys;
-@@ -58,3 +60,4 @@
+@@ -58,3 +58,4 @@
      public Thaumcraft(IEventBus modEventBus, ModContainer modContainer) {
 +        modEventBus.addListener(this::commonSetup);
          modContainer.registerConfig(ModConfig.Type.SYNCED, Config.SPEC);
          modContainer.registerConfig(ModConfig.Type.STARTUP, StartupConfig.SPEC);
-@@ -130,1 +133,5 @@
-     public static Identifier id(String path) {
+@@ -130,1 +130,5 @@
 +    private void commonSetup(FMLCommonSetupEvent event) {
 +        AddonAspects.init();
 +    }
 +
+     public static Identifier id(String path) {
 
 -- 
 2.52.0.windows.1
