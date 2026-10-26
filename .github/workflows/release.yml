@@ -190,10 +190,10 @@ jobs:
         id: asset
         shell: bash
         env:
-          REPO_DIR: \${{ steps.meta.outputs.repo_dir }}
-          CHANNEL: \${{ steps.meta.outputs.channel }}
-          BUILD_VERSION: \${{ steps.meta.outputs.build_version }}
-          SOURCE_SHA: \${{ steps.meta.outputs.source_sha }}
+          REPO_DIR: ${{ steps.meta.outputs.repo_dir }}
+          CHANNEL: ${{ steps.meta.outputs.channel }}
+          BUILD_VERSION: ${{ steps.meta.outputs.build_version }}
+          SOURCE_SHA: ${{ steps.meta.outputs.source_sha }}
         run: |
           set -euo pipefail
           built="$REPO_DIR/build/libs/forbidden-magic-0.574-$CHANNEL-port.$BUILD_VERSION.jar"
