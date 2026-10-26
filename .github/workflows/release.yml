@@ -220,6 +220,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
           CHANNEL: ${{ steps.meta.outputs.channel }}
+          CLEANUP_REFS: ${{ github.event_name == 'push' && github.event.head_commit.message == 'chore: prune stale branches and tags' }}
           SOURCE_SHA: ${{ steps.meta.outputs.source_sha }}
           BUILD_VERSION: ${{ steps.meta.outputs.build_version }}
           JAVA_VERSION: ${{ steps.meta.outputs.java_version }}
@@ -438,3 +439,35 @@ jobs:
             gh release upload "$CHANNEL_TAG" "$JAR_PATH" "$CHECKSUM_PATH" --repo "$REPO"
           fi
           echo "Updated release $CHANNEL_TAG from $SOURCE_SHA. The other Minecraft channel was not touched."
+
+          # One-shot cleanup for refs reviewed on 2026-10-26. This runs only on the
+          # specifically named cleanup commit on main; all published release tags and
+          # the last known-good rollback point remain untouched.
+          if [[ "${CLEANUP_REFS:-false}" == "true" && "$CHANNEL" == "26.3" ]]; then
+            for branch in "feature/1.21.1-content-parity" "fix/upstream-api-1.21.1"; do
+              ref="heads/$branch"
+              if gh api "repos/$REPO/git/ref/$ref" >/dev/null 2>&1; then
+                gh api --method DELETE "repos/$REPO/git/refs/$ref" >/dev/null
+                echo "Deleted obsolete merged branch: $branch"
+              else
+                echo "Branch already absent: $branch"
+              fi
+            done
+
+            for tag in \
+              "archive/releases/26.3/fcfb8b4d33b4c49d7a5bc04db3871401c2ea9eeb" \
+              "archive/releases/26.3/da094b5bc4b222f04c59f8f9ade09064ed5b0131" \
+              "archive/releases/26.3/71159e469420f7c9890348d9c659b0e3beec08ea" \
+              "archive/releases/26.3/a34ecf7646f44afcb02fad40a7479581bc85313e" \
+              "archive/releases/26.3/a4a2965890c8bd21ae975cde0bb2ee956453663b" \
+              "archive/releases/26.3/29486e14d3e25eaa2d5564271238cdd66e53b125" \
+              "archive/releases/26.3/b4ba663d2e8db004ad77a70297f5fef96b73e2eb"; do
+              ref="tags/$tag"
+              if gh api "repos/$REPO/git/ref/$ref" >/dev/null 2>&1; then
+                gh api --method DELETE "repos/$REPO/git/refs/$ref" >/dev/null
+                echo "Deleted redundant workflow-only rollback tag: $tag"
+              else
+                echo "Tag already absent: $tag"
+              fi
+            done
+          fi
