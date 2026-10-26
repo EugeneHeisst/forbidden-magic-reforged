@@ -329,65 +329,20 @@ jobs:
                   "Automated validation covers the test server; graphical client verification remains a separate manual check.",
               ]
 
+          commit_subject = subprocess.run(
+              ["git", "-C", repo_dir, "show", "-s", "--format=%s", source_sha],
+              check=True, capture_output=True, text=True,
+          ).stdout.strip()
+
           lines = [
               f"{mc_version}",
               "",
-              f"Forbidden Magic for Minecraft {mc_version}.",
-              "",
-              "## What changed",
+              f"`{source_sha[:7]}`: {commit_subject}",
           ]
           if compare_url:
-              lines.append(f"- [Compare commits since the previous published build]({compare_url}).")
-          else:
-              lines.append(f"- Initial rolling-channel publication from [{source_sha[:7]}]({source_url}); existing numbered releases remain available.")
-          lines.extend(f"- {item}" for item in bullets)
-          # Keep source commits and PR references together in one compact list.
-          branch = "main" if channel == "26.3" else "1.21.1"
-          recent_prs = []
-          try:
-              response = gh_json(f"repos/{repo}/pulls?state=closed&base={branch}&per_page=100")
-              recent_prs = [pr for pr in response if pr.get("merged_at") and pr.get("html_url") and pr.get("number")]
-              recent_prs.sort(key=lambda pr: pr.get("merged_at", ""), reverse=True)
-          except Exception:
-              pass
+              lines += ["", f"[Changes since previous build]({compare_url})"]
+          lines += ["", f"<!-- release-source-sha: {source_sha} -->"]
 
-          lines += ["", "## Commits & PRs"]
-          if commit_lines:
-              lines += commit_lines[:10]
-              if len(commit_lines) > 10:
-                  lines.append(f"- And {len(commit_lines) - 10} earlier commits; use the compare link above.")
-          else:
-              lines.append(f"- [{source_sha[:7]}]({source_url}) — published source")
-
-          # Merge commit-linked PRs with a small recent-PR context list; don't repeat
-          # PRs and don't emit a noisy "no PR associated" placeholder.
-          seen_prs = set()
-          for number, (url, title) in sorted(pr_map.items()):
-              lines.append(f"- PR [#{number}]({url}) — {title}")
-              seen_prs.add(number)
-          for pr in recent_prs:
-              number = pr["number"]
-              if number in seen_prs:
-                  continue
-              lines.append(f"- PR [#{number}]({pr['html_url']}) — {pr.get('title', '')}")
-              seen_prs.add(number)
-              if len(seen_prs) >= max(5, len(pr_map)):
-                  break
-
-          archive_tag = f"archive/releases/{channel}/{source_sha}"
-          if channel == "26.3":
-              rollback_line = f"- Rollback source: [{archive_tag}](https://github.com/{repo}/tree/{archive_tag})."
-              rollback_text = f"The exact source commit is preserved by the archive tag. To rebuild or roll back, run this workflow manually on main with source_ref set to that tag; older numbered releases remain available."
-          else:
-              rollback_line = f"- Rollback source: [commit {source_sha[:7]}]({source_url}); the exact current source ZIP is attached below."
-              rollback_text = f"To rebuild or roll back to a previous 1.21.1 commit, run this workflow manually on branch 1.21.1 with source_ref set to that commit SHA."
-          lines += [
-              "",
-              f"Commit: [{source_sha[:7]}]({source_url}) · Java {java_version} · Mod {mod_version}",
-              *( [f"[Changes since previous build]({compare_url})"] if compare_url else [] ),
-              "",
-              f"<!-- release-source-sha: {source_sha} -->",
-          ]
           with open(sys.argv[1], "w", encoding="utf-8", newline="\n") as output:
               output.write("\n".join(lines) + "\n")
           PY
