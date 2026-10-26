@@ -1,112 +1,181 @@
-name: Release
+
+name: Publish version-specific rolling releases
 
 on:
   push:
-    tags:
-      - '[0-9]*'
+    branches: [main, "1.21.1"]
   workflow_dispatch:
     inputs:
-      tag:
-        description: Existing semantic-version tag to build and publish (for example 0.1.0-beta.2)
-        required: true
+      source_ref:
+        description: "Optional commit, tag, or archive/releases/<version>/<sha> tag to publish (rollback)"
+        required: false
         type: string
+        default: ""
 
 permissions:
-  contents: read
+  contents: write
+  pull-requests: read
 
 concurrency:
-  group: release-${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+  group: publish-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
-  build-test-publish:
+  publish:
+    name: Build, test, and update the matching Minecraft release
     runs-on: ubuntu-latest
-    timeout-minutes: 90
-    permissions:
-      contents: write
-    env:
-      RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
-
+    timeout-minutes: 120
     steps:
-      - name: Checkout tagged commit
+      - name: Checkout Minecraft 26.3 source
+        if: github.ref == 'refs/heads/main'
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.source_ref != '' && inputs.source_ref || github.sha }}
+          fetch-depth: 0
 
-      - name: Validate tag and set artifact version
+      - name: Checkout Minecraft 1.21.1 source
+        if: github.ref == 'refs/heads/1.21.1'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.source_ref != '' && inputs.source_ref || github.sha }}
+          path: port/forbidden-magic-reforged
+          fetch-depth: 0
+
+      - name: Determine channel and validate source
+        id: meta
         shell: bash
         run: |
           set -euo pipefail
-          if [[ ! "$RELEASE_TAG" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-(alpha|beta|rc)\.(0|[1-9][0-9]*))?$ ]]; then
-            echo "Unsupported tag '$RELEASE_TAG'. Use MAJOR.MINOR.PATCH or MAJOR.MINOR.PATCH-(alpha|beta|rc).N." >&2
+          if [[ "$GITHUB_REF" == "refs/heads/main" ]]; then
+            channel="26.3"
+            repo_dir="."
+            expected_mc="26.3"
+            java_version="25"
+            host_sha=""
+          elif [[ "$GITHUB_REF" == "refs/heads/1.21.1" ]]; then
+            channel="1.21.1"
+            repo_dir="port/forbidden-magic-reforged"
+            expected_mc="1.21.1"
+            java_version="21"
+            host_sha="$(tr -d '[:space:]' < "$repo_dir/host.sha")"
+            if [[ ! "$host_sha" =~ ^[0-9a-f]{40}$ ]]; then
+              echo "Invalid host.sha: $host_sha" >&2
+              exit 1
+            fi
+            echo "host_sha=$host_sha" >> "$GITHUB_OUTPUT"
+          else
+            echo "Run this workflow from main (26.3) or 1.21.1 only." >&2
             exit 1
           fi
-          python3 - <<'PY'
-          import os
-          import re
-          from pathlib import Path
 
-          tag = os.environ["RELEASE_TAG"]
-          properties = Path("gradle.properties")
-          original = properties.read_text(encoding="utf-8")
-          updated, count = re.subn(
+          source_sha="$(git -C "$repo_dir" rev-parse HEAD)"
+          actual_mc="$(sed -n 's/^minecraft_version=//p' "$repo_dir/gradle.properties" | head -n1)"
+          if [[ "$actual_mc" != "$expected_mc" ]]; then
+            echo "Refusing to publish $channel: source targets Minecraft '$actual_mc', expected '$expected_mc'." >&2
+            exit 1
+          fi
+
+          build_version="$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT"
+          mod_version="0.574-$channel-port.$build_version"
+          python3 - "$repo_dir/gradle.properties" "$mod_version" <<'PY'
+          import re
+          import sys
+          from pathlib import Path
+          path = Path(sys.argv[1])
+          content, count = re.subn(
               r"(?m)^mod_version=.*$",
-              f"mod_version=0.574-26.3-port.{tag}",
-              original,
+              f"mod_version={sys.argv[2]}",
+              path.read_text(encoding="utf-8"),
           )
           if count != 1:
-              raise SystemExit(f"Expected exactly one mod_version entry; found {count}")
-          properties.write_text(updated, encoding="utf-8")
-          print(f"Building release {tag} as mod_version=0.574-26.3-port.{tag}")
+              raise SystemExit(f"Expected one mod_version entry; found {count}")
+          path.write_text(content, encoding="utf-8")
           PY
-          test -s "docs/releases/$RELEASE_TAG.md" || {
-            echo "Missing release notes: docs/releases/$RELEASE_TAG.md" >&2
-            exit 1
-          }
 
-      - name: Clone host upstream
-        run: git clone https://github.com/notlikethiss/thaumcraft-4-reforged.git ../thaumcraft-4-reforged
+          {
+            echo "channel=$channel"
+            echo "repo_dir=$repo_dir"
+            echo "expected_mc=$expected_mc"
+            echo "java_version=$java_version"
+            echo "source_sha=$source_sha"
+            echo "build_version=$build_version"
+            echo "mod_version=$mod_version"
+          } >> "$GITHUB_OUTPUT"
+          echo "Publishing Minecraft $channel from $source_sha as mod version $mod_version"
 
-      - name: Set up JDK 25
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up matching Java toolchain
         uses: actions/setup-java@v4
         with:
-          java-version: "25"
-          distribution: "temurin"
+          distribution: temurin
+          java-version: ${{ steps.meta.outputs.java_version }}
+          cache: gradle
 
-      - name: Setup Gradle
+      - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Prepare host (pinned commit + local patches)
+      - name: Clone Thaumcraft host for Minecraft 26.3
+        if: steps.meta.outputs.channel == '26.3'
+        run: git clone https://github.com/notlikethiss/thaumcraft-4-reforged.git ../thaumcraft-4-reforged
+
+      - name: Checkout pinned Thaumcraft host for Minecraft 1.21.1
+        if: steps.meta.outputs.channel == '1.21.1'
+        uses: actions/checkout@v4
+        with:
+          repository: notlikethiss/thaumcraft-4-reforged
+          ref: ${{ steps.meta.outputs.host_sha }}
+          path: port/thaumcraft-4-reforged
+          fetch-depth: 0
+
+      - name: Prepare and patch Thaumcraft host
+        working-directory: ${{ steps.meta.outputs.repo_dir }}
+        shell: bash
         run: |
+          set -euo pipefail
           git config --global user.email "ci@github-actions.local"
           git config --global user.name "GitHub Actions"
           python3 tools/prepare_host.py
 
-      - name: Build patched host
-        working-directory: host
+      - name: Verify prepared host for Minecraft 1.21.1
+        if: steps.meta.outputs.channel == '1.21.1'
+        working-directory: ${{ steps.meta.outputs.repo_dir }}
+        run: python3 tools/prepare_host.py --verify
+
+      - name: Build host
+        working-directory: ${{ steps.meta.outputs.repo_dir }}/host
+        shell: bash
         run: |
           chmod +x gradlew
-          ./gradlew build --no-daemon
+          ./gradlew --no-daemon build
 
-      - name: Build mod
-        run: ./gradlew build --no-daemon
+      - name: Build add-on
+        working-directory: ${{ steps.meta.outputs.repo_dir }}
+        run: ./gradlew --no-daemon build
 
-      - name: Verify mod artifact provenance
+      - name: Verify add-on artifact provenance
+        working-directory: ${{ steps.meta.outputs.repo_dir }}
         run: python3 tools/check_provenance.py
 
-      - name: Run GameTests with Luxuria enabled
-        run: ./gradlew runGameTestServer --no-daemon
+      - name: Run GameTests
+        working-directory: ${{ steps.meta.outputs.repo_dir }}
+        run: ./gradlew --no-daemon runGameTestServer
 
-      - name: Run GameTests with Luxuria disabled
+      - name: Run GameTests with Luxuria disabled (26.3)
+        if: steps.meta.outputs.channel == '26.3'
+        working-directory: ${{ steps.meta.outputs.repo_dir }}
+        shell: bash
         run: |
+          set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
           import re
-
           config = Path("run/config/forbiddenmagic-startup.toml")
           if not config.is_file():
               raise SystemExit(f"Expected startup config was not generated: {config}")
-
           original = config.read_text(encoding="utf-8")
           pattern = re.compile(r"(?m)^([ \t]*no_lust[ \t]*=[ \t]*)false([ \t]*(?:#.*)?[ \t]*$)")
           updated, count = pattern.subn(r"\1true\2", original)
@@ -115,27 +184,176 @@ jobs:
           config.write_text(updated, encoding="utf-8")
           print(f"Set no_lust=true in {config}")
           PY
-          ./gradlew runGameTestServer --no-daemon
+          ./gradlew --no-daemon runGameTestServer
 
-      - name: Publish GitHub release
+      - name: Prepare stable release asset
+        id: asset
+        shell: bash
+        env:
+          REPO_DIR: ${{ steps.meta.outputs.repo_dir }}
+          CHANNEL: ${{ steps.meta.outputs.channel }}
+          BUILD_VERSION: ${{ steps.meta.outputs.build_version }}
+        run: |
+          set -euo pipefail
+          built="$REPO_DIR/build/libs/forbidden-magic-0.574-$CHANNEL-port.$BUILD_VERSION.jar"
+          test -s "$built"
+          asset="$REPO_DIR/build/libs/forbidden-magic-$CHANNEL.jar"
+          mv "$built" "$asset"
+          sha256sum "$asset" > "$REPO_DIR/build/libs/forbidden-magic-$CHANNEL.sha256"
+          echo "jar_path=$asset" >> "$GITHUB_OUTPUT"
+          echo "checksum_path=$REPO_DIR/build/libs/forbidden-magic-$CHANNEL.sha256" >> "$GITHUB_OUTPUT"
+
+      - name: Archive tested source and publish rolling release
         env:
           GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          CHANNEL: ${{ steps.meta.outputs.channel }}
+          SOURCE_SHA: ${{ steps.meta.outputs.source_sha }}
+          BUILD_VERSION: ${{ steps.meta.outputs.build_version }}
+          JAVA_VERSION: ${{ steps.meta.outputs.java_version }}
+          MC_VERSION: ${{ steps.meta.outputs.expected_mc }}
+          REPO_DIR: ${{ steps.meta.outputs.repo_dir }}
+          JAR_PATH: ${{ steps.asset.outputs.jar_path }}
+          CHECKSUM_PATH: ${{ steps.asset.outputs.checksum_path }}
         shell: bash
         run: |
           set -euo pipefail
-          TAG="$RELEASE_TAG"
-          JAR="build/libs/forbidden-magic-0.574-26.3-port.$TAG.jar"
-          NOTES="docs/releases/$TAG.md"
-          test -s "$JAR"
-          test -s "$NOTES"
+          CHANNEL_TAG="$CHANNEL"
+          ARCHIVE_TAG="archive/releases/$CHANNEL/$SOURCE_SHA"
+          TITLE="Minecraft $CHANNEL — latest tested build"
 
-          if gh release view "$TAG" >/dev/null 2>&1; then
-            echo "Release '$TAG' already exists; refusing to overwrite an existing published release." >&2
-            exit 1
+          git -C "$REPO_DIR" config user.email "ci@github-actions.local"
+          git -C "$REPO_DIR" config user.name "GitHub Actions"
+          if ! git -C "$REPO_DIR" ls-remote --exit-code --tags origin "refs/tags/$ARCHIVE_TAG" >/dev/null 2>&1; then
+            git -C "$REPO_DIR" tag -a "$ARCHIVE_TAG" "$SOURCE_SHA" -m "Rollback point for Minecraft $CHANNEL ($SOURCE_SHA)"
+            git -C "$REPO_DIR" push origin "refs/tags/$ARCHIVE_TAG"
           fi
 
-          RELEASE_ARGS=("$TAG" "$JAR" --title "$TAG (NeoForge 26.3)" --notes-file "$NOTES")
-          if [[ "$TAG" == *-* ]]; then
-            RELEASE_ARGS+=(--prerelease)
+          PREVIOUS_BODY=""
+          if gh release view "$CHANNEL_TAG" --repo "$REPO" >/dev/null 2>&1; then
+            PREVIOUS_BODY="$(gh release view "$CHANNEL_TAG" --repo "$REPO" --json body --jq .body)"
           fi
-          gh release create "${RELEASE_ARGS[@]}"
+          export PREVIOUS_BODY
+
+          NOTES_FILE="$RUNNER_TEMP/release-notes-$CHANNEL.md"
+          python3 - "$NOTES_FILE" <<'PY'
+          import json
+          import os
+          import re
+          import subprocess
+          import sys
+
+          repo = os.environ["REPO"]
+          channel = os.environ["CHANNEL"]
+          source_sha = os.environ["SOURCE_SHA"]
+          build_version = os.environ["BUILD_VERSION"]
+          mc_version = os.environ["MC_VERSION"]
+          java_version = os.environ["JAVA_VERSION"]
+          repo_dir = os.environ["REPO_DIR"]
+          previous_body = os.environ.get("PREVIOUS_BODY", "")
+          marker = re.search(r"<!-- release-source-sha: ([0-9a-f]{40}) -->", previous_body)
+          previous_sha = marker.group(1) if marker else ""
+          source_url = f"https://github.com/{repo}/commit/{source_sha}"
+          compare_url = f"https://github.com/{repo}/compare/{previous_sha}...{source_sha}" if previous_sha and previous_sha != source_sha else ""
+
+          def gh_json(endpoint):
+              result = subprocess.run(["gh", "api", endpoint], check=True, capture_output=True, text=True)
+              return json.loads(result.stdout)
+
+          if compare_url:
+              try:
+                  commits = gh_json(f"repos/{repo}/compare/{previous_sha}...{source_sha}").get("commits", [])
+              except Exception:
+                  commits = []
+          else:
+              log = subprocess.run(
+                  ["git", "-C", repo_dir, "log", "-n", "12", "--format=%H%x1f%s"],
+                  check=True, capture_output=True, text=True,
+              ).stdout.splitlines()
+              commits = []
+              for line in log:
+                  parts = line.split("\x1f", 1)
+                  if len(parts) == 2:
+                      commits.append({"sha": parts[0], "commit": {"message": parts[1]}})
+
+          commit_lines = []
+          pr_map = {}
+          for item in commits:
+              sha = item.get("sha", "")
+              message = item.get("commit", {}).get("message", "").splitlines()[0]
+              if not sha:
+                  continue
+              commit_lines.append(f"- [{sha[:7]}](https://github.com/{repo}/commit/{sha}) — {message}")
+              try:
+                  for pr in gh_json(f"repos/{repo}/commits/{sha}/pulls"):
+                      if pr.get("html_url") and pr.get("number"):
+                          pr_map[pr["number"]] = (pr["html_url"], pr.get("title", f"PR #{pr['number']}"))
+              except Exception:
+                  pass
+              for number in re.findall(r"\(#(\d+)\)", message):
+                  pr_map.setdefault(int(number), (f"https://github.com/{repo}/pull/{number}", f"PR #{number}"))
+
+          if channel == "26.3":
+              bullets = [
+                  "Minecraft 26.3 / NeoForge 26.3 build; Java 25.",
+                  "Builds the host and add-on, checks artifact provenance, and runs GameTests with no_lust=false and no_lust=true.",
+                  f"Known parity gaps and client-visual checks are tracked in the [fidelity ledger](https://github.com/{repo}/blob/{source_sha}/docs/fidelity.md).",
+              ]
+          else:
+              bullets = [
+                  "Minecraft 1.21.1 / NeoForge 21.1.x build; Java 21.",
+                  "Builds the pinned Thaumcraft host and add-on, verifies host preparation and artifact provenance, and runs GameTests.",
+                  "Automated validation covers the test server; graphical client verification remains a separate manual check.",
+              ]
+
+          lines = [
+              f"# Forbidden Magic — Minecraft {mc_version}",
+              "",
+              f"Rolling release for Minecraft {mc_version}; only this Minecraft line is updated by this build.",
+              "",
+              "## What changed",
+          ]
+          if compare_url:
+              lines.append(f"- [Compare commits since the previous published build]({compare_url}).")
+          else:
+              lines.append(f"- Initial rolling-channel publication from [{source_sha[:7]}]({source_url}); existing numbered releases remain available.")
+          lines.extend(f"- {item}" for item in bullets)
+          lines += ["", "## Source commits"]
+          lines += commit_lines[:10] if commit_lines else [f"- [{source_sha[:7]}]({source_url}) — published source"]
+          if len(commit_lines) > 10:
+              lines.append(f"- And {len(commit_lines) - 10} earlier commits; use the compare link above.")
+          lines += ["", "## Related pull requests"]
+          if pr_map:
+              lines += [f"- [#{number}]({url}) — {title}" for number, (url, title) in sorted(pr_map.items())]
+          else:
+              lines.append("- No PR association was returned for the listed commits; use the commit links above to trace the source changes.")
+          branch = "main" if channel == "26.3" else "1.21.1"
+          archive_tag = f"archive/releases/{channel}/{source_sha}"
+          lines += [
+              "",
+              "## Build details",
+              f"- Minecraft: {mc_version}",
+              f"- Mod version: 0.574-{channel}-port.{build_version}",
+              f"- Java: {java_version}",
+              f"- Source commit: [{source_sha}]({source_url})",
+              f"- Source branch: [{branch}](https://github.com/{repo}/tree/{branch})",
+              f"- Rollback point: [{archive_tag}](https://github.com/{repo}/tree/{archive_tag})",
+              "",
+              f"The JAR below is replaced in place on the next successful {channel} build. This source commit is preserved by the archive tag above; run this workflow manually from the matching branch and set source_ref to that tag to roll back.",
+              "",
+              f"<!-- release-source-sha: {source_sha} -->",
+          ]
+          with open(sys.argv[1], "w", encoding="utf-8", newline="\n") as output:
+              output.write("\n".join(lines) + "\n")
+          PY
+
+          git -C "$REPO_DIR" tag -f -a "$CHANNEL_TAG" "$SOURCE_SHA" -m "Latest tested Minecraft $CHANNEL build from $SOURCE_SHA"
+          git -C "$REPO_DIR" push --force origin "refs/tags/$CHANNEL_TAG"
+
+          if gh release view "$CHANNEL_TAG" --repo "$REPO" >/dev/null 2>&1; then
+            gh release edit "$CHANNEL_TAG" --repo "$REPO" --title "$TITLE" --notes-file "$NOTES_FILE"
+            gh release upload "$CHANNEL_TAG" "$JAR_PATH" "$CHECKSUM_PATH" --repo "$REPO" --clobber
+          else
+            gh release create "$CHANNEL_TAG" "$JAR_PATH" "$CHECKSUM_PATH" --repo "$REPO" --target "$SOURCE_SHA" --title "$TITLE" --notes-file "$NOTES_FILE"
+          fi
+          echo "Updated release $CHANNEL_TAG from $SOURCE_SHA. The other Minecraft channel was not touched."
