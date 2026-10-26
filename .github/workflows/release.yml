@@ -202,18 +202,7 @@ jobs:
           asset_name="forbidden-magic-$CHANNEL.jar"
           asset="$repo_abs/build/libs/$asset_name"
           mv "$built" "$asset"
-          (
-            cd "$repo_abs/build/libs"
-            sha256sum "$asset_name" > "forbidden-magic-$CHANNEL.sha256"
-          )
           echo "jar_path=$asset" >> "$GITHUB_OUTPUT"
-          echo "checksum_path=$repo_abs/build/libs/forbidden-magic-$CHANNEL.sha256" >> "$GITHUB_OUTPUT"
-          if [[ "$CHANNEL" == "1.21.1" ]]; then
-            source_name="forbidden-magic-$CHANNEL-source.zip"
-            source_bundle="$repo_abs/build/libs/$source_name"
-            git -C "$REPO_DIR" archive --format=zip --output "$source_bundle" "$SOURCE_SHA"
-            echo "source_path=$source_bundle" >> "$GITHUB_OUTPUT"
-          fi
 
       - name: Archive tested source and publish rolling release
         env:
@@ -226,13 +215,11 @@ jobs:
           MC_VERSION: ${{ steps.meta.outputs.expected_mc }}
           REPO_DIR: ${{ steps.meta.outputs.repo_dir }}
           JAR_PATH: ${{ steps.asset.outputs.jar_path }}
-          CHECKSUM_PATH: ${{ steps.asset.outputs.checksum_path }}
-          SOURCE_PATH: ${{ steps.asset.outputs.source_path }}
         shell: bash
         run: |
           set -euo pipefail
           CHANNEL_TAG="$CHANNEL"
-          TITLE="Minecraft $CHANNEL — latest tested build"
+          TITLE="$CHANNEL"
 
           git -C "$REPO_DIR" config user.email "ci@github-actions.local"
           git -C "$REPO_DIR" config user.name "GitHub Actions"
@@ -343,9 +330,9 @@ jobs:
               ]
 
           lines = [
-              f"# Forbidden Magic — Minecraft {mc_version}",
+              f"{mc_version}",
               "",
-              f"Rolling release for Minecraft {mc_version}; only this Minecraft line is updated by this build.",
+              f"Forbidden Magic for Minecraft {mc_version}.",
               "",
               "## What changed",
           ]
@@ -396,15 +383,8 @@ jobs:
               rollback_text = f"To rebuild or roll back to a previous 1.21.1 commit, run this workflow manually on branch 1.21.1 with source_ref set to that commit SHA."
           lines += [
               "",
-              "## Build details",
-              f"- Minecraft: {mc_version}",
-              f"- Mod version: 0.574-{channel}-port.{build_version}",
-              f"- Java: {java_version}",
-              f"- Source commit: [{source_sha}]({source_url})",
-              f"- Source branch: [{branch}](https://github.com/{repo}/tree/{branch})",
-              rollback_line,
-              "",
-              rollback_text,
+              f"Commit: [{source_sha[:7]}]({source_url}) · Java {java_version} · Mod {mod_version}",
+              *( [f"[Changes since previous build]({compare_url})"] if compare_url else [] ),
               "",
               f"<!-- release-source-sha: {source_sha} -->",
           ]
@@ -432,9 +412,5 @@ jobs:
             fi
           done < <(gh api "repos/$REPO/releases/$RELEASE_ID/assets?per_page=100" --jq '.[] | [.id, .name] | @tsv')
 
-          if [[ "$CHANNEL" == "1.21.1" ]]; then
-            gh release upload "$CHANNEL_TAG" "$JAR_PATH" "$CHECKSUM_PATH" "$SOURCE_PATH" --repo "$REPO"
-          else
-            gh release upload "$CHANNEL_TAG" "$JAR_PATH" "$CHECKSUM_PATH" --repo "$REPO"
-          fi
+          gh release upload "$CHANNEL_TAG" "$JAR_PATH" --repo "$REPO"
           echo "Updated release $CHANNEL_TAG from $SOURCE_SHA. The other Minecraft channel was not touched."
