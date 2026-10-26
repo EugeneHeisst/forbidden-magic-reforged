@@ -186,22 +186,48 @@ jobs:
           PY
           ./gradlew --no-daemon runGameTestServer
 
-      - name: Prepare stable release asset
+      - name: Prepare stable release assets and rollback copy
         id: asset
         shell: bash
         env:
-          REPO_DIR: ${{ steps.meta.outputs.repo_dir }}
-          CHANNEL: ${{ steps.meta.outputs.channel }}
-          BUILD_VERSION: ${{ steps.meta.outputs.build_version }}
+          REPO_DIR: \${{ steps.meta.outputs.repo_dir }}
+          CHANNEL: \${{ steps.meta.outputs.channel }}
+          BUILD_VERSION: \${{ steps.meta.outputs.build_version }}
+          SOURCE_SHA: \${{ steps.meta.outputs.source_sha }}
         run: |
           set -euo pipefail
           built="$REPO_DIR/build/libs/forbidden-magic-0.574-$CHANNEL-port.$BUILD_VERSION.jar"
           test -s "$built"
-          asset="$REPO_DIR/build/libs/forbidden-magic-$CHANNEL.jar"
+          short_sha="$(printf '%.7s' "$SOURCE_SHA")"
+          asset_name="forbidden-magic-$CHANNEL.jar"
+          archive_jar_name="forbidden-magic-$CHANNEL-$short_sha-$BUILD_VERSION.jar"
+          source_name="forbidden-magic-$CHANNEL-source.zip"
+          archive_source_name="forbidden-magic-$CHANNEL-source-$short_sha.zip"
+          asset="$REPO_DIR/build/libs/$asset_name"
+          archive_jar="$REPO_DIR/build/libs/$archive_jar_name"
+          source_bundle="$REPO_DIR/build/libs/$source_name"
+          archive_source="$REPO_DIR/build/libs/$archive_source_name"
           mv "$built" "$asset"
-          (cd "$REPO_DIR/build/libs" && sha256sum "forbidden-magic-$CHANNEL.jar" > "forbidden-magic-$CHANNEL.sha256")
+          cp "$asset" "$archive_jar"
+          git -C "$REPO_DIR" archive --format=zip --output "$source_bundle" "$SOURCE_SHA"
+          cp "$source_bundle" "$archive_source"
+          (
+            cd "$REPO_DIR/build/libs"
+            sha256sum "$asset_name" > "forbidden-magic-$CHANNEL.sha256"
+            sha256sum "$archive_jar_name" > "$archive_jar_name.sha256"
+            sha256sum "$source_name" > "forbidden-magic-$CHANNEL-source.sha256"
+            sha256sum "$archive_source_name" > "$archive_source_name.sha256"
+          )
           echo "jar_path=$asset" >> "$GITHUB_OUTPUT"
           echo "checksum_path=$REPO_DIR/build/libs/forbidden-magic-$CHANNEL.sha256" >> "$GITHUB_OUTPUT"
+          echo "archive_jar_path=$archive_jar" >> "$GITHUB_OUTPUT"
+          echo "archive_checksum_path=$REPO_DIR/build/libs/$archive_jar_name.sha256" >> "$GITHUB_OUTPUT"
+          echo "source_path=$source_bundle" >> "$GITHUB_OUTPUT"
+          echo "source_checksum_path=$REPO_DIR/build/libs/forbidden-magic-$CHANNEL-source.sha256" >> "$GITHUB_OUTPUT"
+          echo "archive_source_path=$archive_source" >> "$GITHUB_OUTPUT"
+          echo "archive_source_checksum_path=$REPO_DIR/build/libs/$archive_source_name.sha256" >> "$GITHUB_OUTPUT"
+          echo "archive_jar_name=$archive_jar_name" >> "$GITHUB_OUTPUT"
+          echo "archive_source_name=$archive_source_name" >> "$GITHUB_OUTPUT"
 
       - name: Archive tested source and publish rolling release
         env:
@@ -215,18 +241,47 @@ jobs:
           REPO_DIR: ${{ steps.meta.outputs.repo_dir }}
           JAR_PATH: ${{ steps.asset.outputs.jar_path }}
           CHECKSUM_PATH: ${{ steps.asset.outputs.checksum_path }}
+          ARCHIVE_JAR_PATH: ${{ steps.asset.outputs.archive_jar_path }}
+          ARCHIVE_CHECKSUM_PATH: ${{ steps.asset.outputs.archive_checksum_path }}
+          SOURCE_PATH: ${{ steps.asset.outputs.source_path }}
+          SOURCE_CHECKSUM_PATH: ${{ steps.asset.outputs.source_checksum_path }}
+          ARCHIVE_SOURCE_PATH: ${{ steps.asset.outputs.archive_source_path }}
+          ARCHIVE_SOURCE_CHECKSUM_PATH: ${{ steps.asset.outputs.archive_source_checksum_path }}
+          ARCHIVE_JAR_NAME: ${{ steps.asset.outputs.archive_jar_name }}
+          ARCHIVE_SOURCE_NAME: ${{ steps.asset.outputs.archive_source_name }}
         shell: bash
         run: |
           set -euo pipefail
           CHANNEL_TAG="$CHANNEL"
-          ARCHIVE_TAG="archive/releases/$CHANNEL/$SOURCE_SHA"
           TITLE="Minecraft $CHANNEL — latest tested build"
 
           git -C "$REPO_DIR" config user.email "ci@github-actions.local"
           git -C "$REPO_DIR" config user.name "GitHub Actions"
-          if ! git -C "$REPO_DIR" ls-remote --exit-code --tags origin "refs/tags/$ARCHIVE_TAG" >/dev/null 2>&1; then
-            git -C "$REPO_DIR" tag -a "$ARCHIVE_TAG" "$SOURCE_SHA" -m "Rollback point for Minecraft $CHANNEL ($SOURCE_SHA)"
-            git -C "$REPO_DIR" push origin "refs/tags/$ARCHIVE_TAG"
+
+          if [[ "$CHANNEL" == "26.3" ]]; then
+            ARCHIVE_TAG="archive/releases/$CHANNEL/$SOURCE_SHA"
+            if ! git -C "$REPO_DIR" ls-remote --exit-code --tags origin "refs/tags/$ARCHIVE_TAG" >/dev/null 2>&1; then
+              git -C "$REPO_DIR" tag -a "$ARCHIVE_TAG" "$SOURCE_SHA" -m "Rollback point for Minecraft $CHANNEL ($SOURCE_SHA)"
+              git -C "$REPO_DIR" push origin "refs/tags/$ARCHIVE_TAG"
+            fi
+            TAG_TARGET="$SOURCE_SHA"
+          else
+            # GitHub's built-in GITHUB_TOKEN cannot create a release tag directly on a
+            # commit that changes .github/workflows relative to main. Build a snapshot
+            # from the exact 1.21.1 tree while inheriting main's workflow directory.
+            # The real source SHA and a source ZIP are separately attached to this release.
+            git -C "$REPO_DIR" fetch origin main:refs/remotes/origin/main
+            MAIN_SHA="$(git -C "$REPO_DIR" rev-parse refs/remotes/origin/main)"
+            TREE_WORKDIR="$RUNNER_TEMP/release-source-tree"
+            git -C "$REPO_DIR" worktree add --detach "$TREE_WORKDIR" "$MAIN_SHA"
+            git -C "$TREE_WORKDIR" rm -r --cached -f .
+            git -C "$TREE_WORKDIR" clean -fdx
+            git -C "$REPO_DIR" archive "$SOURCE_SHA" | tar -xf - -C "$TREE_WORKDIR"
+            git -C "$TREE_WORKDIR" checkout --force "$MAIN_SHA" -- .github/workflows
+            git -C "$TREE_WORKDIR" add -A
+            TREE_SHA="$(git -C "$TREE_WORKDIR" write-tree)"
+            TAG_TARGET="$(printf 'Release snapshot for Minecraft 1.21.1; source %s\n' "$SOURCE_SHA" | git -C "$TREE_WORKDIR" commit-tree "$TREE_SHA" -p "$MAIN_SHA")"
+            git -C "$REPO_DIR" worktree remove "$TREE_WORKDIR" --force
           fi
 
           PREVIOUS_BODY=""
@@ -250,6 +305,8 @@ jobs:
           mc_version = os.environ["MC_VERSION"]
           java_version = os.environ["JAVA_VERSION"]
           repo_dir = os.environ["REPO_DIR"]
+          archive_jar_name = os.environ["ARCHIVE_JAR_NAME"]
+          archive_source_name = os.environ["ARCHIVE_SOURCE_NAME"]
           previous_body = os.environ.get("PREVIOUS_BODY", "")
           marker = re.search(r"<!-- release-source-sha: ([0-9a-f]{40}) -->", previous_body)
           previous_sha = marker.group(1) if marker else ""
@@ -358,13 +415,13 @@ jobs:
               output.write("\n".join(lines) + "\n")
           PY
 
-          git -C "$REPO_DIR" tag -f -a "$CHANNEL_TAG" "$SOURCE_SHA" -m "Latest tested Minecraft $CHANNEL build from $SOURCE_SHA"
+          git -C "$REPO_DIR" tag -f -a "$CHANNEL_TAG" "$TAG_TARGET" -m "Latest tested Minecraft $CHANNEL build from source $SOURCE_SHA"
           git -C "$REPO_DIR" push --force origin "refs/tags/$CHANNEL_TAG"
 
           if gh release view "$CHANNEL_TAG" --repo "$REPO" >/dev/null 2>&1; then
             gh release edit "$CHANNEL_TAG" --repo "$REPO" --title "$TITLE" --notes-file "$NOTES_FILE"
-            gh release upload "$CHANNEL_TAG" "$JAR_PATH" "$CHECKSUM_PATH" --repo "$REPO" --clobber
+            gh release upload "$CHANNEL_TAG" "$JAR_PATH" "$CHECKSUM_PATH" "$ARCHIVE_JAR_PATH" "$ARCHIVE_CHECKSUM_PATH" "$SOURCE_PATH" "$SOURCE_CHECKSUM_PATH" "$ARCHIVE_SOURCE_PATH" "$ARCHIVE_SOURCE_CHECKSUM_PATH" --repo "$REPO" --clobber
           else
-            gh release create "$CHANNEL_TAG" "$JAR_PATH" "$CHECKSUM_PATH" --repo "$REPO" --target "$SOURCE_SHA" --title "$TITLE" --notes-file "$NOTES_FILE"
+            gh release create "$CHANNEL_TAG" "$JAR_PATH" "$CHECKSUM_PATH" "$ARCHIVE_JAR_PATH" "$ARCHIVE_CHECKSUM_PATH" "$SOURCE_PATH" "$SOURCE_CHECKSUM_PATH" "$ARCHIVE_SOURCE_PATH" "$ARCHIVE_SOURCE_CHECKSUM_PATH" --repo "$REPO" --target "$TAG_TARGET" --title "$TITLE" --notes-file "$NOTES_FILE"
           fi
           echo "Updated release $CHANNEL_TAG from $SOURCE_SHA. The other Minecraft channel was not touched."
