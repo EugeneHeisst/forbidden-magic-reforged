@@ -199,7 +199,7 @@ jobs:
           test -s "$built"
           asset="$REPO_DIR/build/libs/forbidden-magic-$CHANNEL.jar"
           mv "$built" "$asset"
-          sha256sum "$asset" > "$REPO_DIR/build/libs/forbidden-magic-$CHANNEL.sha256"
+          (cd "$REPO_DIR/build/libs" && sha256sum "forbidden-magic-$CHANNEL.jar" > "forbidden-magic-$CHANNEL.sha256")
           echo "jar_path=$asset" >> "$GITHUB_OUTPUT"
           echo "checksum_path=$REPO_DIR/build/libs/forbidden-magic-$CHANNEL.sha256" >> "$GITHUB_OUTPUT"
 
@@ -296,12 +296,14 @@ jobs:
           if channel == "26.3":
               bullets = [
                   "Minecraft 26.3 / NeoForge 26.3 build; Java 25.",
+                  "Includes the core content: seven sin aspects, shards, taint content, morph tools, Mob Crystal and Wrath Cage, wand items, Blink Focus, enchantments, recipes, and research.",
                   "Builds the host and add-on, checks artifact provenance, and runs GameTests with no_lust=false and no_lust=true.",
                   f"Known parity gaps and client-visual checks are tracked in the [fidelity ledger](https://github.com/{repo}/blob/{source_sha}/docs/fidelity.md).",
               ]
           else:
               bullets = [
                   "Minecraft 1.21.1 / NeoForge 21.1.x build; Java 21.",
+                  "Includes the core content port: aspects and shards, taint materials and tree, morph tools, Mob Crystal and Wrath Cage, wand rods, Blink Focus upgrades, enchantments, recipes, and research.",
                   "Builds the pinned Thaumcraft host and add-on, verifies host preparation and artifact provenance, and runs GameTests.",
                   "Automated validation covers the test server; graphical client verification remains a separate manual check.",
               ]
@@ -322,12 +324,21 @@ jobs:
           lines += commit_lines[:10] if commit_lines else [f"- [{source_sha[:7]}]({source_url}) — published source"]
           if len(commit_lines) > 10:
               lines.append(f"- And {len(commit_lines) - 10} earlier commits; use the compare link above.")
-          lines += ["", "## Related pull requests"]
+          branch = "main" if channel == "26.3" else "1.21.1"
+          lines += ["", "## Pull requests included in this build"]
           if pr_map:
               lines += [f"- [#{number}]({url}) — {title}" for number, (url, title) in sorted(pr_map.items())]
           else:
-              lines.append("- No PR association was returned for the listed commits; use the commit links above to trace the source changes.")
-          branch = "main" if channel == "26.3" else "1.21.1"
+              lines.append("- No PR was directly associated with the commits in this build.")
+          try:
+              recent_prs = gh_json(f"repos/{repo}/pulls?state=closed&base={branch}&per_page=100")
+              merged_prs = [pr for pr in recent_prs if pr.get("merged_at") and pr.get("html_url") and pr.get("number")]
+              merged_prs.sort(key=lambda pr: pr.get("merged_at", ""), reverse=True)
+              if merged_prs:
+                  lines += ["", "## Recent merged PRs for this Minecraft line"]
+                  lines += [f"- [#{pr['number']}]({pr['html_url']}) — {pr.get('title', '')}" for pr in merged_prs[:5]]
+          except Exception:
+              pass
           archive_tag = f"archive/releases/{channel}/{source_sha}"
           lines += [
               "",
