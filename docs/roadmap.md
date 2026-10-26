@@ -31,7 +31,7 @@ Headless CI не заменяет визуальный и игровой гей�
 - Старый Extreme Hills сопоставлен с `minecraft:windswept_hills`; точного аналога нет.
 - Mob Crystal хранит современный namespaced entity ID; миграция миров 1.7.10 не заявлена.
 - Blood Magic, Botania, Ars Magica 2 и CoFH не поддерживаются на 26.3 из-за отсутствия согласованных совместимых зависимостей. Без них нельзя заявлять полный паритет интеграций оригинала; это отдельный scope вне core parity.
-- Перенос 1.21.1 ведётся отдельной веткой. PR #44 мигрирует сборку на upstream aspect API; его слияние не означает завершения feature parity 1.21.1.
+- Ветка 1.21.1 уже переведена на upstream aspect API и composite build в PR #44; полный content parity 1.21.1 остаётся отдельной задачей.
 
 ## Гейт завершения core parity 26.3
 

@@ -9,7 +9,7 @@
 - Опубликован релиз [0.1.1](https://github.com/MxxFoxx2/forbidden-magic-reforged/releases/tag/0.1.1). До закрытия паритета остаются ручные проверки клиента и реального геймплея.
 - Публичный API аспектов аддонов влит в апстрим ([Thaumcraft PR #37](https://github.com/notlikethiss/thaumcraft-4-reforged/pull/37), коммит [d75a946](https://github.com/notlikethiss/thaumcraft-4-reforged/commit/d75a94602100595f48bf31debab0f26c5ad521e2), релиз хоста 1.1.2). Реестр и lifecycle-хук аспектов больше не требуют локальных патчей.
 - Для локальной проверки прямого аспекта блока портала нужен один дополнительный host patch: [0001-block-aspect-targets.patch](patches/0001-block-aspect-targets.patch). Без него аддон работает со стоковым хостом 1.1.2+, но портал не получает собственную block-цель сканирования.
-- Перенос на Minecraft 1.21.1 ведётся отдельно. Миграция на upstream API предложена в [PR #44](https://github.com/MxxFoxx2/forbidden-magic-reforged/pull/44); это ещё не означает, что ветка готова к релизу.
+- Ветка Minecraft 1.21.1 переведена на upstream API и Gradle composite build в [PR #44](https://github.com/MxxFoxx2/forbidden-magic-reforged/pull/44), слитом коммитом [88e6329](https://github.com/MxxFoxx2/forbidden-magic-reforged/commit/88e6329f44ff15824b68bfd9b7481e2c0c2aacf8). Это миграция инфраструктуры/API, а не заявление о завершённом content parity для 1.21.1.
 
 ## Установка
 

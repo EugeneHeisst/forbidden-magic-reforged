@@ -22,7 +22,7 @@
 
 [Thaumcraft PR #37](https://github.com/notlikethiss/thaumcraft-4-reforged/pull/37) принят в upstream коммитом [d75a946](https://github.com/notlikethiss/thaumcraft-4-reforged/commit/d75a94602100595f48bf31debab0f26c5ad521e2); соответствующий API включён в версию 1.1.2. Он добавляет регистрацию аспектов аддонов и объединение аспектов сущностей. Последующее упрощение API находится в [7df0506](https://github.com/notlikethiss/thaumcraft-4-reforged/commit/7df05066a1d8d8d5d6539a9110c9c22b1ea7053d).
 
-Отдельный перенос 1.21.1 выполняется в [PR #44](https://github.com/MxxFoxx2/forbidden-magic-reforged/pull/44). До слияния и успешного CI ветка `1.21.1` ещё не считается мигрированной.
+Миграция ветки 1.21.1 выполнена через [PR #44](https://github.com/MxxFoxx2/forbidden-magic-reforged/pull/44), слитый коммитом [88e6329](https://github.com/MxxFoxx2/forbidden-magic-reforged/commit/88e6329f44ff15824b68bfd9b7481e2c0c2aacf8). Проверка PR завершилась успешно: хост подготовлен без патчей, сборка и provenance успешны, 13/13 GameTests прошли ([CI run #40371665525](https://github.com/MxxFoxx2/forbidden-magic-reforged/actions/runs/40371665525)). После merge запущен отдельный push CI.
 
 ## Отдельные ограничения
 
