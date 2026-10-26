@@ -47,7 +47,7 @@ jobs:
           ./gradlew build publish --no-daemon
 
       - name: Verify local Maven artifact
-        run: test -d maven/thaumcraft/thaumcraft/1.2
+        run: test -d "maven/thaumcraft/thaumcraft/$(sed -n 's/^thaumcraft_version=//p' gradle.properties)"
 
       - name: Build mod
         run: ./gradlew build --no-daemon
