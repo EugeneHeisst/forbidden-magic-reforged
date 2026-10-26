@@ -30,6 +30,8 @@ riding_crop = "Хлыст"
 black_dye = "Чёрная краска"
 taint_fruit = "Скверный плод"
 ring_nutrition = "Кольцо насыщения"
+alchemical_cap = "Алхимический набалдашник"
+equivalent_rod = "Эквивалентный стержень"
 tainted_rod = "Заражённый стержень"
 infernal_rod = "Адский стержень"
 witchwood_rod = "Стержень из ведьминой древесины"
@@ -41,6 +43,12 @@ crystalwell = "Кристальная чернильница с пером"
 primewell = "Первобытные письменные инструменты"
 blink_focus = "Набалдашник: Телепортация"
 sub_collar = "Ошейник боли"
+
+[item.Wand.alchemical]
+cap = "Алхимически коронованный"
+
+[item.Wand.equivalent]
+rod = "§kAlchemical§r"
 
 [item.Wand.tainted]
 rod = "заражённый"

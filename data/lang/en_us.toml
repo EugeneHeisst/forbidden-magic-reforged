@@ -45,10 +45,10 @@ blink_focus = "Wand Focus: Blink"
 sub_collar = "Collar of Pain"
 
 [item.Wand.alchemical]
-cap = "Alchemical"
+cap = "Alchemically Crowned"
 
 [item.Wand.equivalent]
-rod = "Equivalent"
+rod = "§kAlchemical§r"
 
 [item.Wand.tainted]
 rod = "Tainted"
