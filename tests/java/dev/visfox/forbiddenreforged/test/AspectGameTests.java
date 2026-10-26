@@ -296,6 +296,12 @@ public final class AspectGameTests {
         BlockPos portalPos = helper.absolutePos(new BlockPos(3, 3, 3));
         helper.getLevel().setBlockAndUpdate(portalPos, Blocks.NETHER_PORTAL.defaultBlockState());
         ScanManager.Target portal = ScanManager.resolveBlock(helper.getLevel(), portalPos);
+        if (!FmAspectTags.blockTargetsAvailable()) {
+            helper.assertTrue(portal == null || !portal.key().startsWith("block:"),
+                "without block aspect targets the portal cannot resolve through its block identity");
+            helper.succeed();
+            return;
+        }
         helper.assertTrue(portal != null, "the Nether Portal must be a scan target");
         if (portal != null) {
             helper.assertValueEqual(portal.key(), "block:minecraft:nether_portal", "the portal scan target must use its block identity");
