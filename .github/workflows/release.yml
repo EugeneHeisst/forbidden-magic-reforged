@@ -398,6 +398,12 @@ jobs:
           except Exception:
               pass
           archive_tag = f"archive/releases/{channel}/{source_sha}"
+          if channel == "26.3":
+              rollback_line = f"- Rollback point: [{archive_tag}](https://github.com/{repo}/tree/{archive_tag}) and the attached versioned JAR."
+              rollback_text = f"The exact 26.3 source commit is preserved by the archive tag above. To rebuild it, run this workflow manually on main with source_ref set to that tag."
+          else:
+              rollback_line = f"- Rollback point: [source commit {source_sha[:7]}]({source_url}), plus the attached versioned JAR and exact source ZIP."
+              rollback_text = f"To rebuild this exact 1.21.1 source, run this workflow manually on branch 1.21.1 with source_ref set to the source commit SHA above. The matching JAR and exact source ZIP remain attached to this rolling release for direct rollback."
           lines += [
               "",
               "## Build details",
@@ -406,9 +412,9 @@ jobs:
               f"- Java: {java_version}",
               f"- Source commit: [{source_sha}]({source_url})",
               f"- Source branch: [{branch}](https://github.com/{repo}/tree/{branch})",
-              f"- Rollback point: [{archive_tag}](https://github.com/{repo}/tree/{archive_tag})",
+              rollback_line,
               "",
-              f"The JAR below is replaced in place on the next successful {channel} build. This source commit is preserved by the archive tag above; run this workflow manually from the matching branch and set source_ref to that tag to roll back.",
+              rollback_text,
               "",
               f"<!-- release-source-sha: {source_sha} -->",
           ]
