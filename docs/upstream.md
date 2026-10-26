@@ -13,7 +13,7 @@ CI сначала подготавливает закреплённый host и�
 
 ## Запрос публичного API
 
-[Host PR #37 — `feat: add public API for add-on aspect registration`](https://github.com/notlikethiss/thaumcraft-4-reforged/pull/37) на момент последней проверки открыт и Draft. Он добавляет регистрацию аспектов аддонов и слияние аспектов сущностей.
+[Host PR #37 — `feat: add public API for add-on aspect registration`](https://github.com/notlikethiss/thaumcraft-4-reforged/pull/37) смержен 2026-10-26 (`d75a946`), API выпущен в `1.1.2`. Он добавляет регистрацию аспектов аддонов и слияние аспектов сущностей.
 
 Этот API сам по себе не закрывает два текущих parity gap: распознавание блоков Forbidden Magic системой скверны и аспектовую цель `minecraft:portal`. Они требуют отдельных публичных API хоста и интеграционных GameTest; см. [roadmap](roadmap.md).
 

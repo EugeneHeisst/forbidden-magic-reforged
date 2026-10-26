@@ -1,12 +1,11 @@
-From acb00ec829a07141cf77f90ca768dd591cfe12e6 Mon Sep 17 00:00:00 2001
-From: Mxx Foxx <tanjiro235@proton.me>
-Date: Wed, 21 Oct 2026 11:44:40 +0300
-Subject: [PATCH] publish host
+From 112a685cb38abc043ed0351fbd17a101cadb1094 Mon Sep 17 00:00:00 2001
+From: MxxFoxx2 <126578124+MxxFoxx2@users.noreply.github.com>
+Date: Mon, 26 Oct 2026 18:29:29 +0300
+Subject: [PATCH 1/2] publish host
 
 ---
- build.gradle      | 18 ++++++++++++++++++
- gradle.properties |  2 +-
- 2 files changed, 19 insertions(+), 1 deletion(-)
+ build.gradle | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
 
 diff --git a/build.gradle b/build.gradle
 index 8c11279..d580329 100644
@@ -41,19 +40,6 @@ index 8c11279..d580329 100644
 +        }
 +    }
 +}
-diff --git a/gradle.properties b/gradle.properties
-index b131c1b..52a66d6 100644
---- a/gradle.properties
-+++ b/gradle.properties
-@@ -13,7 +13,7 @@ neo_version=26.3.0.57-beta
- mod_id=thaumcraft
- mod_name=Thaumcraft 4: Reforged
- mod_license=All Rights Reserved
--mod_version=1.1
-+mod_version=1.2
- mod_group_id=thaumcraft
- mod_authors=Azanor (original), overseas (port)
- mod_credits=Special thanks to CovertJaguar, Dan Scott, Lorc, bonemouse, Scott Killen, Rorax and chicken_bones
 -- 
 2.52.0.windows.1
 

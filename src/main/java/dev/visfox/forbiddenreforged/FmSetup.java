@@ -39,9 +39,9 @@ public final class FmSetup {
             }
             ForbiddenMagic.LOGGER.info(
                 "Aspect registry summary: total={} builtin={} registeredAddon={} fmAddon={} expectedFmAddon={} luxuria={}",
-                Aspect.count(),
-                Aspect.builtinCount(),
-                Aspect.count() - Aspect.builtinCount(),
+                FmAspects.count(),
+                FmAspects.BUILTIN_ASPECT_COUNT,
+                FmAspects.count() - FmAspects.BUILTIN_ASPECT_COUNT,
                 fmAddonCount,
                 expectedAddonCount,
                 luxuriaStatus

@@ -4,7 +4,7 @@
 
 - Проверенный кодовый срез: [`13e088e`](https://github.com/MxxFoxx2/forbidden-magic-reforged/commit/13e088efe1478cc241d50121ef4684d2b1bc1c5c).
 - [Beta release workflow #5](https://github.com/MxxFoxx2/forbidden-magic-reforged/actions/runs/40205532603) завершился успешно и опубликовал [`0.1.0-beta.1`](https://github.com/MxxFoxx2/forbidden-magic-reforged/releases/tag/0.1.0-beta.1) как prerelease.
-- `host.sha` закреплён на upstream `cf0c42199d01fdfcd99ee167224f7a1b4a4427a5`; host patches применены через `tools/prepare_host.py`.
+- `host.sha` закреплён на upstream `5ea7ba3cb4753f06cbf93c7bb83bab9afbd99755`; host patches применены через `tools/prepare_host.py`.
 - CI успешно выполнил host `build publish`, проверку локального Maven, сборку аддона и `tools/check_provenance.py`.
 - С `no_lust=false`: **92/92** required GameTests passed; `luxuria=luxuria`.
 - С `no_lust=true`: **92/92** required GameTests passed; `luxuria=null`.

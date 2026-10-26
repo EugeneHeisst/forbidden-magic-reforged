@@ -122,7 +122,7 @@ public final class AspectGameTests {
 
     private static void aspectRegistryKeepsBuiltinOrderAndCombines(GameTestHelper helper) {
         Aspect[] all = Aspect.values();
-        helper.assertValueEqual(Aspect.builtinCount(), 48, "exactly 48 builtin aspects");
+        helper.assertValueEqual(FmAspects.BUILTIN_ASPECT_COUNT, 48, "exactly 48 builtin aspects");
         helper.assertTrue(all.length >= 48, "builtins must remain registered");
         helper.assertValueEqual(all[0], Aspect.AIR, "first builtin must stay index 0");
         helper.assertValueEqual(all[47], Aspect.TRAP, "last builtin must stay index 47");
@@ -134,7 +134,7 @@ public final class AspectGameTests {
 
     private static void addonAspectSurvivesClientSync(GameTestHelper helper) {
         Aspect nether = FmAspects.NETHER;
-        helper.assertTrue(nether != null && nether.ordinal() >= Aspect.builtinCount(), "infernus must be an add-on aspect");
+        helper.assertTrue(nether != null && nether.ordinal() >= FmAspects.BUILTIN_ASPECT_COUNT, "infernus must be an add-on aspect");
         helper.assertValueEqual(Aspect.getAspect("infernus"), nether, "by-tag lookup must find the add-on aspect");
         AspectList list = new AspectList().add(nether, 3);
         ByteBuf buffer = io.netty.buffer.Unpooled.buffer();
@@ -150,14 +150,14 @@ public final class AspectGameTests {
         Aspect[] sins = {FmAspects.NETHER, FmAspects.WRATH, FmAspects.ENVY, FmAspects.GLUTTONY, FmAspects.PRIDE, FmAspects.SLOTH};
         for (Aspect aspect : sins) {
             helper.assertTrue(aspect != null, "sin aspect must be registered");
-            helper.assertTrue(aspect.ordinal() >= Aspect.builtinCount(), aspect.getSerializedName() + " must be an add-on aspect");
+            helper.assertTrue(aspect.ordinal() >= FmAspects.BUILTIN_ASPECT_COUNT, aspect.getSerializedName() + " must be an add-on aspect");
             helper.assertTrue(aspect.getImage().getNamespace().equals(ForbiddenMagic.MODID), aspect.getSerializedName() + " texture must live in the add-on namespace");
         }
         Aspect ira = Aspect.combine(Aspect.WEAPON, Aspect.FIRE);
         helper.assertTrue(ira == FmAspects.WRATH, "combine(WEAPON, FIRE) must resolve to the add-on ira");
         helper.assertTrue(Aspect.combine(Aspect.AIR, Aspect.FIRE) == Aspect.LIGHT, "adding ira must not disturb builtin combine");
         int expected = FmConfig.lustDisabled() ? 6 : 7;
-        helper.assertValueEqual(Aspect.count(), Aspect.builtinCount() + expected, FmConfig.lustDisabled() ? "six add-on aspects: luxuria is switched off" : "exactly seven add-on aspects");
+        helper.assertValueEqual(FmAspects.count(), FmAspects.BUILTIN_ASPECT_COUNT + expected, FmConfig.lustDisabled() ? "six add-on aspects: luxuria is switched off" : "exactly seven add-on aspects");
         helper.succeed();
     }
 
@@ -354,7 +354,7 @@ public final class AspectGameTests {
 
     private static void aspectDiagnosticsExposeStableRegistryTable(GameTestHelper helper) {
             List<String> registryLines = FmAspectDiagnostics.registryLines();
-            helper.assertValueEqual(registryLines.size(), Aspect.count(), "diagnostics must contain every registered aspect");
+            helper.assertValueEqual(registryLines.size(), FmAspects.count(), "diagnostics must contain every registered aspect");
             for (int index = 0; index < Aspect.values().length; index++) {
                 Aspect aspect = Aspect.values()[index];
                 helper.assertTrue(registryLines.get(index).contains("ordinal=" + index + " "), "registry ordinals must be strict and ordered: " + aspect.getTag());
@@ -362,7 +362,7 @@ public final class AspectGameTests {
             helper.assertValueEqual(registryLines.get(0), "ordinal=0 tag=aer name=Aer kind=builtin components=-", "first registry row must be exact");
             helper.assertTrue(registryLines.stream().anyMatch(line -> line.contains("ordinal=47 ") && line.contains("tag=vinculum ") && line.contains("name=Vinculum ") && line.contains("kind=builtin")), "ordinal 47 vinculum must be present");
             for (Aspect aspect : Aspect.values()) {
-                if (aspect.ordinal() < Aspect.builtinCount()) {
+                if (aspect.ordinal() < FmAspects.BUILTIN_ASPECT_COUNT) {
                     helper.assertTrue(registryLines.stream().anyMatch(line -> line.contains("ordinal=" + aspect.ordinal() + " ") && line.contains("tag=" + aspect.getTag() + " ") && line.contains("kind=builtin")), "builtin aspect must be classified: " + aspect.getTag());
                 }
             }
@@ -375,7 +375,7 @@ public final class AspectGameTests {
                 addonLines,
                 "Forbidden Magic rows must match the add-on section of the canonical registry"
             );
-            int expectedOrdinal = Aspect.builtinCount();
+            int expectedOrdinal = FmAspects.BUILTIN_ASPECT_COUNT;
             for (String line : addonLines) {
                 helper.assertTrue(line.contains("ordinal=" + expectedOrdinal + " "), "add-on ordinals must be consecutive: " + line);
                 helper.assertTrue(line.contains("kind=addon"), "add-on aspect must be classified: " + line);
@@ -383,7 +383,7 @@ public final class AspectGameTests {
                 helper.assertTrue(line.contains("components="), "add-on aspect must include its components: " + line);
                 expectedOrdinal++;
             }
-            helper.assertValueEqual(expectedOrdinal, Aspect.builtinCount() + expected, "all add-on ordinals must be present");
+            helper.assertValueEqual(expectedOrdinal, FmAspects.BUILTIN_ASPECT_COUNT + expected, "all add-on ordinals must be present");
             helper.assertTrue(addonLines.stream().anyMatch(line -> line.contains("tag=infernus ") && line.contains("name=Infernus ") && line.contains("components=ignis,praecantatio")), "infernus row must include exact name and component tags");
             helper.succeed();
         }

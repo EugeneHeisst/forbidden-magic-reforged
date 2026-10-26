@@ -35,8 +35,14 @@ public final class FmAspects {
                 WRATH = api.register("ira", 0x870404, new Aspect[]{Aspect.WEAPON, Aspect.FIRE}, 771, texture("ira"));
             });
         } catch (NoSuchMethodError | NoClassDefFoundError absent) {
-            throw new IllegalStateException("Forbidden Magic requires Thaumcraft 4: Reforged 1.2 or newer with the add-on aspect API", absent);
+            throw new IllegalStateException("Forbidden Magic requires Thaumcraft 4: Reforged 1.1.2 or newer with the add-on aspect API", absent);
         }
+    }
+
+    public static final int BUILTIN_ASPECT_COUNT = 48;
+
+    public static int count() {
+        return Aspect.values().length;
     }
 
     private static Identifier texture(String name) {

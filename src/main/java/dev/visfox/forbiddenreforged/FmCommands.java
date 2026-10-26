@@ -30,9 +30,9 @@ public final class FmCommands {
         CommandSourceStack source = context.getSource();
         int fmAddonCount = FmAspectDiagnostics.addonLines().size();
         source.sendSuccess(
-            () -> Component.literal("Aspect registry: total=" + Aspect.count()
-                + " builtin=" + Aspect.builtinCount()
-                + " registeredAddon=" + (Aspect.count() - Aspect.builtinCount())
+            () -> Component.literal("Aspect registry: total=" + FmAspects.count()
+                + " builtin=" + FmAspects.BUILTIN_ASPECT_COUNT
+                + " registeredAddon=" + (FmAspects.count() - FmAspects.BUILTIN_ASPECT_COUNT)
                 + " fmAddon=" + fmAddonCount),
             false
         );

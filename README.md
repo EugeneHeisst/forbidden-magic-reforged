@@ -1,6 +1,6 @@
 # Forbidden Magic: Reforged
 
-Порт Forbidden Magic 0.574 (Minecraft 1.7.10) на Thaumcraft 4: Reforged 1.2 для Minecraft 26.3. Переносит семь аспектов грехов, осколки, зачарования, хамелеоновы инструменты, материалы скверны, Mob Crystal и Wrath Cage.
+Порт Forbidden Magic 0.574 (Minecraft 1.7.10) на Thaumcraft 4: Reforged 1.1.2 для Minecraft 26.3. Переносит семь аспектов грехов, осколки, зачарования, хамелеоновы инструменты, материалы скверны, Mob Crystal и Wrath Cage.
 
 ## Статус
 
@@ -8,7 +8,7 @@
 - Паритет не объявлен завершённым. Текущие пробелы и ограничения записаны в [roadmap](docs/roadmap.md), проверенные отличия — в [fidelity ledger](docs/fidelity.md).
 - Первая экспериментальная beta опубликована: [0.1.0-beta.1](https://github.com/MxxFoxx2/forbidden-magic-reforged/releases/tag/0.1.0-beta.1). Полный паритет ещё не объявлен.
 - Новые релизы публикуются из Git-тегов после сборки и обоих наборов GameTests; тесты также запускаются для pull request в `main`. Инструкция: [процесс выпуска](docs/releasing.md).
-- [Thaumcraft 4: Reforged #37](https://github.com/notlikethiss/thaumcraft-4-reforged/pull/37) открыт, но ещё не слит; публичный API пока отсутствует в опубликованном upstream-хосте. Beta требует закреплённый и локально пропатченный хост.
+- Публичный API аспектов аддонов влит в апстрим ([#37](https://github.com/notlikethiss/thaumcraft-4-reforged/pull/37) → `d75a946`, релиз `1.1.2`), поэтому реестр аспектов больше не требует нашего патча. Локально остаются два патча: публикация хоста в maven для разработки и block aspect targets для точного аспекта портала. Готовый jar по-прежнему требует патченного хоста; без него портал сканируется через обсидиан.
 
 ## Установка
 
