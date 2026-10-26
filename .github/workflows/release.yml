@@ -444,7 +444,7 @@ jobs:
           # specifically named cleanup commit on main; all published release tags and
           # the last known-good rollback point remain untouched.
           if [[ "${CLEANUP_REFS:-false}" == "true" && "$CHANNEL" == "26.3" ]]; then
-            for branch in "feature/1.21.1-content-parity" "fix/upstream-api-1.21.1"; do
+            for branch in "fix/upstream-api-1.21.1"; do
               ref="heads/$branch"
               if gh api "repos/$REPO/git/ref/$ref" >/dev/null 2>&1; then
                 gh api --method DELETE "repos/$REPO/git/refs/$ref" >/dev/null
