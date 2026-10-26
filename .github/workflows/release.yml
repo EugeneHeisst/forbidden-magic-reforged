@@ -220,7 +220,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
           CHANNEL: ${{ steps.meta.outputs.channel }}
-          CLEANUP_REFS: ${{ github.event_name == 'push' && github.event.head_commit.message == 'chore: prune stale branches and tags' }}
+          CLEANUP_REFS: "${{ github.event_name == 'push' && contains(github.event.head_commit.message, 'prune stale branches and tags') }}"
           SOURCE_SHA: ${{ steps.meta.outputs.source_sha }}
           BUILD_VERSION: ${{ steps.meta.outputs.build_version }}
           JAVA_VERSION: ${{ steps.meta.outputs.java_version }}
