@@ -378,25 +378,39 @@ jobs:
           else:
               lines.append(f"- Initial rolling-channel publication from [{source_sha[:7]}]({source_url}); existing numbered releases remain available.")
           lines.extend(f"- {item}" for item in bullets)
-          lines += ["", "## Source commits"]
-          lines += commit_lines[:10] if commit_lines else [f"- [{source_sha[:7]}]({source_url}) — published source"]
-          if len(commit_lines) > 10:
-              lines.append(f"- And {len(commit_lines) - 10} earlier commits; use the compare link above.")
+          # Keep source commits and PR references together in one compact list.
           branch = "main" if channel == "26.3" else "1.21.1"
-          lines += ["", "## Pull requests included in this build"]
-          if pr_map:
-              lines += [f"- [#{number}]({url}) — {title}" for number, (url, title) in sorted(pr_map.items())]
-          else:
-              lines.append("- No PR was directly associated with the commits in this build.")
+          recent_prs = []
           try:
-              recent_prs = gh_json(f"repos/{repo}/pulls?state=closed&base={branch}&per_page=100")
-              merged_prs = [pr for pr in recent_prs if pr.get("merged_at") and pr.get("html_url") and pr.get("number")]
-              merged_prs.sort(key=lambda pr: pr.get("merged_at", ""), reverse=True)
-              if merged_prs:
-                  lines += ["", "## Recent merged PRs for this Minecraft line"]
-                  lines += [f"- [#{pr['number']}]({pr['html_url']}) — {pr.get('title', '')}" for pr in merged_prs[:5]]
+              response = gh_json(f"repos/{repo}/pulls?state=closed&base={branch}&per_page=100")
+              recent_prs = [pr for pr in response if pr.get("merged_at") and pr.get("html_url") and pr.get("number")]
+              recent_prs.sort(key=lambda pr: pr.get("merged_at", ""), reverse=True)
           except Exception:
               pass
+
+          lines += ["", "## Commits & PRs"]
+          if commit_lines:
+              lines += commit_lines[:10]
+              if len(commit_lines) > 10:
+                  lines.append(f"- And {len(commit_lines) - 10} earlier commits; use the compare link above.")
+          else:
+              lines.append(f"- [{source_sha[:7]}]({source_url}) — published source")
+
+          # Merge commit-linked PRs with a small recent-PR context list; don't repeat
+          # PRs and don't emit a noisy "no PR associated" placeholder.
+          seen_prs = set()
+          for number, (url, title) in sorted(pr_map.items()):
+              lines.append(f"- PR [#{number}]({url}) — {title}")
+              seen_prs.add(number)
+          for pr in recent_prs:
+              number = pr["number"]
+              if number in seen_prs:
+                  continue
+              lines.append(f"- PR [#{number}]({pr['html_url']}) — {pr.get('title', '')}")
+              seen_prs.add(number)
+              if len(seen_prs) >= max(5, len(pr_map)):
+                  break
+
           archive_tag = f"archive/releases/{channel}/{source_sha}"
           if channel == "26.3":
               rollback_line = f"- Rollback point: [{archive_tag}](https://github.com/{repo}/tree/{archive_tag}) and the attached versioned JAR."
