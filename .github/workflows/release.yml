@@ -424,7 +424,7 @@ jobs:
           # This is a rolling release, not a build archive: remove only assets managed
           # by this workflow before uploading the current, predictable filenames.
           RELEASE_ID="$(gh api "repos/$REPO/releases/tags/$CHANNEL_TAG" --jq .id)"
-          while IFS=\t' read -r ASSET_ID ASSET_NAME; do
+          while read -r ASSET_ID ASSET_NAME; do
             [[ -n "$ASSET_ID" && -n "$ASSET_NAME" ]] || continue
             if [[ "$ASSET_NAME" == "forbidden-magic-$CHANNEL"* ]]; then
               gh api "repos/$REPO/releases/assets/$ASSET_ID" --method DELETE >/dev/null
