@@ -10,12 +10,12 @@
 
 ## Уже устранено и проверено
 
-- **Aspect scan Nether Portal:** локальный host patch [`0002-block-aspect-targets.patch`](../patches/0002-block-aspect-targets.patch) добавляет регистрацию аспектов на блоки и синхронизацию block targets. `FmAspectTags` назначает NETHER 4 современному блоку `minecraft:nether_portal`; GameTest проверяет фактическую цель `block:minecraft:nether_portal` и количество NETHER 4. Обсидиан больше не используется как прокси.
+- **Aspect scan Nether Portal:** локальный host patch [`0001-block-aspect-targets.patch`](../patches/0001-block-aspect-targets.patch) добавляет регистрацию аспектов на блоки и синхронизацию block targets. `FmAspectTags` назначает NETHER 4 современному блоку `minecraft:nether_portal`; GameTest проверяет фактическую цель `block:minecraft:nether_portal` и количество NETHER 4. Обсидиан больше не используется как прокси.
 - **Alchemical Wand Cap и Equivalent Wand Rod:** восстановлены исходные параметры (discount 0.9, WATER discount 0.8, cost 7; capacity 100, cost 12), отдельные компоненты/текстуры и Equivalent creative wand с void cap. [CI run #163](https://github.com/MxxFoxx2/forbidden-magic-reforged/actions/runs/40187253872) прошёл сборку, provenance и 92 GameTest в обоих режимах.
 - Скверное дерево/саженец восстановлены по оригинальному генератору; headless-тесты покрывают стадии, форму кроны и поддержку листвы. Визуальная проверка в клиенте остаётся открытой.
 - **Add-on aspect API влит в апстрим:** [PR #37](https://github.com/notlikethiss/thaumcraft-4-reforged/pull/37) смержен как [`d75a946`](https://github.com/notlikethiss/thaumcraft-4-reforged/commit/d75a94602100595f48bf31debab0f26c5ad521e2) и выпущен в `1.1.2`; следом автор упростил API (`7df0506`). Наши патчи реестра аспектов, хука `AddonAspects` и сканера удалены, порт собирается против стокового API. Отличие, которое осталось: `Aspect.count()`/`builtinCount()` заменены на `Aspect.values().length` и константу 48, а диагностика аддон-аспектов берёт канонический порядок хоста — апстрим сортирует аддонные аспекты по тегу, поэтому `desidia` идёт первой.
 
-**Upstream обновлён:** `host.sha` передвинут с `69a47a1` через `cf0c421` на `5ea7ba3` (релиз `1.1.2`). Block aspect targets остаются единственным функциональным патчем: в апстриме `AspectRegistrar` по-прежнему принимает только item-цели. При обновлении upstream проверяй применимость `0002` и тест портала.
+**Upstream обновлён:** `host.sha` передвинут с `69a47a1` через `cf0c421` на `5ea7ba3` (релиз `1.1.2`). Block aspect targets остаются единственным функциональным патчем: в апстриме `AspectRegistrar` по-прежнему принимает только item-цели. При обновлении upstream проверяй применимость `0001` и тест портала.
 
 ## Незакрытые ручные проверки
 

@@ -71,6 +71,15 @@ configurations {
     clientRuntimeClasspath.extendsFrom runtimeClasspath
 }
 
+if (file('host').isDirectory()) {
+    def hostProperties = new java.util.Properties()
+    file('host/gradle.properties').withInputStream { hostProperties.load(it) }
+    def hostVersion = hostProperties.getProperty('mod_version')
+    if (hostVersion != thaumcraft_version) {
+        throw new GradleException("host/ is version ${hostVersion} but thaumcraft_version is ${thaumcraft_version}; run tools/prepare_host.py")
+    }
+}
+
 dependencies {
     implementation "com.github.glitchfiend:TerraBlender-neoforge:${terrablender_version}"
     compileOnly "thaumcraft:thaumcraft:${thaumcraft_version}"

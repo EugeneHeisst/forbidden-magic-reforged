@@ -40,14 +40,11 @@ jobs:
           git config --global user.name "GitHub Actions"
           python3 tools/prepare_host.py
 
-      - name: Build and publish host to local maven/
+      - name: Build patched host
         working-directory: host
         run: |
           chmod +x gradlew
-          ./gradlew build publish --no-daemon
-
-      - name: Verify local Maven artifact
-        run: test -d "maven/thaumcraft/thaumcraft/$(sed -n 's/^thaumcraft_version=//p' gradle.properties)"
+          ./gradlew build --no-daemon
 
       - name: Build mod
         run: ./gradlew build --no-daemon
