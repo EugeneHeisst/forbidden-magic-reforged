@@ -1,5 +1,20 @@
 package dev.visfox.forbiddenreforged.test;
 
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.tags.TagKey;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.core.Direction;
+import thaumcraft.taint.TaintSpread;
+import dev.visfox.forbiddenreforged.TaintLogTextureVariant;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 import dev.visfox.forbiddenreforged.FmBlocks;
 import dev.visfox.forbiddenreforged.FmSpawnerMobs;
 import net.minecraft.world.entity.EntityType;
@@ -314,5 +329,118 @@ public final class FmGameTests {
         helper.assertTrue(crystalRecipe != null, "mob crystal crucible recipe exists");
         helper.assertTrue(crystalRecipe.aspects().getAmount(Aspect.MIND) >= 10, "mob crystal recipe needs MIND 10");
         helper.succeed();
+    }
+    @GameTest(template = "empty", templateNamespace = "forbiddenmagic")
+    public static void taintMaterialBlocksAreRegistered(GameTestHelper helper) {
+        helper.assertValueEqual(BuiltInRegistries.BLOCK.getKey(FmBlocks.TAINT_LOG.get()), ResourceLocation.parse("forbiddenmagic:taint_log"), "taint log id");
+        helper.assertValueEqual(BuiltInRegistries.BLOCK.getKey(FmBlocks.TAINT_PLANKS.get()), ResourceLocation.parse("forbiddenmagic:taint_planks"), "taint planks id");
+        helper.assertValueEqual(BuiltInRegistries.BLOCK.getKey(FmBlocks.TAINT_STONE_SMOOTH.get()), ResourceLocation.parse("forbiddenmagic:taint_stone_smooth"), "smooth stone id");
+        helper.assertValueEqual(BuiltInRegistries.BLOCK.getKey(FmBlocks.TAINT_STONE_BRICK.get()), ResourceLocation.parse("forbiddenmagic:taint_stone_brick"), "brick id");
+        helper.assertValueEqual(BuiltInRegistries.BLOCK.getKey(FmBlocks.STAR_BLOCK.get()), ResourceLocation.parse("forbiddenmagic:star_block"), "star block id");
+        helper.assertFalse(new ItemStack(FmBlocks.TAINT_LOG.get().asItem()).isEmpty(), "taint log has an item");
+        helper.assertFalse(new ItemStack(FmBlocks.STAR_BLOCK.get().asItem()).isEmpty(), "star block has an item");
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty", templateNamespace = "forbiddenmagic")
+    public static void taintBlocksCarryToolTags(GameTestHelper helper) {
+        TagKey<Block> axe = TagKey.create(Registries.BLOCK, ResourceLocation.parse("minecraft:mineable/axe"));
+        TagKey<Block> pickaxe = TagKey.create(Registries.BLOCK, ResourceLocation.parse("minecraft:mineable/pickaxe"));
+        TagKey<Block> beacon = TagKey.create(Registries.BLOCK, ResourceLocation.parse("minecraft:beacon_base_blocks"));
+        helper.assertTrue(BuiltInRegistries.BLOCK.wrapAsHolder(FmBlocks.TAINT_LOG.get()).is(axe), "taint log mines with an axe");
+        helper.assertTrue(BuiltInRegistries.BLOCK.wrapAsHolder(FmBlocks.TAINT_PLANKS.get()).is(axe), "taint planks mine with an axe");
+        helper.assertTrue(BuiltInRegistries.BLOCK.wrapAsHolder(FmBlocks.TAINT_STONE_SMOOTH.get()).is(pickaxe), "taint stone mines with a pickaxe");
+        helper.assertTrue(BuiltInRegistries.BLOCK.wrapAsHolder(FmBlocks.STAR_BLOCK.get()).is(beacon), "star block is a beacon base");
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty", templateNamespace = "forbiddenmagic")
+    public static void taintMaterialsResistFibrousTaint(GameTestHelper helper) {
+        var level = helper.getLevel();
+        BlockPos pos = helper.absolutePos(new BlockPos(3, 3, 3));
+        for (Block block : List.of(
+            FmBlocks.TAINT_LOG.get(),
+            FmBlocks.TAINT_PLANKS.get(),
+            FmBlocks.TAINT_STONE_SMOOTH.get(),
+            FmBlocks.TAINT_STONE_BRICK.get()
+        )) {
+            level.setBlockAndUpdate(pos, block.defaultBlockState());
+            level.setBlockAndUpdate(pos.above(), Blocks.STONE.defaultBlockState());
+            helper.assertFalse(TaintSpread.spreadFibres(level, pos),
+                BuiltInRegistries.BLOCK.getKey(block) + " must not be replaced by fibrous taint");
+            helper.assertTrue(level.getBlockState(pos).is(block),
+                BuiltInRegistries.BLOCK.getKey(block) + " remains intact after a spread attempt");
+        }
+        helper.assertFalse(FmBlocks.TAINT_LOG.get().defaultBlockState().is(BlockTags.LOGS),
+            "taint log must not enter the host vanilla-log crusting path");
+        for (Block block : List.of(FmBlocks.TAINT_PLANKS.get(), FmBlocks.TAINT_STONE_SMOOTH.get(), FmBlocks.TAINT_STONE_BRICK.get())) {
+            var state = block.defaultBlockState();
+            helper.assertFalse(state.is(BlockTags.DIRT) || state.is(BlockTags.SAND),
+                BuiltInRegistries.BLOCK.getKey(block) + " must not enter the host soil conversion path");
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty", templateNamespace = "forbiddenmagic")
+    public static void blocksDropThemselves(GameTestHelper helper) {
+        var level = helper.getLevel();
+        BlockPos pos = helper.absolutePos(new BlockPos(0, 4, 0));
+        for (var block : List.of(
+            FmBlocks.TAINT_LOG.get(), FmBlocks.TAINT_PLANKS.get(),
+            FmBlocks.TAINT_STONE_SMOOTH.get(), FmBlocks.TAINT_STONE_BRICK.get(),
+            FmBlocks.STAR_BLOCK.get())) {
+            level.setBlockAndUpdate(pos, block.defaultBlockState());
+            var drops = Block.getDrops(level.getBlockState(pos), level, pos, null);
+            helper.assertTrue(drops.stream().anyMatch(stack -> stack.is(block.asItem())), BuiltInRegistries.BLOCK.getKey(block) + " must drop itself");
+        }
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty", templateNamespace = "forbiddenmagic")
+    public static void umbralPlantsAreRegistered(GameTestHelper helper) {
+        helper.assertValueEqual(BuiltInRegistries.BLOCK.getKey(FmBlocks.UMBRAL_ROSE.get()), ResourceLocation.parse("forbiddenmagic:umbral_rose"), "umbral rose id");
+        helper.assertValueEqual(BuiltInRegistries.BLOCK.getKey(FmBlocks.UMBRAL_ROSE_BUSH.get()), ResourceLocation.parse("forbiddenmagic:umbral_rose_bush"), "umbral rose bush id");
+        TagKey<Block> flowers = TagKey.create(Registries.BLOCK, ResourceLocation.parse("minecraft:small_flowers"));
+        helper.assertTrue(BuiltInRegistries.BLOCK.wrapAsHolder(FmBlocks.UMBRAL_ROSE.get()).is(flowers), "umbral rose is a small flower");
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty", templateNamespace = "forbiddenmagic")
+    public static void taintLogVariantsAreWeightedAndDeterministic(GameTestHelper helper) {
+        try (InputStream stream = ForbiddenMagic.class.getResourceAsStream("/assets/forbiddenmagic/blockstates/taint_log.json")) {
+            helper.assertTrue(stream != null, "taint log blockstate must ship with the mod");
+            JsonObject root = JsonParser.parseReader(new InputStreamReader(stream, StandardCharsets.UTF_8)).getAsJsonObject();
+            for (String axis : List.of("axis=x", "axis=y", "axis=z")) {
+                var variants = root.getAsJsonObject("variants").getAsJsonArray(axis);
+                helper.assertValueEqual(variants.size(), 3, axis + " keeps the three original side variants");
+                int total = 0;
+                for (var element : variants) {
+                    total += element.getAsJsonObject().get("weight").getAsInt();
+                }
+                helper.assertValueEqual(total, 9, axis + " weights keep the original 75/12.5/12.5 ratio");
+            }
+            int[] counts = new int[3];
+            for (int x = -16; x <= 16; x++) {
+                for (int z = -16; z <= 16; z++) {
+                    for (int side = 0; side < 6; side++) {
+                        int selected = TaintLogTextureVariant.select(side, x, 7, z);
+                        helper.assertTrue(selected >= 0 && selected <= 2, "face texture selector must return a known variant");
+                        helper.assertValueEqual(selected, TaintLogTextureVariant.select(side, x, 7, z),
+                            "face texture selection must be stable for a given side and position");
+                        counts[selected]++;
+                    }
+                }
+            }
+            for (int variant = 0; variant < counts.length; variant++) {
+                helper.assertTrue(counts[variant] > 0, "coordinate sample must exercise side-texture variant " + variant);
+            }
+            helper.assertValueEqual(TaintLogTextureVariant.select(3, 3, 7, 5), TaintLogTextureVariant.GROSS,
+                "selection must use the original side + y + x*z seed");
+            helper.assertValueEqual(TaintLogTextureVariant.variantForDirection(Direction.Axis.Y, Direction.DOWN, 3, 7, 5),
+                TaintLogTextureVariant.STANDARD, "vertical log ends keep the end texture");
+            helper.succeed();
+        } catch (IOException e) {
+            helper.fail("could not read the taint log blockstate: " + e);
+        }
     }
 }
