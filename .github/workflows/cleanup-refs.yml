@@ -1,0 +1,48 @@
+name: One-time repository ref cleanup
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    if: contains(github.event.head_commit.message, 'prune stale branches and tags')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete reviewed obsolete refs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          delete_ref() {
+            local ref="$1"
+            local label="$2"
+            if gh api "repos/$REPO/git/ref/$ref" >/dev/null 2>&1; then
+              gh api --method DELETE "repos/$REPO/git/refs/$ref" >/dev/null
+              echo "Deleted $label: $ref"
+            else
+              echo "Already absent: $ref"
+            fi
+          }
+
+          # PR #44 was merged. Keep the unmerged feature/1.21.1-content-parity
+          # branch: its eight unique commits were not merged by PR #39 or #46.
+          delete_ref "heads/fix/upstream-api-1.21.1" "merged branch"
+
+          # Keep official release tags, the legacy dev archive, the last two
+          # tested 26.3 rollback points, and the existing 1.21.1 rollback point.
+          for tag in \
+            "archive/releases/26.3/fcfb8b4d33b4c49d7a5bc04db3871401c2ea9eeb" \
+            "archive/releases/26.3/da094b5bc4b222f04c59f8f9ade09064ed5b0131" \
+            "archive/releases/26.3/71159e469420f7c9890348d9c659b0e3beec08ea" \
+            "archive/releases/26.3/a34ecf7646f44afcb02fad40a7479581bc85313e" \
+            "archive/releases/26.3/a4a2965890c8bd21ae975cde0bb2ee956453663b" \
+            "archive/releases/26.3/29486e14d3e25eaa2d5564271238cdd66e53b125"; do
+            delete_ref "tags/$tag" "redundant workflow-only tag"
+          done
