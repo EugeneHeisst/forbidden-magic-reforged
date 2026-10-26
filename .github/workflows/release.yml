@@ -186,7 +186,7 @@ jobs:
           PY
           ./gradlew --no-daemon runGameTestServer
 
-      - name: Prepare stable release assets and rollback copy
+      - name: Prepare stable release assets
         id: asset
         shell: bash
         env:
@@ -199,36 +199,21 @@ jobs:
           repo_abs="$(cd "$REPO_DIR" && pwd)"
           built="$repo_abs/build/libs/forbidden-magic-0.574-$CHANNEL-port.$BUILD_VERSION.jar"
           test -s "$built"
-          short_sha="$(printf '%.7s' "$SOURCE_SHA")"
           asset_name="forbidden-magic-$CHANNEL.jar"
-          archive_jar_name="forbidden-magic-$CHANNEL-$short_sha-$BUILD_VERSION.jar"
-          source_name="forbidden-magic-$CHANNEL-source.zip"
-          archive_source_name="forbidden-magic-$CHANNEL-source-$short_sha.zip"
           asset="$repo_abs/build/libs/$asset_name"
-          archive_jar="$repo_abs/build/libs/$archive_jar_name"
-          source_bundle="$repo_abs/build/libs/$source_name"
-          archive_source="$repo_abs/build/libs/$archive_source_name"
           mv "$built" "$asset"
-          cp "$asset" "$archive_jar"
-          git -C "$REPO_DIR" archive --format=zip --output "$source_bundle" "$SOURCE_SHA"
-          cp "$source_bundle" "$archive_source"
           (
             cd "$repo_abs/build/libs"
             sha256sum "$asset_name" > "forbidden-magic-$CHANNEL.sha256"
-            sha256sum "$archive_jar_name" > "$archive_jar_name.sha256"
-            sha256sum "$source_name" > "forbidden-magic-$CHANNEL-source.sha256"
-            sha256sum "$archive_source_name" > "$archive_source_name.sha256"
           )
           echo "jar_path=$asset" >> "$GITHUB_OUTPUT"
           echo "checksum_path=$repo_abs/build/libs/forbidden-magic-$CHANNEL.sha256" >> "$GITHUB_OUTPUT"
-          echo "archive_jar_path=$archive_jar" >> "$GITHUB_OUTPUT"
-          echo "archive_checksum_path=$repo_abs/build/libs/$archive_jar_name.sha256" >> "$GITHUB_OUTPUT"
-          echo "source_path=$source_bundle" >> "$GITHUB_OUTPUT"
-          echo "source_checksum_path=$repo_abs/build/libs/forbidden-magic-$CHANNEL-source.sha256" >> "$GITHUB_OUTPUT"
-          echo "archive_source_path=$archive_source" >> "$GITHUB_OUTPUT"
-          echo "archive_source_checksum_path=$repo_abs/build/libs/$archive_source_name.sha256" >> "$GITHUB_OUTPUT"
-          echo "archive_jar_name=$archive_jar_name" >> "$GITHUB_OUTPUT"
-          echo "archive_source_name=$archive_source_name" >> "$GITHUB_OUTPUT"
+          if [[ "$CHANNEL" == "1.21.1" ]]; then
+            source_name="forbidden-magic-$CHANNEL-source.zip"
+            source_bundle="$repo_abs/build/libs/$source_name"
+            git -C "$REPO_DIR" archive --format=zip --output "$source_bundle" "$SOURCE_SHA"
+            echo "source_path=$source_bundle" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Archive tested source and publish rolling release
         env:
@@ -242,14 +227,7 @@ jobs:
           REPO_DIR: ${{ steps.meta.outputs.repo_dir }}
           JAR_PATH: ${{ steps.asset.outputs.jar_path }}
           CHECKSUM_PATH: ${{ steps.asset.outputs.checksum_path }}
-          ARCHIVE_JAR_PATH: ${{ steps.asset.outputs.archive_jar_path }}
-          ARCHIVE_CHECKSUM_PATH: ${{ steps.asset.outputs.archive_checksum_path }}
           SOURCE_PATH: ${{ steps.asset.outputs.source_path }}
-          SOURCE_CHECKSUM_PATH: ${{ steps.asset.outputs.source_checksum_path }}
-          ARCHIVE_SOURCE_PATH: ${{ steps.asset.outputs.archive_source_path }}
-          ARCHIVE_SOURCE_CHECKSUM_PATH: ${{ steps.asset.outputs.archive_source_checksum_path }}
-          ARCHIVE_JAR_NAME: ${{ steps.asset.outputs.archive_jar_name }}
-          ARCHIVE_SOURCE_NAME: ${{ steps.asset.outputs.archive_source_name }}
         shell: bash
         run: |
           set -euo pipefail
@@ -306,8 +284,6 @@ jobs:
           mc_version = os.environ["MC_VERSION"]
           java_version = os.environ["JAVA_VERSION"]
           repo_dir = os.environ["REPO_DIR"]
-          archive_jar_name = os.environ["ARCHIVE_JAR_NAME"]
-          archive_source_name = os.environ["ARCHIVE_SOURCE_NAME"]
           previous_body = os.environ.get("PREVIOUS_BODY", "")
           marker = re.search(r"<!-- release-source-sha: ([0-9a-f]{40}) -->", previous_body)
           previous_sha = marker.group(1) if marker else ""
@@ -413,11 +389,11 @@ jobs:
 
           archive_tag = f"archive/releases/{channel}/{source_sha}"
           if channel == "26.3":
-              rollback_line = f"- Rollback point: [{archive_tag}](https://github.com/{repo}/tree/{archive_tag}) and the attached versioned JAR."
-              rollback_text = f"The exact 26.3 source commit is preserved by the archive tag above. To rebuild it, run this workflow manually on main with source_ref set to that tag."
+              rollback_line = f"- Rollback source: [{archive_tag}](https://github.com/{repo}/tree/{archive_tag})."
+              rollback_text = f"The exact source commit is preserved by the archive tag. To rebuild or roll back, run this workflow manually on main with source_ref set to that tag; older numbered releases remain available."
           else:
-              rollback_line = f"- Rollback point: [source commit {source_sha[:7]}]({source_url}), plus the attached versioned JAR and exact source ZIP."
-              rollback_text = f"To rebuild this exact 1.21.1 source, run this workflow manually on branch 1.21.1 with source_ref set to the source commit SHA above. The matching JAR and exact source ZIP remain attached to this rolling release for direct rollback."
+              rollback_line = f"- Rollback source: [commit {source_sha[:7]}]({source_url}); the exact current source ZIP is attached below."
+              rollback_text = f"To rebuild or roll back to a previous 1.21.1 commit, run this workflow manually on branch 1.21.1 with source_ref set to that commit SHA."
           lines += [
               "",
               "## Build details",
@@ -441,8 +417,24 @@ jobs:
 
           if gh release view "$CHANNEL_TAG" --repo "$REPO" >/dev/null 2>&1; then
             gh release edit "$CHANNEL_TAG" --repo "$REPO" --title "$TITLE" --notes-file "$NOTES_FILE"
-            gh release upload "$CHANNEL_TAG" "$JAR_PATH" "$CHECKSUM_PATH" "$ARCHIVE_JAR_PATH" "$ARCHIVE_CHECKSUM_PATH" "$SOURCE_PATH" "$SOURCE_CHECKSUM_PATH" "$ARCHIVE_SOURCE_PATH" "$ARCHIVE_SOURCE_CHECKSUM_PATH" --repo "$REPO" --clobber
           else
-            gh release create "$CHANNEL_TAG" "$JAR_PATH" "$CHECKSUM_PATH" "$ARCHIVE_JAR_PATH" "$ARCHIVE_CHECKSUM_PATH" "$SOURCE_PATH" "$SOURCE_CHECKSUM_PATH" "$ARCHIVE_SOURCE_PATH" "$ARCHIVE_SOURCE_CHECKSUM_PATH" --repo "$REPO" --target "$TAG_TARGET" --title "$TITLE" --notes-file "$NOTES_FILE"
+            gh release create "$CHANNEL_TAG" --repo "$REPO" --target "$TAG_TARGET" --title "$TITLE" --notes-file "$NOTES_FILE"
+          fi
+
+          # This is a rolling release, not a build archive: remove only assets managed
+          # by this workflow before uploading the current, predictable filenames.
+          RELEASE_ID="$(gh api "repos/$REPO/releases/tags/$CHANNEL_TAG" --jq .id)"
+          while IFS=\t' read -r ASSET_ID ASSET_NAME; do
+            [[ -n "$ASSET_ID" && -n "$ASSET_NAME" ]] || continue
+            if [[ "$ASSET_NAME" == "forbidden-magic-$CHANNEL"* ]]; then
+              gh api "repos/$REPO/releases/assets/$ASSET_ID" --method DELETE >/dev/null
+              echo "Removed obsolete release asset: $ASSET_NAME"
+            fi
+          done < <(gh api "repos/$REPO/releases/$RELEASE_ID/assets?per_page=100" --jq '.[] | [.id, .name] | @tsv')
+
+          if [[ "$CHANNEL" == "1.21.1" ]]; then
+            gh release upload "$CHANNEL_TAG" "$JAR_PATH" "$CHECKSUM_PATH" "$SOURCE_PATH" --repo "$REPO"
+          else
+            gh release upload "$CHANNEL_TAG" "$JAR_PATH" "$CHECKSUM_PATH" --repo "$REPO"
           fi
           echo "Updated release $CHANNEL_TAG from $SOURCE_SHA. The other Minecraft channel was not touched."
