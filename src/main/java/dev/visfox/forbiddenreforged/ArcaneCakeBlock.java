@@ -1,8 +1,8 @@
 package dev.visfox.forbiddenreforged;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
@@ -40,14 +40,16 @@ public final class ArcaneCakeBlock extends Block {
     }
 
     @Override
-    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    protected VoxelShape getShape(
+            BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         int slice = state.getValue(SLICE);
         double minX = Math.min(14.0, (1 + slice) / 12.0 * 16.0);
         return box(minX, 0.0, 1.0, 15.0, 8.0, 15.0);
     }
 
     @Override
-    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+    protected InteractionResult useWithoutItem(
+            BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         eat(level, pos, state, player);
         return InteractionResult.SUCCESS;
     }
@@ -74,7 +76,8 @@ public final class ArcaneCakeBlock extends Block {
     }
 
     @Override
-    protected void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+    protected void randomTick(
+            BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         int slice = state.getValue(SLICE);
         if (slice > 0) {
             level.setBlock(pos, state.setValue(SLICE, slice - 1), 3);

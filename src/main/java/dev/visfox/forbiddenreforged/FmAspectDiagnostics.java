@@ -1,17 +1,23 @@
 package dev.visfox.forbiddenreforged;
 
+import thaumcraft.api.aspects.Aspect;
+
 import java.util.ArrayList;
 import java.util.List;
-import thaumcraft.aspect.Aspect;
 
 public final class FmAspectDiagnostics {
-    private FmAspectDiagnostics() {
-    }
+    private FmAspectDiagnostics() {}
 
     public static List<String> registryLines() {
         List<String> lines = new ArrayList<>();
-        for (Aspect aspect : Aspect.values()) {
-            lines.add(line(aspect, aspect.ordinal() < FmAspects.BUILTIN_ASPECT_COUNT ? "builtin" : "addon"));
+        for (Aspect aspect : Aspect.aspects.values()) {
+            lines.add(
+                    line(
+                            aspect,
+                            new java.util.ArrayList<>(Aspect.aspects.values()).indexOf(aspect)
+                                            < FmAspects.BUILTIN_ASPECT_COUNT
+                                    ? "builtin"
+                                    : "addon"));
         }
         return List.copyOf(lines);
     }
@@ -30,10 +36,15 @@ public final class FmAspectDiagnostics {
             }
             componentTags = String.join(",", tags);
         }
-        return "ordinal=" + aspect.ordinal()
-            + " tag=" + aspect.getTag()
-            + " name=" + aspect.getName()
-            + " kind=" + kind
-            + " components=" + componentTags;
+        return "ordinal="
+                + new java.util.ArrayList<>(Aspect.aspects.values()).indexOf(aspect)
+                + " tag="
+                + aspect.getTag()
+                + " name="
+                + aspect.getName()
+                + " kind="
+                + kind
+                + " components="
+                + componentTags;
     }
 }

@@ -1,46 +1,14 @@
-# Forbidden Magic: Reforged
+# Forbidden Magic — TC4Modern fork
 
-Общие инструкции для любых агентов. Это единственный источник правил; `CLAUDE.md` импортирует этот файл через `@AGENTS.md` и содержит только Claude-специфику.
+This fork targets Minecraft 1.21.1 / NeoForge 21.1.256 / Java 21 only. Use branch `1.21.1`; do not merge upstream `main` (26.3).
+Read `/home/eugheist/Project/CLAUDE.md` when it exists for shared port workflow and release rules.
 
-Порт аддона Forbidden Magic 0.574 (MC 1.7.10, SpitefulFox) на Thaumcraft 4: Reforged (MC 26.3). Логика, числа, рецепты, тексты и ассеты оригинала переносятся 1:1, технический слой пишется на современных API. Спека и план лежат в `docs/superpowers/` и читаются вместе: в спеке измерения и обоснования, в плане разбиение по задачам.
+The upstream Reforged port and its attribution remain in history. Its prior agent instructions are archived in `docs/upstream-AGENTS.md`; references to the other host, Windows, 26.3, or host patches do not apply to this fork.
 
-## Источники истины
+Required host: EugeneHeisst/thaumcraft-port, modId tc4modern, minimum 0.17.189. Do not bundle any host classes/assets or edit the host repository. Bridges live under dev.visfox.forbiddenreforged.compat and targeted mixins under .mixin. Keep original Forbidden Magic mechanics and resource attribution; document necessary integration deviations in docs/tc4modern-compatibility.md.
 
-- Поведение: оригинал 1.7.10 в `../ForbiddenMagic`.
-- API хоста: `../thaumcraft-4-reforged`, его `CLAUDE.md` и раздел «API для аддонов».
-- `reference/tc4r/fm-1.21.1.jar` — jar чужого порта на 1.21.1, распакован рядом в `reference/tc4r/x/`. Локально, в git не идёт. Материал для сверки поведения; код оттуда не заимствуется.
+Build: `python tools/prepare_dependencies.py`; `./gradlew build`. All downloads are pinned and SHA-256 checked in data/compat-dependencies.json. Optional -Ptc4Jar overrides the host artifact.
 
-## Хост: пиним, не правим
+Integration tests: `python tools/prepare_dependencies.py --test-pack`; `./gradlew -PcompatTest -PcompatPack=deps/test-pack runGameTestServer`. Require the native "All ... required tests passed" log marker; Gradle can exit successfully after a game startup failure. Test sources only compile with -PcompatTest and must not ship in the release JAR; use `clean build` without the property for release. Hidden, muted isolated client audits are permitted, never use the user's live game. Run one Gradle process per project.
 
-- Хост пинится sha в `host.sha`, копия собирается в `host/` (в git не идёт), наши изменения к хосту живут патчами в `patches/*.patch`. Рабочее дерево хоста только читаем: `git -C ../thaumcraft-4-reforged status --porcelain` должен оставаться пустым.
-- Пропатченная копия отчитывается версией ровно `1.2`. Не `1.1` и не `1.2-fm.1`: пре-релизный квалификатор сортится ниже `1.2`, и наш собственный `versionRange="[1.2,)"` тогда не разрешается.
-- Ни один класс и ни один ассет хоста не попадает в наш jar. Проверяет `tools/check_provenance.py` в каждом гейте.
-
-## Порядок в конструкторе
-
-Конструктор регистрирует конфиг, регистраторы и `DeferredRegister`; сами аспекты создаются в `FMLCommonSetupEvent`, потому что `no_lust` — STARTUP-конфиг и должен быть прочитан до регистрации. Аспекты до таблицы меток, предметы до рецептов, проверка доступности API хоста до любого к нему обращения. `no_lust` гасит саму регистрацию `luxuria`, как `DarkAspects.java:28`; значения конфига на клиенте и сервере должны совпадать, иначе разойдутся ordinal-таблицы аспектов.
-
-## Намеренные отступления от оригинала
-
-- При включённом `no_lust` аспект `luxuria` не регистрируется вовсе, как в `DarkAspects.java:28`, а не остаётся в реестре без меток. Поле аспекта люсти тогда неинициализировано, и все позднейшие обращения к нему — проверка на null.
-- Семь осколков грехов — семь отдельных id, а не один предмет с семью метами, как `ItemDeadlyShard.vices` в оригинале.
-- Подмена четвёртого осколка на `despair` при `no_lust` выражена config-gated рецептом, а не переименованием иконки.
-- Баги оригинала чиним только если они ломают игру: дюп, потеря предметов, NPE, рассинхрон, краш сервера. Всё остальное расхождение записывается в `docs/deviations.md`, а не устраняется молча.
-
-## Ресурсы и стиль
-
-- Ресурсы делают генераторы в `tools/`, datagen не используется. Повторный прогон генератора не должен менять файлы.
-- lang только `en_us` и `ru_ru`, формулировки оригинала сохраняются.
-- Java и Python: 4 пробела, без комментариев. Коммиты на английском, `feat:` / `fix:` / `docs:` / `chore:`, без строк соавторства.
-
-## Окружение на этой машине
-
-- Python — `python` (3.14); `python3` здесь не существует. Gradle — `cmd //c gradlew.bat <задача>` из Git Bash.
-- Конфиги только `SYNCED` / `STARTUP` / `CLIENT`: `ModConfig.Type.COMMON` удалён в FML 12, на нём падает NeoForge 26.3.0.37+.
-- Тесты — только GameTest: `cmd //c gradlew.bat runGameTestServer`. Запуск игры, визуальную проверку и партию двумя клиентами делает пользователь.
-
-## Метаданные порта
-
-- modId `forbiddenmagic`, пакет `dev.visfox.forbiddenreforged` (атрибуция автору оригинала сохраняется), версия `0.574-26.3-port.0.1.0`.
-- Лицензия порта — MIT; в `NOTICE` — WTFPL оригинала, ARR хоста, происхождение ассетов и «поддержка время от времени без обязательств».
-- Зависимость от хоста: `modId="thaumcraft"`, `type="required"`, `versionRange="[1.2,)"`, `ordering="AFTER"`.
+Java: four spaces. Commits: feat:/fix:/docs:/chore:, English, no coauthor trailer. Preserve MIT/WTFPL attribution and NOTICE. This fork does not support installing over the upstream Reforged version; both use forbiddenmagic modId.

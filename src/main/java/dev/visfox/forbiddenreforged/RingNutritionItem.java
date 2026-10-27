@@ -1,13 +1,13 @@
 package dev.visfox.forbiddenreforged;
 
+import baubles.api.BaubleType;
+import baubles.api.IBauble;
+
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import thaumcraft.item.gear.RunicArmor;
-import thaumcraft.platform.Bauble;
-import thaumcraft.platform.BaubleType;
 
-public class RingNutritionItem extends Item implements Bauble, RunicArmor {
+public class RingNutritionItem extends Item implements IBauble {
     public RingNutritionItem(Properties properties) {
         super(properties.stacksTo(1));
     }
@@ -17,7 +17,6 @@ public class RingNutritionItem extends Item implements Bauble, RunicArmor {
         return BaubleType.RING;
     }
 
-    @Override
     public int getRunicCharge(ItemStack stack) {
         return 0;
     }
@@ -29,10 +28,8 @@ public class RingNutritionItem extends Item implements Bauble, RunicArmor {
     }
 
     @Override
-    public void onEquipped(ItemStack stack, LivingEntity wearer) {
-    }
+    public void onEquipped(ItemStack stack, LivingEntity wearer) {}
 
     @Override
-    public void onUnequipped(ItemStack stack, LivingEntity wearer) {
-    }
+    public void onUnequipped(ItemStack stack, LivingEntity wearer) {}
 }

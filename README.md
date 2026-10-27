@@ -1,43 +1,36 @@
-# Forbidden Magic: Reforged — Minecraft 1.21.1
+# Forbidden Magic UNOFFICIAL PORT
 
-Неофициальный порт Forbidden Magic 0.574 (Minecraft 1.7.10) для Thaumcraft 4: Reforged на Minecraft 1.21.1. Эта ветка развивается отдельно от порта для Minecraft 26.3.
+Форк [MxxFoxx2/forbidden-magic-reforged](https://github.com/MxxFoxx2/forbidden-magic-reforged/tree/1.21.1) для **Minecraft 1.21.1 / NeoForge 21.1.256+ / Java 21**. Поддерживается только ветка `1.21.1`.
 
-## Статус
-
-- Целевая среда: Minecraft 1.21.1, NeoForge 21.1.x и Java 21.
-- Полный паритет с оригиналом не подтверждён. Текущие этапы и оставшиеся задачи описаны в [roadmap](docs/roadmap.md).
-- Требуется Thaumcraft 4: Reforged 1.1.2. Эта ветка использует upstream API аспектов аддонов.
+Аддон предназначен для [Thaumcraft UNOFFICIAL PORT от EugeneHeisst](https://github.com/EugeneHeisst/thaumcraft-port), **0.17.189 или новее** (`tc4modern`). Чужой Thaumcraft 4: Reforged (`thaumcraft`) этой сборке не подходит. Одновременно ставить два Forbidden Magic нельзя.
 
 ## Установка
 
-Проверьте, что загружаемый файл предназначен именно для Minecraft 1.21.1 и NeoForge 21.1.x: сборка для Minecraft 26.3 несовместима. Файлы релизов доступны в [Releases](https://github.com/MxxFoxx2/forbidden-magic-reforged/releases). Если подходящего релиза нет, соберите мод из этой ветки.
+Скачайте один JAR из [Releases](https://github.com/EugeneHeisst/forbidden-magic-reforged/releases) и положите в `mods` клиента и сервера вместе с указанным Thaumcraft. Дополнительный патчер и отдельный API не нужны. Перед заменой другой реализации аддона сделайте резервную копию мира: автоматическая миграция данных из Reforged не предусмотрена.
 
-Для игры нужны NeoForge, Thaumcraft 4: Reforged 1.1.2 и зависимости хоста, включая Curios. Поместите JAR мода в папку `mods/`.
+## Совместимость
 
-## Сборка и тесты
+- Thaumcraft: аспекты грехов, сканирование, исследования в отдельной вкладке, тигель, магический верстак, наполнение и зачарование наполнением, жезлы и фокус, Baubles, трубы эссенции и клетка гнева.
+- [Thaumic Tinkerer](https://github.com/EugeneHeisst/thaumic-tinkerer-port): восемь зачарований Forbidden Magic на столе зачарования. Если вариантов больше 16, страницы переключаются колесом мыши. Аддон работает и без Tinkerer.
+- IndustrialCraft 2, Thaumic Energistics, Advanced Solar Panels, Electro-Magic Tools, Gravitation Suite: совместный запуск проверяется вместе с остальной сборкой. Новых преобразований EU/FE или интеграций с отсутствующими модами этот форк не добавляет.
 
-Требуются Git, Python 3 и JDK 21.
+Sodium и Iris не поддерживаются: с ними возможны визуальные баги.
 
-Клонируйте ветку и репозиторий хоста рядом друг с другом:
+## Сборка
 
-```powershell
-git clone --branch 1.21.1 https://github.com/MxxFoxx2/forbidden-magic-reforged.git forbidden-magic-reforged-1.21.1
-cd forbidden-magic-reforged-1.21.1
-git clone https://github.com/notlikethiss/thaumcraft-4-reforged.git ../thaumcraft-4-reforged
-python tools/prepare_host.py
-.\gradlew.bat build --no-daemon
-.\gradlew.bat runGameTestServer --no-daemon
+```sh
+python tools/prepare_dependencies.py
+./gradlew clean build
+python tools/check_provenance.py
 ```
 
-На Linux/macOS используйте `python3` и `./gradlew`. Скрипт `tools/prepare_host.py` подготавливает в `host/` закреплённую версию хоста, указанную в `host.sha`. Gradle использует `host/` через composite build; отдельный `publish` не требуется. Не редактируйте `host/` вручную.
+Зависимости закреплены версиями и SHA-256. Существующая локальная сборка `../thaumcraft4-modern/versions/0.17.189` используется автоматически; можно указать `-Ptc4Jar=/path/to/tc4modern.jar`.
 
-При успешной сборке JAR создаётся в `build/libs/forbidden-magic-0.574-1.21.1-port.0.1.0.jar`.
+```sh
+python tools/prepare_dependencies.py --test-pack
+./gradlew -PcompatTest -PcompatPack=deps/test-pack runGameTestServer
+```
 
-## Авторы и лицензии
+Описание адаптации и ограничений: [docs/tc4modern-compatibility.md](docs/tc4modern-compatibility.md). Старые документы Reforged в `docs/superpowers`, `patches` и прежние тесты в `tests/java` сохранены для истории; актуальные тесты этого форка находятся в `tests/compat`.
 
-- **SpitefulFox** — оригинальный Forbidden Magic 0.574 (WTFPL).
-- **notlikethiss** — Thaumcraft 4: Reforged (All Rights Reserved).
-- **Azanor** — Thaumcraft 4.2.3.5.
-- **MxxFoxx2** — порт (MIT).
-
-Лицензия MIT применяется к оригинальным изменениям порта; лицензии оригинального Forbidden Magic и Thaumcraft 4: Reforged остаются отдельными. См. `LICENSE` и `NOTICE`.
+Оригинальный Forbidden Magic: SpitefulFox (WTFPL). Порт Reforged: MxxFoxx2 (MIT). Адаптация TC4Modern: EugeneHeisst. Thaumcraft: Azanor. Подробная атрибуция в [NOTICE](NOTICE).

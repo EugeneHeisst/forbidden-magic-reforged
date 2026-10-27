@@ -15,8 +15,11 @@ public final class BlackDyeItem extends Item {
     }
 
     @Override
-    public InteractionResult interactLivingEntity(ItemStack stack, Player player, LivingEntity target, InteractionHand hand) {
-        if (!(target instanceof Sheep sheep) || sheep.isSheared() || sheep.getColor() == DyeColor.BLACK) {
+    public InteractionResult interactLivingEntity(
+            ItemStack stack, Player player, LivingEntity target, InteractionHand hand) {
+        if (!(target instanceof Sheep sheep)
+                || sheep.isSheared()
+                || sheep.getColor() == DyeColor.BLACK) {
             return super.interactLivingEntity(stack, player, target, hand);
         }
         if (!player.level().isClientSide()) {

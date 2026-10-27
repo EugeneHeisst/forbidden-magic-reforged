@@ -327,3 +327,6 @@ heretic = "Еретик"
 
 [entity.minecraft.villager.forbiddenmagic]
 heretic = "Еретик"
+
+[forbiddenmagic.enchanter]
+page = "Страница %s/%s · колесо мыши"

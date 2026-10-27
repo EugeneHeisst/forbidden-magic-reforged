@@ -1,5 +1,8 @@
 package dev.visfox.forbiddenreforged;
 
+import dev.visfox.forbiddenreforged.compat.research.ResearchConfig;
+import dev.visfox.forbiddenreforged.compat.research.ResearchManager;
+
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -9,16 +12,15 @@ import net.minecraft.world.item.Items;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
-import thaumcraft.research.ResearchConfig;
-import thaumcraft.aspect.Aspect;
-import thaumcraft.research.ResearchManager;
+
+import thaumcraft.api.aspects.Aspect;
 
 /** Restores player-side behavior for the two original Forbidden Magic scribing tools. */
 public final class ScribeWellEvents {
-    private static final ResourceLocation PRIMORDIAL_PEARL_ID = ResourceLocation.parse("thaumcraft:primordial_pearl");
+    private static final ResourceLocation PRIMORDIAL_PEARL_ID =
+            ResourceLocation.parse("tc4modern:primordial_pearl");
 
-    private ScribeWellEvents() {
-    }
+    private ScribeWellEvents() {}
 
     public static void register() {
         NeoForge.EVENT_BUS.addListener(ScribeWellEvents::onPlayerTick);
@@ -27,8 +29,8 @@ public final class ScribeWellEvents {
 
     private static void onPlayerTick(PlayerTickEvent.Post event) {
         if (!(event.getEntity() instanceof ServerPlayer player)
-            || ResearchConfig.RESEARCH_DIFFICULTY != -1
-            || player.tickCount % 200 != 0) {
+                || ResearchConfig.difficulty() != -1
+                || player.tickCount % 200 != 0) {
             return;
         }
 
@@ -57,15 +59,17 @@ public final class ScribeWellEvents {
 
     private static void onItemCrafted(PlayerEvent.ItemCraftedEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player)
-            || player.level().isClientSide()
-            || !event.getCrafting().is(FmItems.PRIMEWELL.get())) {
+                || player.level().isClientSide()
+                || !event.getCrafting().is(FmItems.PRIMEWELL.get())) {
             return;
         }
 
         // The original Primewell crafting hook returns its primordial pearl.
         Item pearl = BuiltInRegistries.ITEM.get(PRIMORDIAL_PEARL_ID);
         if (pearl == Items.AIR) {
-            ForbiddenMagic.LOGGER.warn("Could not refund Primewell's primordial pearl: {} is not registered", PRIMORDIAL_PEARL_ID);
+            ForbiddenMagic.LOGGER.warn(
+                    "Could not refund Primewell's primordial pearl: {} is not registered",
+                    PRIMORDIAL_PEARL_ID);
             return;
         }
 

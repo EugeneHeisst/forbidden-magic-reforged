@@ -1,0 +1,29 @@
+{
+  "date": "2026-10-27",
+  "status": "PASS",
+  "minecraft": "1.21.1",
+  "neoforge": "21.1.256",
+  "java": 21,
+  "native_gametests": {
+    "full-published": 14,
+    "nolust-easy": 14,
+    "disabled": 14,
+    "solo": 14
+  },
+  "client_models": 92,
+  "native_tinkerer_enchantments": 8,
+  "client_screenshots": [
+    "01-items-and-wands.png",
+    "02-enchanter-sword.png",
+    "03-enchanter-pickaxe.png"
+  ],
+  "jar_sha256": "84c76277efecf8ad43ae5a27bb433473b31f0560598432b6ce2363b86b4b113e",
+  "host_bundled": false,
+  "audit_classes_bundled": false,
+  "limitations": [
+    "No Reforged save migration",
+    "No complete infusion lifecycle for each recipe",
+    "No Sodium/Iris certification",
+    "No Ars Magica integration validation"
+  ]
+}

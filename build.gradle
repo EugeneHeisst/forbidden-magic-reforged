@@ -95,26 +95,9 @@ configurations {
     clientRuntimeClasspath.extendsFrom runtimeClasspath
 }
 
-if (file('host').isDirectory()) {
-    def hostProperties = new java.util.Properties()
-    file('host/gradle.properties').withInputStream { hostProperties.load(it) }
-    def hostVersion = hostProperties.getProperty('mod_version')
-    if (hostVersion != thaumcraft_version) {
-        throw new GradleException("host/ is version ${hostVersion} but thaumcraft_version is ${thaumcraft_version}; run tools/prepare_host.py")
-    }
-}
-
+def tc4Jar = providers.gradleProperty('tc4Jar').orElse(file('../thaumcraft4-modern/versions/0.17.189/tc4modern-0.17.189.jar').exists() ? '../thaumcraft4-modern/versions/0.17.189/tc4modern-0.17.189.jar' : 'deps/tc4modern-0.17.189.jar')
 dependencies {
-    implementation "com.github.glitchfiend:TerraBlender-neoforge:${terrablender_version}"
-
-    compileOnly "thaumcraft:thaumcraft:${thaumcraft_version}"
-    localRuntime "thaumcraft:thaumcraft:${thaumcraft_version}"
-    // Thaumcraft 1.21.1 has a mandatory Curios runtime dependency; include it in GameTest runs.
-    localRuntime "top.theillusivec4.curios:curios-neoforge:${curios_version}"
-
-    compileOnly "mezz.jei:jei-${minecraft_version}-common-api:${jei_version}"
-    compileOnly "mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}"
-    clientRuntimeOnly "mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}"
+    implementation files(tc4Jar)
 }
 
 tasks.named('jar', Jar) {
@@ -124,9 +107,7 @@ tasks.named('jar', Jar) {
 sourceSets.main.resources {
     srcDir('src/generated/resources')
 }
-sourceSets.main.java {
-    srcDir('tests/java')
-}
+
 
 def generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {
     var replaceProperties = [
@@ -155,4 +136,15 @@ tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }
 
-tasks.register('verify', GradleBuild) { }
+
+
+if (providers.gradleProperty('compatTest').isPresent()) {
+    sourceSets.main.java.srcDir('tests/compat')
+    def testPack = providers.gradleProperty('compatPack').get()
+    dependencies { runtimeOnly fileTree(dir: testPack, include: '*.jar') }
+    neoForge.runs.client.gameDirectory = file(providers.gradleProperty('compatRun').getOrElse('run-compat-client'))
+    neoForge.runs.client.programArguments.addAll '--width','1100','--height','760','--quickPlaySingleplayer','Showcase'
+    neoForge.runs.client.systemProperty 'forbiddenmagic.clientAudit', 'true'
+    neoForge.runs.gameTestServer.systemProperty 'forbiddenmagic.fullPack', providers.gradleProperty('compatFullPack').getOrElse('true')
+    neoForge.runs.gameTestServer.gameDirectory = file(providers.gradleProperty('compatRun').getOrElse('run-compat'))
+}

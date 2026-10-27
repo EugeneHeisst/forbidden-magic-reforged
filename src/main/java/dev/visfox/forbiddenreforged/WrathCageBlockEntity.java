@@ -1,6 +1,8 @@
 package dev.visfox.forbiddenreforged;
 
-import java.util.Objects;
+import dev.visfox.forbiddenreforged.compat.aspect.AspectSource;
+import dev.visfox.forbiddenreforged.compat.blockentity.TcBlockEntity;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -8,24 +10,25 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import thaumcraft.compat.ValueInput;
-import thaumcraft.compat.ValueOutput;
 import net.minecraft.world.phys.AABB;
-import javax.annotation.Nullable;
-import thaumcraft.aspect.Aspect;
-import thaumcraft.aspect.AspectList;
-import thaumcraft.aspect.AspectSource;
-import thaumcraft.blockentity.TcBlockEntity;
-import thaumcraft.essentia.EssentiaTransport;
 
-public class WrathCageBlockEntity extends TcBlockEntity implements AspectSource, EssentiaTransport {
+import thaumcraft.api.aspects.Aspect;
+import thaumcraft.api.aspects.AspectList;
+import thaumcraft.api.aspects.IEssentiaTransport;
+
+import java.util.Objects;
+
+import javax.annotation.Nullable;
+
+public class WrathCageBlockEntity extends TcBlockEntity
+        implements AspectSource, IEssentiaTransport {
     private static final int MAX_STORED = 64;
     private static final int MAX_NEARBY = 6;
     private static final int SPAWN_RANGE = 4;
@@ -67,7 +70,8 @@ public class WrathCageBlockEntity extends TcBlockEntity implements AspectSource,
         sync();
     }
 
-    public static boolean shouldSpawn(boolean powered, boolean mobSet, int fuel, int cost, int availableEssentia) {
+    public static boolean shouldSpawn(
+            boolean powered, boolean mobSet, int fuel, int cost, int availableEssentia) {
         return !powered && mobSet && (cost == 0 || fuel > 0 || availableEssentia >= cost);
     }
 
@@ -76,7 +80,8 @@ public class WrathCageBlockEntity extends TcBlockEntity implements AspectSource,
         return slothful ? delay + 200 : delay;
     }
 
-    public static void tick(Level level, BlockPos pos, BlockState state, WrathCageBlockEntity cage) {
+    public static void tick(
+            Level level, BlockPos pos, BlockState state, WrathCageBlockEntity cage) {
         if (level.isClientSide() || !FmConfig.wrathCage()) {
             return;
         }
@@ -85,7 +90,12 @@ public class WrathCageBlockEntity extends TcBlockEntity implements AspectSource,
             cage.drawEssentia(level, pos);
         }
         boolean powered = level.hasNeighborSignal(pos);
-        if (!shouldSpawn(powered, cage.mobId != null, cage.fuel, cost, cage.special + cage.wrath + cage.sloth)) {
+        if (!shouldSpawn(
+                powered,
+                cage.mobId != null,
+                cage.fuel,
+                cost,
+                cage.special + cage.wrath + cage.sloth)) {
             return;
         }
         if (cost > 0 && cage.fuel <= 0) {
@@ -126,7 +136,8 @@ public class WrathCageBlockEntity extends TcBlockEntity implements AspectSource,
         Aspect mobAspect = mobAspect();
         int cost = FmConfig.wrathCost();
         for (Direction direction : Direction.values()) {
-            if (!(level.getBlockEntity(pos.relative(direction)) instanceof EssentiaTransport transport)) {
+            if (!(level.getBlockEntity(pos.relative(direction))
+                    instanceof IEssentiaTransport transport)) {
                 continue;
             }
             Direction side = direction.getOpposite();
@@ -138,14 +149,19 @@ public class WrathCageBlockEntity extends TcBlockEntity implements AspectSource,
                 sync();
                 return;
             }
-            if (FmAspects.WRATH != null && wrath < MAX_STORED && special < cost
-                && transport.takeEssentia(FmAspects.WRATH, 1, side) == 1) {
+            if (FmAspects.WRATH != null
+                    && wrath < MAX_STORED
+                    && special < cost
+                    && transport.takeEssentia(FmAspects.WRATH, 1, side) == 1) {
                 wrath++;
                 sync();
                 return;
             }
-            if (FmAspects.SLOTH != null && sloth < MAX_STORED && special < cost && wrath < cost
-                && transport.takeEssentia(FmAspects.SLOTH, 1, side) == 1) {
+            if (FmAspects.SLOTH != null
+                    && sloth < MAX_STORED
+                    && special < cost
+                    && wrath < cost
+                    && transport.takeEssentia(FmAspects.SLOTH, 1, side) == 1) {
                 sloth++;
                 sync();
                 return;
@@ -154,7 +170,9 @@ public class WrathCageBlockEntity extends TcBlockEntity implements AspectSource,
     }
 
     private void spawnRound(ServerLevel level, BlockPos pos) {
-        if (level.getNearestPlayer(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, PLAYER_RANGE, false) == null) {
+        if (level.getNearestPlayer(
+                        pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, PLAYER_RANGE, false)
+                == null) {
             return;
         }
         ResourceLocation id = mobId == null ? null : ResourceLocation.tryParse(mobId);
@@ -167,20 +185,38 @@ public class WrathCageBlockEntity extends TcBlockEntity implements AspectSource,
             spawnDelay = nextDelay(level.getRandom(), slothful);
             return;
         }
-        AABB nearby = new AABB(pos.getX() - 4, pos.getY() - 1, pos.getZ() - 4, pos.getX() + 5, pos.getY() + 2, pos.getZ() + 5);
+        AABB nearby =
+                new AABB(
+                        pos.getX() - 4,
+                        pos.getY() - 1,
+                        pos.getZ() - 4,
+                        pos.getX() + 5,
+                        pos.getY() + 2,
+                        pos.getZ() + 5);
         int cost = FmConfig.wrathCost();
         for (int attempt = 0; attempt < SPAWN_COUNT && (fuel > 0 || cost <= 0); attempt++) {
-            // Minecraft 1.21.1 exposes the spawn-aware overload with level, consumer, position and flags.
+            // Minecraft 1.21.1 exposes the spawn-aware overload with level, consumer, position and
+            // flags.
             Entity entity = type.create(level, null, pos, MobSpawnType.SPAWNER, false, false);
             if (entity == null) {
                 break;
             }
-            if (level.getEntitiesOfClass(Entity.class, nearby, other -> other.getType() == type).size() >= MAX_NEARBY) {
+            if (level.getEntitiesOfClass(Entity.class, nearby, other -> other.getType() == type)
+                            .size()
+                    >= MAX_NEARBY) {
                 break;
             }
-            double x = pos.getX() + 0.5 + (level.getRandom().nextDouble() - level.getRandom().nextDouble()) * SPAWN_RANGE;
+            double x =
+                    pos.getX()
+                            + 0.5
+                            + (level.getRandom().nextDouble() - level.getRandom().nextDouble())
+                                    * SPAWN_RANGE;
             double y = pos.getY() + level.getRandom().nextInt(3) - 1;
-            double z = pos.getZ() + 0.5 + (level.getRandom().nextDouble() - level.getRandom().nextDouble()) * SPAWN_RANGE;
+            double z =
+                    pos.getZ()
+                            + 0.5
+                            + (level.getRandom().nextDouble() - level.getRandom().nextDouble())
+                                    * SPAWN_RANGE;
             entity.moveTo(x, y, z, level.getRandom().nextFloat() * 360.0F, 0.0F);
             if (level.noCollision(entity) && !level.containsAnyLiquid(entity.getBoundingBox())) {
                 level.addFreshEntity(entity);
@@ -209,7 +245,13 @@ public class WrathCageBlockEntity extends TcBlockEntity implements AspectSource,
     public void preRemoveSideEffects(BlockPos pos, BlockState state) {
         super.preRemoveSideEffects(pos, state);
         if (mobId != null && level != null) {
-            ItemEntity drop = new ItemEntity(level, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, crystalForBreak(this));
+            ItemEntity drop =
+                    new ItemEntity(
+                            level,
+                            pos.getX() + 0.5,
+                            pos.getY() + 0.5,
+                            pos.getZ() + 0.5,
+                            crystalForBreak(this));
             level.addFreshEntity(drop);
         }
     }
@@ -232,32 +274,19 @@ public class WrathCageBlockEntity extends TcBlockEntity implements AspectSource,
     }
 
     @Override
-    public void setAspects(AspectList aspects) {
-    }
+    public void setAspects(AspectList aspects) {}
 
     @Override
     public boolean doesContainerAccept(Aspect aspect) {
-        return FmConfig.wrathCost() > 0 && (aspect == FmAspects.WRATH || aspect == FmAspects.SLOTH || aspect == mobAspect());
+        return FmConfig.wrathCost() > 0
+                && (aspect == FmAspects.WRATH
+                        || aspect == FmAspects.SLOTH
+                        || aspect == mobAspect());
     }
 
     @Override
     public int addToContainer(Aspect aspect, int amount) {
-        if (FmConfig.wrathCost() <= 0) {
-            return amount;
-        }
-        if (aspect == FmAspects.WRATH) {
-            wrath += amount;
-            return 0;
-        }
-        if (aspect == FmAspects.SLOTH) {
-            sloth += amount;
-            return 0;
-        }
-        if (aspect == mobAspect()) {
-            special += amount;
-            return 0;
-        }
-        return amount;
+        return amount - addEssentia(aspect, amount, Direction.UP);
     }
 
     @Override
@@ -309,8 +338,7 @@ public class WrathCageBlockEntity extends TcBlockEntity implements AspectSource,
     }
 
     @Override
-    public void setSuction(@Nullable Aspect aspect, int amount) {
-    }
+    public void setSuction(@Nullable Aspect aspect, int amount) {}
 
     @Override
     public @Nullable Aspect getSuctionType(Direction face) {
@@ -335,20 +363,13 @@ public class WrathCageBlockEntity extends TcBlockEntity implements AspectSource,
 
     @Override
     public int addEssentia(Aspect aspect, int amount, Direction face) {
-        int accepted = Math.min(amount, MAX_STORED);
-        if (aspect == mobAspect()) {
-            special += accepted;
-            return accepted;
-        }
-        if (aspect == FmAspects.WRATH) {
-            wrath += accepted;
-            return accepted;
-        }
-        if (aspect == FmAspects.SLOTH) {
-            sloth += accepted;
-            return accepted;
-        }
-        return amount;
+        if (amount <= 0 || !doesContainerAccept(aspect)) return 0;
+        int accepted = Math.min(amount, Math.max(0, MAX_STORED - containerContains(aspect)));
+        if (aspect == mobAspect()) special += accepted;
+        else if (aspect == FmAspects.WRATH) wrath += accepted;
+        else if (aspect == FmAspects.SLOTH) sloth += accepted;
+        if (accepted > 0) sync();
+        return accepted;
     }
 
     @Override
@@ -375,8 +396,10 @@ public class WrathCageBlockEntity extends TcBlockEntity implements AspectSource,
     }
 
     @Override
-    protected void saveAdditional(ValueOutput output) {
-        super.saveAdditional(output);
+    protected void saveAdditional(
+            net.minecraft.nbt.CompoundTag output,
+            net.minecraft.core.HolderLookup.Provider registries) {
+        super.saveAdditional(output, registries);
         if (mobId != null) {
             output.putString("MobId", mobId);
         }
@@ -390,15 +413,17 @@ public class WrathCageBlockEntity extends TcBlockEntity implements AspectSource,
     }
 
     @Override
-    protected void loadAdditional(ValueInput input) {
-        super.loadAdditional(input);
-        mobId = input.getString("MobId").orElse(null);
-        special = input.getIntOr("Special", 0);
-        wrath = input.getIntOr("Wrath", 0);
-        sloth = input.getIntOr("Sloth", 0);
-        fuel = input.getIntOr("Fuel", 0);
-        spawnDelay = input.getIntOr("Delay", 20);
-        slothful = input.getBooleanOr("Slothful", false);
-        mode = input.getIntOr("Mode", 0);
+    protected void loadAdditional(
+            net.minecraft.nbt.CompoundTag input,
+            net.minecraft.core.HolderLookup.Provider registries) {
+        super.loadAdditional(input, registries);
+        mobId = input.contains("MobId") ? input.getString("MobId") : null;
+        special = input.contains("Special") ? input.getInt("Special") : 0;
+        wrath = input.contains("Wrath") ? input.getInt("Wrath") : 0;
+        sloth = input.contains("Sloth") ? input.getInt("Sloth") : 0;
+        fuel = input.contains("Fuel") ? input.getInt("Fuel") : 0;
+        spawnDelay = input.contains("Delay") ? input.getInt("Delay") : 20;
+        slothful = input.getBoolean("Slothful");
+        mode = input.contains("Mode") ? input.getInt("Mode") : 0;
     }
 }

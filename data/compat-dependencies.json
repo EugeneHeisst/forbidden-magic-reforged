@@ -1,0 +1,56 @@
+[
+  {
+    "name": "tc4modern-0.17.189.jar",
+    "url": "https://github.com/EugeneHeisst/thaumcraft-port/releases/download/v0.17.189/tc4modern-0.17.189.jar",
+    "sha256": "1474de983229e762f436f37a6a3c834d1d920746a72926c1a562c5d91713c63c",
+    "host": true
+  },
+  {
+    "name": "thaumic-tinkerer-modern-0.1.11.jar",
+    "url": "https://github.com/EugeneHeisst/thaumic-tinkerer-port/releases/download/v0.1.11/thaumic-tinkerer-modern-0.1.11.jar",
+    "sha256": "974e9b654249a65826159db2568f1f0b91b8c699d9d6078d05b5ac79d3736b32",
+    "host": false
+  },
+  {
+    "name": "thaumic-energistics-modern-0.7.12.jar",
+    "url": "https://github.com/EugeneHeisst/thaumic-energistics-port/releases/download/v0.7.12/thaumic-energistics-modern-0.7.12.jar",
+    "sha256": "6dda14e2143fcb5b7b962b0cdeef40e3975f72b7819cd9d8e32364b2f90a0c33",
+    "host": false
+  },
+  {
+    "name": "industrialcraft2-modern-0.1.31.jar",
+    "url": "https://github.com/EugeneHeisst/industrialcraft-port/releases/download/v0.1.31/industrialcraft2-modern-0.1.31.jar",
+    "sha256": "fbb10f956a9a2310284f0947f81048df70ad3ddbde82767093a8c82b3cd3ba58",
+    "host": false
+  },
+  {
+    "name": "advanced-solar-panels-modern-0.1.6.jar",
+    "url": "https://github.com/EugeneHeisst/advanced-solar-panels-port/releases/download/v0.1.6/advanced-solar-panels-modern-0.1.6.jar",
+    "sha256": "c683ff0885b626319310e5252358157ef245bdad971c04fc14af0d0a91a315e8",
+    "host": false
+  },
+  {
+    "name": "electro-magic-tools-modern-0.1.13.jar",
+    "url": "https://github.com/EugeneHeisst/electro-magic-tools-port/releases/download/v0.1.13/electro-magic-tools-modern-0.1.13.jar",
+    "sha256": "40b3fd2d1b6e40ed3fcae1106f77e2fa481bebb061fb634a5ab736c6aab89019",
+    "host": false
+  },
+  {
+    "name": "gravisuite-modern-0.1.8.jar",
+    "url": "https://github.com/EugeneHeisst/gravisuite-port/releases/download/v0.1.8/gravisuite-modern-0.1.8.jar",
+    "sha256": "5a0c3fa3e2afaf521f9b110a57035f546196486e1aa334df1ffd7487fd8fac72",
+    "host": false
+  },
+  {
+    "name": "appliedenergistics2-19.2.18.jar",
+    "url": "https://cdn.modrinth.com/data/XxWD5pD3/versions/KDnFUmMm/appliedenergistics2-19.2.18.jar",
+    "sha256": "df15a07f86ca1ca93aa66373f9d5d84dd3d4586631fceb38f4fbc85dad591e39",
+    "host": false
+  },
+  {
+    "name": "guideme-21.1.19.jar",
+    "url": "https://cdn.modrinth.com/data/Ck4E7v7R/versions/hFpGwC6q/guideme-21.1.19.jar",
+    "sha256": "2ce254edb931c3c3cf81d69abaf8f4ce5b871bf85e64984f366bf044173bd66a",
+    "host": false
+  }
+]

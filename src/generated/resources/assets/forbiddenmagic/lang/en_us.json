@@ -208,5 +208,6 @@
   "tooltip.creativeonly": "Creative Only",
   "tooltip.profane_contract": "Contract: %s",
   "item.forbiddenmagic.mob_crystal": "Imprinting Crystal",
-  "forbiddenmagic.research_page.MOBCRYSTAL.1": "A diamond exposed to concentrated mind and energy aspects becomes a vessel that can hold the imprint of a creature."
+  "forbiddenmagic.research_page.MOBCRYSTAL.1": "A diamond exposed to concentrated mind and energy aspects becomes a vessel that can hold the imprint of a creature.",
+  "forbiddenmagic.enchanter.page": "Page %s/%s · mouse wheel"
 }

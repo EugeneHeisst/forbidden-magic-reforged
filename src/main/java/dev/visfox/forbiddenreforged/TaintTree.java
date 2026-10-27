@@ -6,8 +6,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
 
 public final class TaintTree {
-    private TaintTree() {
-    }
+    private TaintTree() {}
 
     public static boolean grow(ServerLevel level, BlockPos pos, RandomSource random) {
         int height = 4 + random.nextInt(3);

@@ -1,5 +1,7 @@
 package dev.visfox.forbiddenreforged;
 
+import dev.visfox.forbiddenreforged.compat.wand.Wands;
+
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -10,8 +12,8 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
@@ -33,12 +35,9 @@ import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
 import net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent;
 import net.neoforged.neoforge.event.level.BlockDropsEvent;
-import thaumcraft.entity.boss.ThaumcraftBoss;
-import thaumcraft.wand.Wands;
 
 public final class FmDrops {
-    private FmDrops() {
-    }
+    private FmDrops() {}
 
     public static void register() {
         NeoForge.EVENT_BUS.addListener(FmDrops::onLivingDrops);
@@ -83,12 +82,16 @@ public final class FmDrops {
         if (held.isEmpty() || !held.is(ItemTags.SWORDS)) {
             return 0;
         }
-        double modifier = held.getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY)
-            .modifiers().stream()
-            .filter(entry -> entry.attribute().is(Attributes.ATTACK_DAMAGE))
-            .filter(entry -> entry.slot().test(EquipmentSlot.MAINHAND))
-            .mapToDouble(entry -> entry.modifier().amount())
-            .sum();
+        double modifier =
+                held
+                        .getOrDefault(
+                                DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY)
+                        .modifiers()
+                        .stream()
+                        .filter(entry -> entry.attribute().is(Attributes.ATTACK_DAMAGE))
+                        .filter(entry -> entry.slot().test(EquipmentSlot.MAINHAND))
+                        .mapToDouble(entry -> entry.modifier().amount())
+                        .sum();
         return (int) (1.0 + modifier);
     }
 
@@ -107,10 +110,16 @@ public final class FmDrops {
         }
         DamageSource source = event.getSource();
         Entity attacker = source.getEntity();
-        boolean playerKill = event.isRecentlyHit() && attacker instanceof ServerPlayer && !(attacker instanceof FakePlayer);
+        boolean playerKill =
+                event.isRecentlyHit()
+                        && attacker instanceof ServerPlayer
+                        && !(attacker instanceof FakePlayer);
         if (!playerKill) {
             if (rollSloth(entity.getRandom().nextInt(30))) {
-                addDrop(event, FmItems.DEADLY_SHARDS.get("sloth").get(), slothCount(entity.getRandom().nextInt(3)));
+                addDrop(
+                        event,
+                        FmItems.DEADLY_SHARDS.get("sloth").get(),
+                        slothCount(entity.getRandom().nextInt(3)));
             }
             return;
         }
@@ -123,49 +132,56 @@ public final class FmDrops {
             }
             if (isBoss(entity)) {
                 int looting = enchant(player, held, Enchantments.LOOTING);
-                addDrop(event, FmItems.DEADLY_SHARDS.get("pride").get(), prideCount(looting, entity.getRandom().nextInt(1 + looting)));
+                addDrop(
+                        event,
+                        FmItems.DEADLY_SHARDS.get("pride").get(),
+                        prideCount(looting, entity.getRandom().nextInt(1 + looting)));
             }
             int greed = enchant(player, held, Enchantments.LOOTING) + Wands.getFocusTreasure(held);
             if (rollGreed(greed, entity.getRandom().nextInt(20))) {
                 addDrop(event, FmItems.DEADLY_SHARDS.get("greed").get(), 1);
             }
         }
-        if (entity instanceof ZombifiedPiglin pig && pig.getMainHandItem().is(FmItems.DEADLY_SHARDS.get("envy").get())) {
+        if (entity instanceof ZombifiedPiglin pig
+                && pig.getMainHandItem().is(FmItems.DEADLY_SHARDS.get("envy").get())) {
             addDrop(event, FmItems.DEADLY_SHARDS.get("envy").get(), 1);
         }
     }
 
     private static void onFoodFinished(LivingEntityUseItemEvent.Finish event) {
-        if (!(event.getEntity() instanceof Player player) || player.level().isClientSide()
-            || player.level().dimension() != Level.NETHER) {
+        if (!(event.getEntity() instanceof Player player)
+                || player.level().isClientSide()
+                || player.level().dimension() != Level.NETHER) {
             return;
         }
 
         ItemStack consumed = event.getItem();
         if (consumed.get(DataComponents.FOOD) == null
-            || consumed.is(FmItems.GLUTTONY_SHARD.get())
-            || !rollGluttony(player.getRandom().nextInt(10))) {
+                || consumed.is(FmItems.GLUTTONY_SHARD.get())
+                || !rollGluttony(player.getRandom().nextInt(10))) {
             return;
         }
 
         var random = player.getRandom();
-        ItemEntity drop = new ItemEntity(
-            player.level(), player.getX(), player.getY(), player.getZ(),
-            new ItemStack(FmItems.GLUTTONY_SHARD.get())
-        );
+        ItemEntity drop =
+                new ItemEntity(
+                        player.level(),
+                        player.getX(),
+                        player.getY(),
+                        player.getZ(),
+                        new ItemStack(FmItems.GLUTTONY_SHARD.get()));
         drop.setPickUpDelay(10);
         drop.setDeltaMovement(
-            (random.nextFloat() - random.nextFloat()) * 0.1F,
-            random.nextFloat() * 0.05F,
-            (random.nextFloat() - random.nextFloat()) * 0.1F
-        );
+                (random.nextFloat() - random.nextFloat()) * 0.1F,
+                random.nextFloat() * 0.05F,
+                (random.nextFloat() - random.nextFloat()) * 0.1F);
         player.level().addFreshEntity(drop);
     }
 
     private static void onQuartzOreDrops(BlockDropsEvent event) {
         if (event.getLevel().dimension() != Level.NETHER
-            || !event.getState().is(Blocks.NETHER_QUARTZ_ORE)
-            || !(event.getBreaker() instanceof Player player)) {
+                || !event.getState().is(Blocks.NETHER_QUARTZ_ORE)
+                || !(event.getBreaker() instanceof Player player)) {
             return;
         }
 
@@ -175,27 +191,34 @@ public final class FmDrops {
         }
 
         var pos = event.getPos();
-        ItemEntity drop = new ItemEntity(
-            event.getLevel(), pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
-            new ItemStack(FmItems.DEADLY_SHARDS.get("greed").get())
-        );
+        ItemEntity drop =
+                new ItemEntity(
+                        event.getLevel(),
+                        pos.getX() + 0.5,
+                        pos.getY() + 0.5,
+                        pos.getZ() + 0.5,
+                        new ItemStack(FmItems.DEADLY_SHARDS.get("greed").get()));
         drop.setPickUpDelay(10);
         event.getDrops().add(drop);
     }
 
     private static void onEntityJoinLevel(EntityJoinLevelEvent event) {
-        if (event.getLevel().isClientSide() || event.loadedFromDisk()
-            || event.getLevel().dimension() != Level.NETHER
-            || !(event.getEntity() instanceof ZombifiedPiglin piglin)
-            || !rollEnvy(piglin.getRandom().nextInt(175))) {
+        if (event.getLevel().isClientSide()
+                || event.loadedFromDisk()
+                || event.getLevel().dimension() != Level.NETHER
+                || !(event.getEntity() instanceof ZombifiedPiglin piglin)
+                || !rollEnvy(piglin.getRandom().nextInt(175))) {
             return;
         }
 
-        piglin.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(FmItems.DEADLY_SHARDS.get("envy").get()));
+        piglin.setItemSlot(
+                EquipmentSlot.MAINHAND, new ItemStack(FmItems.DEADLY_SHARDS.get("envy").get()));
     }
 
     private static boolean isBoss(LivingEntity entity) {
-        return entity instanceof WitherBoss || entity instanceof EnderDragon || entity instanceof ThaumcraftBoss;
+        return entity instanceof WitherBoss
+                || entity instanceof EnderDragon
+                || FmSpawnerMobs.isBoss(entity.getType());
     }
 
     private static int wrathBonus(ServerPlayer player, LivingEntity target) {
@@ -226,12 +249,22 @@ public final class FmDrops {
     }
 
     private static int enchant(LivingEntity entity, ItemStack stack, ResourceKey<Enchantment> key) {
-        return stack.getEnchantmentLevel(entity.level().registryAccess().lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(key));
+        return stack.getEnchantmentLevel(
+                entity.level()
+                        .registryAccess()
+                        .lookupOrThrow(Registries.ENCHANTMENT)
+                        .getOrThrow(key));
     }
 
     private static void addDrop(LivingDropsEvent event, Item item, int count) {
         LivingEntity entity = event.getEntity();
-        ItemEntity drop = new ItemEntity(entity.level(), entity.getX(), entity.getY(), entity.getZ(), new ItemStack(item, count));
+        ItemEntity drop =
+                new ItemEntity(
+                        entity.level(),
+                        entity.getX(),
+                        entity.getY(),
+                        entity.getZ(),
+                        new ItemStack(item, count));
         drop.setPickUpDelay(10);
         event.getDrops().add(drop);
     }

@@ -11,6 +11,9 @@ public class LustShardItem extends Item {
 
     @Override
     public Component getName(ItemStack stack) {
-        return Component.translatable(FmConfig.lustDisabled() ? "item.forbiddenmagic.despair_shard" : "item.forbiddenmagic.lust_shard");
+        return Component.translatable(
+                FmConfig.lustDisabled()
+                        ? "item.forbiddenmagic.despair_shard"
+                        : "item.forbiddenmagic.lust_shard");
     }
 }

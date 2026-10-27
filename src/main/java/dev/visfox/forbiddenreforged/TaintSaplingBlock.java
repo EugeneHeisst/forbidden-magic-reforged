@@ -1,6 +1,7 @@
 package dev.visfox.forbiddenreforged;
 
 import com.mojang.serialization.MapCodec;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
@@ -13,6 +14,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public final class TaintSaplingBlock extends BushBlock implements BonemealableBlock {
     public static final MapCodec<TaintSaplingBlock> CODEC = simpleCodec(TaintSaplingBlock::new);
+
     public TaintSaplingBlock(BlockBehaviour.Properties properties) {
         super(properties);
     }
@@ -23,7 +25,8 @@ public final class TaintSaplingBlock extends BushBlock implements BonemealableBl
     }
 
     @Override
-    protected void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+    protected void randomTick(
+            BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         if (random.nextInt(10) == 0 && level.getMaxLocalRawBrightness(pos.above()) >= 9) {
             grow(level, pos, random);
         }
@@ -41,12 +44,14 @@ public final class TaintSaplingBlock extends BushBlock implements BonemealableBl
     }
 
     @Override
-    public boolean isBonemealSuccess(Level level, RandomSource random, BlockPos pos, BlockState state) {
+    public boolean isBonemealSuccess(
+            Level level, RandomSource random, BlockPos pos, BlockState state) {
         return true;
     }
 
     @Override
-    public void performBonemeal(ServerLevel level, RandomSource random, BlockPos pos, BlockState state) {
+    public void performBonemeal(
+            ServerLevel level, RandomSource random, BlockPos pos, BlockState state) {
         grow(level, pos, random);
     }
 }

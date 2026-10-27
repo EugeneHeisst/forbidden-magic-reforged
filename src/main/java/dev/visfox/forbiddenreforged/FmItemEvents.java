@@ -1,12 +1,11 @@
 package dev.visfox.forbiddenreforged;
 
-import java.util.concurrent.ThreadLocalRandom;
-import net.minecraft.world.item.crafting.RecipeType;
 import net.neoforged.neoforge.event.furnace.FurnaceFuelBurnTimeEvent;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 public final class FmItemEvents {
-    private FmItemEvents() {
-    }
+    private FmItemEvents() {}
 
     public static void onFuel(FurnaceFuelBurnTimeEvent event) {
         if (event.getItemStack().is(FmItems.TAINT_COAL.get())) {

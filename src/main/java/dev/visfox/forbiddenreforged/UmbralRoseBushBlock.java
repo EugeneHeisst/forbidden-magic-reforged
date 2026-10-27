@@ -16,7 +16,8 @@ public final class UmbralRoseBushBlock extends DoublePlantBlock implements Bonem
     }
 
     @Override
-    protected void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+    protected void randomTick(
+            BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         if (random.nextInt(10) <= 2) {
             UmbralRoseBlock.spread(level, pos, random);
         }
@@ -28,12 +29,14 @@ public final class UmbralRoseBushBlock extends DoublePlantBlock implements Bonem
     }
 
     @Override
-    public boolean isBonemealSuccess(Level level, RandomSource random, BlockPos pos, BlockState state) {
+    public boolean isBonemealSuccess(
+            Level level, RandomSource random, BlockPos pos, BlockState state) {
         return true;
     }
 
     @Override
-    public void performBonemeal(ServerLevel level, RandomSource random, BlockPos pos, BlockState state) {
+    public void performBonemeal(
+            ServerLevel level, RandomSource random, BlockPos pos, BlockState state) {
         UmbralRoseBlock.spread(level, pos, random);
     }
 }

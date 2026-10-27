@@ -12,3 +12,7 @@ forbidden-magic-reforged/
 logs/
 *.hprof
 *.log
+
+deps/
+run-compat*/
+versions/

@@ -208,5 +208,6 @@
   "tooltip.creativeonly": "Только для творческого режима",
   "tooltip.profane_contract": "Контракт: %s",
   "item.forbiddenmagic.mob_crystal": "Кристалл отпечатка",
-  "forbiddenmagic.research_page.MOBCRYSTAL.1": "Алмаз, насыщенный аспектами разума и энергии, становится сосудом для отпечатка существа."
+  "forbiddenmagic.research_page.MOBCRYSTAL.1": "Алмаз, насыщенный аспектами разума и энергии, становится сосудом для отпечатка существа.",
+  "forbiddenmagic.enchanter.page": "Страница %s/%s · колесо мыши"
 }

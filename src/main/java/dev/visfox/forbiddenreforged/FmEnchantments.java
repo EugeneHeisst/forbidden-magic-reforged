@@ -16,8 +16,7 @@ public final class FmEnchantments {
     public static final ResourceKey<Enchantment> IMPACT = key("impact");
     public static final ResourceKey<Enchantment> VOIDTOUCHED = key("voidtouched");
 
-    private FmEnchantments() {
-    }
+    private FmEnchantments() {}
 
     private static ResourceKey<Enchantment> key(String name) {
         return ResourceKey.create(Registries.ENCHANTMENT, ForbiddenMagic.id(name));
@@ -28,9 +27,9 @@ public final class FmEnchantments {
             return 0;
         }
         return access.lookupOrThrow(Registries.ENCHANTMENT)
-            .get(key)
-            .map(holder -> stack.getEnchantmentLevel(holder))
-            .orElse(0);
+                .get(key)
+                .map(holder -> stack.getEnchantmentLevel(holder))
+                .orElse(0);
     }
 
     public static boolean enabled() {

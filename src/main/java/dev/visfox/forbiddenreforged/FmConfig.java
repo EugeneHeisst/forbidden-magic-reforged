@@ -21,23 +21,48 @@ public final class FmConfig {
     public static ModConfigSpec.BooleanValue emeraldTrans;
 
     static {
-        noLust = BUILDER.comment("Enable to remove Luxuria aspect and related items.").define("general.no_lust", false);
-        tagResearch = BUILDER.comment("Show the [FM] prefix in Forbidden Magic research titles.").define("general.tag_research", true);
-        gluttony = BUILDER.comment("0 = Enabled, 1 = Disabled, 2 = Hardcore").defineInRange("general.gluttony", 0, 0, 2);
-        enchanting = BUILDER.comment("Enable Forbidden Magic enchantments.").define("general.enchanting", true);
-        greedyEnch = BUILDER.comment("Enable the Capitalist (Greedy) enchantment, its recipe and effects.").define("general.greedy_ench", true);
+        noLust =
+                BUILDER.comment("Enable to remove Luxuria aspect and related items.")
+                        .define("general.no_lust", false);
+        tagResearch =
+                BUILDER.comment("Show the [FM] prefix in Forbidden Magic research titles.")
+                        .define("general.tag_research", true);
+        gluttony =
+                BUILDER.comment("0 = Enabled, 1 = Disabled, 2 = Hardcore")
+                        .defineInRange("general.gluttony", 0, 0, 2);
+        enchanting =
+                BUILDER.comment("Enable Forbidden Magic enchantments.")
+                        .define("general.enchanting", true);
+        greedyEnch =
+                BUILDER.comment(
+                                "Enable the Capitalist (Greedy) enchantment, its recipe and"
+                                        + " effects.")
+                        .define("general.greedy_ench", true);
         wrathCage = BUILDER.comment("Enable the Wrath Cage.").define("general.wrath_cage", true);
-        wrathCost = BUILDER.comment("Essentia cost per spawn round.").defineInRange("general.wrath_cost", 5, 0, 64);
-        wrathEff = BUILDER.comment("Spawns granted per essentia cost.").defineInRange("general.wrath_eff", 4, 1, 64);
-        wrathCrazy = BUILDER.comment("Let the cage imprint on any non-boss mob.").define("general.wrath_crazy", false);
-        spork = BUILDER.comment("Rename the Diabolist Fork to 'Diabolist Spork' and use the spork texture.").define("general.spork", false);
-        silverfishEmeralds = BUILDER.comment("Allow silverfish to drop emerald nuggets.").define("general.silverfish_emeralds", true);
-        emeraldTrans = BUILDER.comment("Enable Emerald Transmutation research and recipe.").define("general.emerald_transmutation", true);
+        wrathCost =
+                BUILDER.comment("Essentia cost per spawn round.")
+                        .defineInRange("general.wrath_cost", 5, 0, 64);
+        wrathEff =
+                BUILDER.comment("Spawns granted per essentia cost.")
+                        .defineInRange("general.wrath_eff", 4, 1, 64);
+        wrathCrazy =
+                BUILDER.comment("Let the cage imprint on any non-boss mob.")
+                        .define("general.wrath_crazy", false);
+        spork =
+                BUILDER.comment(
+                                "Rename the Diabolist Fork to 'Diabolist Spork' and use the spork"
+                                        + " texture.")
+                        .define("general.spork", false);
+        silverfishEmeralds =
+                BUILDER.comment("Allow silverfish to drop emerald nuggets.")
+                        .define("general.silverfish_emeralds", true);
+        emeraldTrans =
+                BUILDER.comment("Enable Emerald Transmutation research and recipe.")
+                        .define("general.emerald_transmutation", true);
         SPEC = BUILDER.build();
     }
 
-    private FmConfig() {
-    }
+    private FmConfig() {}
 
     public static void register(ModContainer container) {
         container.registerConfig(ModConfig.Type.STARTUP, SPEC);

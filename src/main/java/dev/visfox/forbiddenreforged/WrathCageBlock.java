@@ -1,6 +1,7 @@
 package dev.visfox.forbiddenreforged;
 
-import javax.annotation.Nullable;
+import dev.visfox.forbiddenreforged.compat.blockentity.TcBlockEntity;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -15,7 +16,8 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
-import thaumcraft.blockentity.TcBlockEntity;
+
+import javax.annotation.Nullable;
 
 public final class WrathCageBlock extends Block implements EntityBlock {
     public WrathCageBlock(Properties properties) {
@@ -29,19 +31,17 @@ public final class WrathCageBlock extends Block implements EntityBlock {
 
     @Override
     public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(
-        Level level, BlockState state, BlockEntityType<T> type
-    ) {
+            Level level, BlockState state, BlockEntityType<T> type) {
         if (type != FmBlockEntities.WRATH_CAGE.get()) {
             return null;
         }
         return (tickLevel, pos, tickState, entity) ->
-            WrathCageBlockEntity.tick(tickLevel, pos, tickState, (WrathCageBlockEntity) entity);
+                WrathCageBlockEntity.tick(tickLevel, pos, tickState, (WrathCageBlockEntity) entity);
     }
 
     @Override
     protected InteractionResult useWithoutItem(
-        BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit
-    ) {
+            BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (!(level.getBlockEntity(pos) instanceof WrathCageBlockEntity cage)) {
             return InteractionResult.PASS;
         }
@@ -53,9 +53,13 @@ public final class WrathCageBlock extends Block implements EntityBlock {
 
     @Override
     protected ItemInteractionResult useItemOn(
-        ItemStack stack, BlockState state, Level level, BlockPos pos, Player player,
-        InteractionHand hand, BlockHitResult hit
-    ) {
+            ItemStack stack,
+            BlockState state,
+            Level level,
+            BlockPos pos,
+            Player player,
+            InteractionHand hand,
+            BlockHitResult hit) {
         if (!(level.getBlockEntity(pos) instanceof WrathCageBlockEntity cage)) {
             return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         }
@@ -73,7 +77,8 @@ public final class WrathCageBlock extends Block implements EntityBlock {
     }
 
     @Override
-    public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean isMoving) {
+    public void onRemove(
+            BlockState state, Level level, BlockPos pos, BlockState newState, boolean isMoving) {
         TcBlockEntity.beforeRemove(state, level, pos, newState);
         super.onRemove(state, level, pos, newState, isMoving);
     }

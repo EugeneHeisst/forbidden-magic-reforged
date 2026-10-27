@@ -3,7 +3,8 @@
     "bottom": "forbiddenmagic:block/cake_bottom",
     "side": "forbiddenmagic:block/cake_side",
     "top": "forbiddenmagic:block/cake_top",
-    "inner": "forbiddenmagic:block/cake_inner"
+    "inner": "forbiddenmagic:block/cake_inner",
+    "particle": "#side"
   },
   "elements": [
     {

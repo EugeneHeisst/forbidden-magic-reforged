@@ -2,7 +2,9 @@ package dev.visfox.forbiddenreforged.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+
 import dev.visfox.forbiddenreforged.WrathCageBlockEntity;
+
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
@@ -22,8 +24,13 @@ public final class WrathCageRenderer implements BlockEntityRenderer<WrathCageBlo
     }
 
     @Override
-    public void render(WrathCageBlockEntity cage, float partialTick, PoseStack poseStack,
-        MultiBufferSource buffers, int packedLight, int packedOverlay) {
+    public void render(
+            WrathCageBlockEntity cage,
+            float partialTick,
+            PoseStack poseStack,
+            MultiBufferSource buffers,
+            int packedLight,
+            int packedOverlay) {
         Level level = cage.getLevel();
         String mobId = cage.getMobId();
         if (level == null || mobId == null || mobId.isBlank()) {
@@ -42,9 +49,19 @@ public final class WrathCageRenderer implements BlockEntityRenderer<WrathCageBlo
         entity.yRotO = 0.0F;
         poseStack.pushPose();
         poseStack.translate(0.5D, 0.22D, 0.5D);
-        poseStack.mulPose(Axis.YP.rotationDegrees((cage.getBlockPos().asLong() % 360L) + partialTick));
+        poseStack.mulPose(
+                Axis.YP.rotationDegrees((cage.getBlockPos().asLong() % 360L) + partialTick));
         poseStack.scale(0.38F, 0.38F, 0.38F);
-        dispatcher.render(entity, 0.0D, 0.0D, 0.0D, entity.getYRot(), partialTick, poseStack, buffers, packedLight);
+        dispatcher.render(
+                entity,
+                0.0D,
+                0.0D,
+                0.0D,
+                entity.getYRot(),
+                partialTick,
+                poseStack,
+                buffers,
+                packedLight);
         poseStack.popPose();
     }
 }

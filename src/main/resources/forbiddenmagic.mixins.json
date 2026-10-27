@@ -1,0 +1,28 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "dev.visfox.forbiddenreforged.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "ResearchConfigAccessor",
+    "AccessoriesAccessor",
+    "InfusionEnchantmentsMixin",
+    "ResearchWarpMixin",
+    "WarpGearMixin",
+    "FocusUpgradeMixin",
+    "DepthTextureMixin",
+    "UpgradeIconMixin",
+    "TinkererCostsMixin",
+    "TinkererMenuSizeMixin",
+    "TinkererDataSizeMixin",
+    "InfusionResearchGateMixin"
+  ],
+  "client": [
+    "WandTextureMixin",
+    "TinkererScreenSizeMixin",
+    "GogglesContainerMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

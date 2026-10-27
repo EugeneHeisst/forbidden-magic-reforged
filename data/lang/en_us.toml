@@ -335,3 +335,6 @@ heretic = "Heretic"
 
 [entity.minecraft.villager.forbiddenmagic]
 heretic = "Heretic"
+
+[forbiddenmagic.enchanter]
+page = "Page %s/%s · mouse wheel"

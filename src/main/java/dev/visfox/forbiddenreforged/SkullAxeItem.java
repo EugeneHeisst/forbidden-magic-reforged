@@ -10,6 +10,11 @@ public class SkullAxeItem extends Item {
     }
 
     @Override
+    public int getEnchantmentValue() {
+        return 18;
+    }
+
+    @Override
     public float getDestroySpeed(ItemStack stack, BlockState state) {
         return 1.0F;
     }

@@ -26,3 +26,9 @@ No Thaumcraft code or assets are redistributed by this project.
 
 AI assistance
 Parts of the port were developed with AI assistance; the port author remains responsible for the content.
+
+TC4Modern compatibility fork (Minecraft 1.21.1 only)
+Copyright (c) 2026 EugeneHeisst. Compatibility additions are under MIT.
+Runtime host: EugeneHeisst Thaumcraft UNOFFICIAL PORT (tc4modern).
+This fork does not depend on or bundle Thaumcraft 4: Reforged.
+No Thaumcraft host classes or host assets are included in this artifact.
