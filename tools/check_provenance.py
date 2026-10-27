@@ -36,6 +36,8 @@ def main() -> int:
                             if path not in names:
                                 violations.append(f"{name}: missing texture {texture}")
             for name in archive.namelist():
+                if name in ("dev/eugheist/", "dev/eugheist/portupdates/") or name.startswith("dev/eugheist/portupdates/forbiddenmagic/"):
+                    continue  # embedded shared port updater, not TC4Modern code
                 if name.startswith(FORBIDDEN_PREFIXES):
                     violations.append(f"{jar.name}: {name}")
                 elif name.endswith(".class") and not name.startswith("dev/visfox/forbiddenreforged/"):
