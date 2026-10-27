@@ -1,11 +1,11 @@
 package dev.visfox.forbiddenreforged;
 
 import net.neoforged.fml.ModList;
-import thaumcraft.Config;
 import thaumcraft.aspect.Aspect;
 import thaumcraft.aspect.AspectList;
 import thaumcraft.crafting.TcStack;
 import thaumcraft.research.ResearchCategories;
+import thaumcraft.research.ResearchConfig;
 import thaumcraft.research.ResearchPage;
 
 public final class FmResearch {
@@ -183,10 +183,7 @@ public final class FmResearch {
             .setParents("NETHERSHARDS")
             .registerResearchItem();
         new FmResearchItem("ROD_tainted", "FORBIDDEN", new AspectList().add(Aspect.MAGIC, 4).add(Aspect.TAINT, 5).add(Aspect.TOOL, 2), -8, 3, 3, TcStack.of(FmItems.TAINTED_ROD.getId().toString(), 1))
-            .setPages(
-                ResearchPage.text("forbiddenmagic.research_page.ROD_tainted.1"),
-                ResearchPage.infusion("ROD_TAINTED")
-            )
+            .setPages(ResearchPage.text("forbiddenmagic.research_page.ROD_tainted.1"))
             .setParents("ROD_silverwood", "TAINTSHOVEL", "INFUSION")
             .setConcealed()
             .setWarp(2)
@@ -211,7 +208,7 @@ public final class FmResearch {
                 .setHidden()
                 .registerResearchItem();
         }
-        if (ModList.get().isLoaded("arsmagica2")) {
+        if (FmWands.isArsMagicaLoaded()) {
             new FmResearchItem("ROD_witchwood", "FORBIDDEN", new AspectList().add(Aspect.TREE, 3).add(Aspect.MAGIC, 2), -3, 1, 3, TcStack.of(FmItems.WITCHWOOD_ROD.getId().toString(), 1))
                 .setPages(ResearchPage.text("forbiddenmagic.research_page.ROD_witchwood.1"))
                 .setParents("NETHERSHARDS")
@@ -221,12 +218,12 @@ public final class FmResearch {
         }
         new FmResearchItem("ROD_profane", "FORBIDDEN", new AspectList(), -9, -8, 0, TcStack.of(FmItems.PROFANE_ROD.getId().toString(), 1))
             .setPages(ResearchPage.text("forbiddenmagic.research_page.ROD_profane.1"))
-            .setRound()
             .setParents("NETHERSHARDS")
             .setHidden()
             .setStub()
+            .setRound()
             .registerResearchItem();
-        if (ModList.get().isLoaded("arsmagica2")) {
+        if (FmWands.isArsMagicaLoaded()) {
             new FmResearchItem("ROD_witchwood_staff", "FORBIDDEN", new AspectList().add(Aspect.TREE, 4).add(Aspect.MAGIC, 3), -3, -1, 2, TcStack.of(FmItems.WITCHWOOD_STAFF_ROD.getId().toString(), 1))
                 .setPages(ResearchPage.text("forbiddenmagic.research_page.ROD_witchwood_staff.1"))
                 .setParents("ROD_witchwood")
@@ -243,7 +240,7 @@ public final class FmResearch {
         }
         new FmResearchItem("CRYSTALWELL", "FORBIDDEN", new AspectList().add(Aspect.MIND, 3).add(Aspect.CRYSTAL, 2).add(Aspect.MAGIC, 1), -2, -8, 1, TcStack.of(FmItems.CRYSTALWELL.getId().toString(), 1))
             .setPages(
-                ResearchPage.text(Config.researchDifficulty() == -1
+                ResearchPage.text(ResearchConfig.RESEARCH_DIFFICULTY == -1
                     ? "forbiddenmagic.research_page.CRYSTALWELL.1b"
                     : "forbiddenmagic.research_page.CRYSTALWELL.1"),
                 ResearchPage.arcane("CRYSTALWELL")
@@ -258,8 +255,8 @@ public final class FmResearch {
         new FmResearchItem("TAINTSHOVEL", "FORBIDDEN", new AspectList().add(Aspect.CRYSTAL, 3).add(Aspect.TAINT, 2).add(Aspect.TOOL, 1), -8, 1, 2, TcStack.of(FmItems.TAINT_SHOVEL.getId().toString(), 1))
             .setPages(
                 ResearchPage.text("forbiddenmagic.research_page.TAINTSHOVEL.1"),
-                ResearchPage.infusion("TAINTSHOVEL"),
-                ResearchPage.text("forbiddenmagic.research_page.TAINTSHOVEL.2")
+                ResearchPage.text("forbiddenmagic.research_page.TAINTSHOVEL.2"),
+                ResearchPage.infusion("TAINTSHOVEL")
             )
             .setParents("THAUMIUM", "INFUSION", "ETHEREALBLOOM")
             .setConcealed()

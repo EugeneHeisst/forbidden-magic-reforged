@@ -4,7 +4,6 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import thaumcraft.aspect.AddonAspects;
-import thaumcraft.aspect.Aspect;
 import thaumcraft.research.Warp;
 
 @EventBusSubscriber(modid = ForbiddenMagic.MODID)

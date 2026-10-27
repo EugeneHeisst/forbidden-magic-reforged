@@ -1,45 +1,37 @@
-# Forbidden Magic: Reforged
+# Forbidden Magic: Reforged — Minecraft 1.21.1
 
-Порт Forbidden Magic 0.574 (Minecraft 1.7.10) для Thaumcraft 4: Reforged на Minecraft 26.3. Перенесённый контент включает семь аспектов грехов, осколки, зачарования, хамелеоновы инструменты, материалы скверны, Mob Crystal и Wrath Cage.
+Неофициальный порт Forbidden Magic 0.574 (Minecraft 1.7.10) для Thaumcraft 4: Reforged на Minecraft 1.21.1. Эта ветка развивается отдельно от порта для Minecraft 26.3.
 
 ## Статус
 
-- Целевая версия — Minecraft 26.3 / Java 25. Полный паритет с оригиналом пока не подтверждён.
-- Реализованные механики и отличия: [fidelity ledger](docs/fidelity.md). Оставшиеся задачи: [roadmap](docs/roadmap.md). Результаты проверок: [verification](docs/verification.md).
-- Последний релиз — [0.1.1](https://github.com/MxxFoxx2/forbidden-magic-reforged/releases/tag/0.1.1). CI успешно прошёл сборку и 94/94 GameTests в обоих режимах `no_lust`; визуальные проверки клиента и полноценные игровые проверки ещё нужны.
-- Thaumcraft 4: Reforged 1.1.2+ содержит upstream API аспектов аддонов. Для регистрации портала Нижнего мира как отдельной цели сканирования блока нужен локальный [host patch](patches/0001-block-aspect-targets.patch).
+- Целевая среда: Minecraft 1.21.1, NeoForge 21.1.x и Java 21.
+- Полный паритет с оригиналом не подтверждён. Текущие этапы и оставшиеся задачи описаны в [roadmap](docs/roadmap.md).
+- Требуется Thaumcraft 4: Reforged 1.1.2. Эта ветка использует upstream API аспектов аддонов.
 
 ## Установка
 
-Скачайте мод из [Releases](https://github.com/MxxFoxx2/forbidden-magic-reforged/releases) и поместите JAR в `mods/` вместе с Thaumcraft 4: Reforged 1.1.2+ для Minecraft 26.3.
+Проверьте, что загружаемый файл предназначен именно для Minecraft 1.21.1 и NeoForge 21.1.x: сборка для Minecraft 26.3 несовместима. Файлы релизов доступны в [Releases](https://github.com/MxxFoxx2/forbidden-magic-reforged/releases). Если подходящего релиза нет, соберите мод из этой ветки.
 
-Хост не включён в этот репозиторий из-за лицензии All Rights Reserved.
+Для игры нужны NeoForge, Thaumcraft 4: Reforged 1.1.2 и зависимости хоста, включая Curios. Поместите JAR мода в папку `mods/`.
 
-## Сборка
+## Сборка и тесты
 
-Нужны Git, Python 3 и JDK 25. Клонируйте хост рядом с этим репозиторием:
+Требуются Git, Python 3 и JDK 21.
+
+Клонируйте ветку и репозиторий хоста рядом друг с другом:
 
 ```powershell
+git clone --branch 1.21.1 https://github.com/MxxFoxx2/forbidden-magic-reforged.git forbidden-magic-reforged-1.21.1
+cd forbidden-magic-reforged-1.21.1
 git clone https://github.com/notlikethiss/thaumcraft-4-reforged.git ../thaumcraft-4-reforged
 python tools/prepare_host.py
-Push-Location host
-.\gradlew.bat build --no-daemon
-Pop-Location
 .\gradlew.bat build --no-daemon
 .\gradlew.bat runGameTestServer --no-daemon
 ```
 
-На Linux/macOS используйте `./gradlew` и `python3`. Скрипт `tools/prepare_host.py` создаёт закреплённую копию хоста в `host/` и применяет патчи. Composite build использует её автоматически; отдельный `publish` не требуется. Не редактируйте `host/` вручную.
+На Linux/macOS используйте `python3` и `./gradlew`. Скрипт `tools/prepare_host.py` подготавливает в `host/` закреплённую версию хоста, указанную в `host.sha`. Gradle использует `host/` через composite build; отдельный `publish` не требуется. Не редактируйте `host/` вручную.
 
-## Использование
-
-В Thaumonomicon категория **FORBIDDEN** открывается после исследования «Сетевые осколки». Хамелеоновы инструменты переключают наборы зачарований по **Shift + ПКМ**.
-
-Настройки в `config/forbiddenmagic-startup.toml`:
-
-- `no_lust = true` — отключает аспект Luxuria и связанные с Lust рецепты.
-- `silverfish_emeralds = false` — отключает выпадение изумрудных самородков с чешуйниц.
-- `emerald_transmutation = false` — отключает исследование и алхимическую трансмутацию самородков.
+При успешной сборке JAR создаётся в `build/libs/forbidden-magic-0.574-1.21.1-port.0.1.0.jar`.
 
 ## Авторы и лицензии
 
@@ -48,4 +40,4 @@ Pop-Location
 - **Azanor** — Thaumcraft 4.2.3.5.
 - **MxxFoxx2** — порт (MIT).
 
-Порт распространяется по MIT; лицензии оригинала и хоста остаются отдельными. Подробности — в `LICENSE` и `NOTICE`.
+Лицензия MIT применяется к оригинальным изменениям порта; лицензии оригинального Forbidden Magic и Thaumcraft 4: Reforged остаются отдельными. См. `LICENSE` и `NOTICE`.

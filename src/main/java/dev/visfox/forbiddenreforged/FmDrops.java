@@ -18,7 +18,7 @@ import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Enemy;
-import net.minecraft.world.entity.monster.zombie.ZombifiedPiglin;
+import net.minecraft.world.entity.monster.ZombifiedPiglin;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -84,7 +84,11 @@ public final class FmDrops {
             return 0;
         }
         double modifier = held.getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY)
-            .compute(Attributes.ATTACK_DAMAGE, 0.0, EquipmentSlot.MAINHAND);
+            .modifiers().stream()
+            .filter(entry -> entry.attribute().is(Attributes.ATTACK_DAMAGE))
+            .filter(entry -> entry.slot().test(EquipmentSlot.MAINHAND))
+            .mapToDouble(entry -> entry.modifier().amount())
+            .sum();
         return (int) (1.0 + modifier);
     }
 
