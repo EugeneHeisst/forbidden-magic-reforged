@@ -15,7 +15,7 @@
 | Клетка гнева | Родной `IEssentiaTransport`, синхронизация и NBT 1.21.1. Зарядка от банок/труб; контейнер доступен адаптерам Thaumic Energistics и очкам откровения. Извлечение из клетки запрещено, как в исходной реализации. |
 | Thaumic Tinkerer | Восемь чар в родном каталоге затрат. Размер сетевой синхронизации и кнопок увеличивается вместе с каталогом; дополнительные варианты доступны на страницах по 16 через колесо мыши. |
 
-Обязательна только зависимость `tc4modern >= 0.17.189`. Остальные шесть портов не становятся обязательными. Работа с IC2/ASP/EMT/Gravi означает совместный запуск; новых энергетических механик этот перенос не изобретает.
+Обязательна только зависимость `tc4modern >= 0.17.191`. Остальные шесть портов не становятся обязательными. Работа с IC2/ASP/EMT/Gravi означает совместный запуск; новых энергетических механик этот перенос не изобретает.
 
 ## Необходимые отличия интеграции
 
@@ -37,3 +37,9 @@
 Нет автоматического переноса сохранений из Thaumcraft 4: Reforged. Сторонние интеграции Ars Magica из upstream не проверяются этим набором. Исторические спек/патчи другого хоста сохранены для происхождения проекта, но в сборке не применяются.
 
 Sodium и Iris не поддерживаются: с ними возможны визуальные баги.
+
+## Addon aspect icons (0.1.3)
+
+Requires TC4Modern 0.17.191: inventory scanning, the thaumometer, goggles and the deconstruction table now use each registered aspect's own texture identifier. Earlier host versions incorrectly looked for addon icons in the tc4modern namespace. All seven original icons remain in forbiddenmagic; no host textures are bundled.
+
+Validation on 2026-10-29: the final TC4Modern 0.17.191 / Tinkerer 0.1.14 / Forbidden Magic 0.1.3 client passes all 60 native regression/resource checks, including native scan rendering of all seven addon icons in inventory, the first-person device and the offhand HUD. The 0.17.190 / 0.1.2 baseline reproduces tinted missing-texture checkerboards despite all seven registered resources existing. All 14 required integration GameTests pass; a subsequent clean release build excludes the audit classes. Evidence and the native harness are in [the host validation report](https://github.com/EugeneHeisst/thaumcraft-port/blob/main/docs/validation/issues-2026-10-29.md).

@@ -2,7 +2,7 @@
 
 Форк [MxxFoxx2/forbidden-magic-reforged](https://github.com/MxxFoxx2/forbidden-magic-reforged/tree/1.21.1) для **Minecraft 1.21.1 / NeoForge 21.1.256+ / Java 21**. Поддерживается только ветка `1.21.1`.
 
-Аддон предназначен для [Thaumcraft UNOFFICIAL PORT от EugeneHeisst](https://github.com/EugeneHeisst/thaumcraft-port), **0.17.189 или новее** (`tc4modern`). Чужой Thaumcraft 4: Reforged (`thaumcraft`) этой сборке не подходит. Одновременно ставить два Forbidden Magic нельзя.
+Аддон предназначен для [Thaumcraft UNOFFICIAL PORT от EugeneHeisst](https://github.com/EugeneHeisst/thaumcraft-port), **0.17.191 или новее** (`tc4modern`). Чужой Thaumcraft 4: Reforged (`thaumcraft`) этой сборке не подходит. Одновременно ставить два Forbidden Magic нельзя.
 
 ## Установка
 
@@ -24,7 +24,7 @@ python tools/prepare_dependencies.py
 python tools/check_provenance.py
 ```
 
-Зависимости закреплены версиями и SHA-256. Существующая локальная сборка `../thaumcraft4-modern/versions/0.17.189` используется автоматически; можно указать `-Ptc4Jar=/path/to/tc4modern.jar`.
+Зависимости закреплены версиями и SHA-256. Существующая локальная сборка `../thaumcraft4-modern/versions/0.17.191` используется автоматически; можно указать `-Ptc4Jar=/path/to/tc4modern.jar`.
 
 ```sh
 python tools/prepare_dependencies.py --test-pack

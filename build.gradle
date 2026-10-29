@@ -95,7 +95,7 @@ configurations {
     clientRuntimeClasspath.extendsFrom runtimeClasspath
 }
 
-def tc4Jar = providers.gradleProperty('tc4Jar').orElse(file('../thaumcraft4-modern/versions/0.17.189/tc4modern-0.17.189.jar').exists() ? '../thaumcraft4-modern/versions/0.17.189/tc4modern-0.17.189.jar' : 'deps/tc4modern-0.17.189.jar')
+def tc4Jar = providers.gradleProperty('tc4Jar').orElse(file('../thaumcraft4-modern/versions/0.17.191/tc4modern-0.17.191.jar').exists() ? '../thaumcraft4-modern/versions/0.17.191/tc4modern-0.17.191.jar' : 'deps/tc4modern-0.17.191.jar')
 dependencies {
     implementation files(tc4Jar)
 }
