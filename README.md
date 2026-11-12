@@ -31,6 +31,6 @@ python tools/prepare_dependencies.py --test-pack
 ./gradlew -PcompatTest -PcompatPack=deps/test-pack runGameTestServer
 ```
 
-Описание адаптации и ограничений: [docs/tc4modern-compatibility.md](docs/tc4modern-compatibility.md). Старые документы Reforged в `docs/superpowers`, `patches` и прежние тесты в `tests/java` сохранены для истории; актуальные тесты этого форка находятся в `tests/compat`.
+Описание адаптации и ограничений: [docs/tc4modern-compatibility.md](docs/tc4modern-compatibility.md). Исторический [проект адаптации Reforged](docs/design/upstream-port-design.md), `patches` и прежние тесты в `tests/java` сохранены для истории; актуальные тесты этого форка находятся в `tests/compat`.
 
 Оригинальный Forbidden Magic: SpitefulFox (WTFPL). Порт Reforged: MxxFoxx2 (MIT). Адаптация TC4Modern: EugeneHeisst. Thaumcraft: Azanor. Подробная атрибуция в [NOTICE](NOTICE).
